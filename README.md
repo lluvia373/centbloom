@@ -9,12 +9,15 @@
 | 내용 | 파일 |
 | --- | --- |
 | 작업·문서 작성 규칙 | [AGENTS.md](./AGENTS.md) |
+| 코드 지도·파일 역할·기능 추가 방법 | [DEVELOPMENT.md](./DEVELOPMENT.md) |
 | 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
 | 구현·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
 | Cloudflare 배포·로그인 설정 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
 | 승인 로고·자산·재생성 | [BRAND.md](./BRAND.md) |
 
 사업 계획은 로컬 전용 BUSINESS_MODEL.md에서 관리하며 공개 저장소에 포함하지 않는다. 파일이 없는 환경은 위 공개 문서를 따른다.
+
+코드를 수정할 때는 PROJECT_STATUS의 현재 상태/제약을 확인하고 [작업별 시작점](./DEVELOPMENT.md#작업별-시작점)에서 담당 파일과 테스트를 선택한다. [확장 절차](./DEVELOPMENT.md#코드-추가수정-절차)·[파일 역할](./DEVELOPMENT.md#파일-역할)을 필요할 때 읽고, 전체 소스나 과거 기록을 반복해서 읽지 않는다.
 
 ## 로컬 실행
 
@@ -47,12 +50,5 @@ Windows에서 실제 PostgreSQL 두 연결의 저장 경합은 다음 별도 검
 
 ```sh
 npm install --prefix work/pg-runtime embedded-postgres@18.4.0-beta.17 pg@8.23.0
-node tests/postgres-concurrency.mjs
-```
-
-Windows에서 실제 PostgreSQL 두 연결의 저장 경합은 다음 별도 검사로 재현한다. 앱 의존성은 바꾸지 않으며 DB는 127.0.0.1:55439에서 실행 후 종료된다. 생성된 격리 데이터는 Git 제외 work 폴더에 남는다.
-
-```sh
-npm install --prefix work/pg-runtime embedded-postgres@18.4.0-beta.17 pg@8.20.0
 node tests/postgres-concurrency.mjs
 ```

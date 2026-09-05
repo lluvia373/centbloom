@@ -84,6 +84,4 @@
 
 ## 구현 확인 위치
 
-[시장·종목 검색](./src/lib/markets.ts) · [시세 자동 갱신](./src/hooks/useLiveQuotes.ts) · [실제 시장 화면](./src/components/LiveMarkets.tsx)
-
-[포트폴리오](./src/lib/portfolio.ts) · [통화](./src/lib/currency.ts) · [성과](./src/lib/performance.ts) · [기간 기록](./src/hooks/usePerformanceHistory.ts) · [거래/시세](./src/hooks/usePortfolio.tsx) · [거래 백업](./src/lib/transaction-backup.ts) · [관심종목](./src/hooks/useWatchlist.ts) · [노트](./src/hooks/useJournal.ts) · [로그인 접근](./src/components/AuthGate.tsx)
+작업별 진입점·파일 역할·공개 사용 창구는 [코드 지도](./DEVELOPMENT.md#작업별-시작점)를 따른다. 계산의 세부 구현은 [포트폴리오](./src/lib/portfolio.ts)·[성과](./src/lib/performance.ts)·[통화](./src/lib/currency.ts)를 확인한다.
