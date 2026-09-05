@@ -10,8 +10,8 @@
 
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
-| 공개 Cloudflare | 09-06 main 앱 `1a9d1c4` 배포. Worker `b89cd2dc-e248-41ae-9161-c03f7849a231`. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. Git 자동 Builds 미연결 |
-| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10), 개발 지도, DB 복구 사본, 검색/자산 요약 수정까지 main 반영·로컬 동기화 | 배포 앱 이후 변경은 결과 문서뿐이며 소스는 위 커밋과 동일 |
+| 공개 Cloudflare | 09-06 main 앱 `018e8f9` 배포. Worker `5dfa5296-3a66-43d9-9f2e-5b223a3a953c`. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. Git 자동 Builds 미연결 |
+| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10), 개발 지도, DB 복구 사본·검색/자산 요약·분할 매수 개별 삭제 수정까지 main 반영·로컬 동기화 | 다른 작업의 미커밋 AGENTS·이용 분석 요구는 이번 배포에서 제외. 배포 이후 자체 변경은 결과 문서뿐 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 연동 완료·승인 기록 없음 | 공개 콘텐츠·고지·신고 기능과 광고 연동 준비 |
 
@@ -32,7 +32,7 @@
 
 | 날짜·환경·대상 | 통과 범위 | 한계 |
 | --- | --- | --- |
-| 09-06 Windows 로컬 · 분할 매수 개별 삭제 수정 | 자동 테스트 42개·ESLint·TypeScript·Next.js/OpenNext 빌드 통과. 격리 3003 앱에서 동일 종목 10주/20주 각각 삭제, 8초 복구, 새로고침 유지, 다른 종목 보존, 전체 삭제 취소 후 목록 유지 확인. [UI 연결 회귀](./tests/holding-management.test.mjs)·[저장/초과 매도 검증](./tests/ledger-store.test.mjs) | 실제 계정 기록은 변경하지 않음. 운영 쓰기·이번 변경의 실제 모바일 기기는 미검증 |
+| 09-06 Windows/Cloudflare · 분할 매수 개별 삭제 `018e8f9` | 자동 테스트 42개·ESLint·TypeScript·Next.js/OpenNext 빌드 통과. 격리 3003 앱에서 동일 종목 10주/20주 각각 삭제, 8초 복구, 새로고침 유지, 다른 종목 보존, 전체 삭제 취소 후 목록 유지 확인. 공개 `/`·`/portfolio` HTTP 200, BUILD_ID·변경 JS 자산 일치. [UI 연결 회귀](./tests/holding-management.test.mjs)·[저장/초과 매도 검증](./tests/ledger-store.test.mjs) | 실제 계정 기록은 변경하지 않음. 운영 쓰기·이번 변경의 실제 모바일 기기는 미검증 |
 | 09-06 최종 배포 · main 앱 `1a9d1c4` | 40개 자동 테스트·ESLint·TypeScript·Next.js/OpenNext 빌드 통과. 격리 PostgreSQL 18.4 두 연결 경합, 비공개 복구 사본 권한·롤백 보존 검증. 공개 페이지 8개·5개국 시세/환율·검색/차트/과거 가격·오류 400·BUILD_ID 확인. 로그인된 공개 대시보드에서 자산 카드·시세·모바일 메뉴 표시 확인 | 운영 데이터 보존/권한은 실제 DB 확인. 운영 합성 계정 쓰기는 자동 승인 검토가 거부하여 격리 DB에서만 검사. 다중 기기·실제 모바일 기기·운영 대용량 Worker는 미검증 |
 | 09-06 Windows 로컬 · 구조 리팩터링 전체 | 38개 자동 테스트·ESLint·TypeScript·Next.js/OpenNext 빌드, 격리 CRUD/백업/차트 및 스타일 비교 통과. 상세 근거는 아래 구조 검토 | 운영 DB/배포·다중 기기·실제 모바일 기기 미검증. 로컬 전용 |
 | 09-06 main · 개발 안내 점검 | 실제 import/export·파일 역할·공개 훅을 대조해 DEVELOPMENT 지도/확장 절차 추가, README 중복·버전 불일치 정리. 문서 링크/경로·정적 순환 검사 확인 | 문서 변경이며 앱 동작·운영 배포 재검증 아님. 실제 모델 토큰 절감량 미측정; 기능 경계가 자동으로 전부 강제되는 구조는 아님 |
