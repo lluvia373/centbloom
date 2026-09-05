@@ -1,0 +1,32 @@
+{
+  "tool": "Sharp deterministic pixel editing; explicitly requested by user",
+  "mode": "background-only pixel normalization",
+  "source": "centifolio-logo-gold-on-white.pre-pixel-edit.png",
+  "output": "centifolio-logo-gold-on-white.png",
+  "outputKind": "Opaque pure-white background PNG, not an alpha cutout",
+  "userInstruction": "배경 픽셀만 직접 수정해",
+  "method": "Replace only near-white neutral background RGB pixels with (255,255,255); no crop, rotation, resampling, foreground recoloring or generation.",
+  "mask": {
+    "minimumChannel": 245,
+    "maximumChannelSpread": 6
+  },
+  "validationFile": "background-pixel-validation.json",
+  "originalDerivative": {
+    "tool": "Built-in image_gen",
+    "mode": "background edit",
+    "source": "centifolio-logo-gold-on-black.original.png",
+    "output": "centifolio-logo-gold-on-white.pre-pixel-edit.png",
+    "outputKind": "Opaque white-background derivative, not an alpha cutout",
+    "prompts": [
+      "Edit the supplied exact brand image. Change ONLY the black background to solid pure white #FFFFFF, including every black negative-space opening between and inside the petals and leaves. Preserve the gold rose EXACTLY as supplied: same antique-gold color and subtle texture, identical contours and shape, all the same leaves, petals and stem, exact angle, position, square canvas and margins. Do NOT redraw, stylize, beautify, rotate, crop, resize the subject, add outlines, shadows, glow or text. This is a plain background replacement for a white website. Output a flat opaque PNG with pure white background and clean gold edges. No transparency, checkerboard, colored fringing or speckles.",
+      "Use case: precise-object-edit. Image 1 is the edit target: the gold rose on a clean white background. Image 2 is the original approved mark and is the color reference only. Match the rose's muted antique-gold color and subtle texture in image 2, approximately midtone RGB(204,164,82), hex #CCA452. The gold in image 1 is too bright yellow: reduce that brightness/saturation back to the original antique gold. Change only gold color/texture. Keep image 1's exact rose geometry, all edge positions, angle, framing, size and the clean pure white background entirely unchanged. Do not redraw, simplify, add, remove, rotate, crop, or add outlines/shadows/halos. Output an opaque PNG of the same square composition."
+    ],
+    "validation": "Visually inspected against the archived source; original preserved byte-for-byte. Shape, orientation and framing closely follow the source, but the generated derivative is not pixel-identical.",
+    "discardedApproach": "Two built-in transparent background extractions produced colored fringe contamination and were rejected; no transparent output is shipped."
+  },
+  "discardedLatestAttempt": {
+    "tool": "Built-in image_gen",
+    "method": "Transparent extraction from the white derivative",
+    "result": "Rejected: painted checkerboard RGB PNG without alpha, and changed gold RGB pixels. Not copied into project or used."
+  }
+}

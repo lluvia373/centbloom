@@ -62,18 +62,18 @@ export function StockChart({
   }, [symbol, range, retry]);
 
   const isUp = data.length >= 2 && data[data.length - 1].close >= data[0].close;
-  const color = isUp ? "#26764f" : "#ab4e42";
+  const color = isUp ? "#16856b" : "#d65353";
   const periodChange =
     data.length >= 2 && data[0].close > 0
       ? (data[data.length - 1].close / data[0].close - 1) * 100
       : null;
 
   return (
-    <section className="rounded-2xl border border-[#e8ece9] bg-white p-4 sm:p-7">
+    <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-4 sm:p-7">
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-base font-semibold text-[#1b2c26]">주가 흐름</h2>
-          <p className="mt-1.5 text-xs text-[#617365]">
+          <h2 className="text-base font-semibold text-[#202329]">주가 추이</h2>
+          <p className="mt-1.5 text-xs text-[#727680]">
             기간 내 종가 추이{" "}
             {periodChange != null && !loading && (
               <span className="ml-2 font-medium" style={{ color }}>
@@ -83,7 +83,7 @@ export function StockChart({
             )}
           </p>
         </div>
-        <div className="flex max-w-full gap-1 overflow-x-auto rounded-lg bg-[#f5f7f4] p-1">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-lg bg-[#f6f7f8] p-1">
           {RANGES.map((item) => (
             <button
               key={item.value}
@@ -95,7 +95,7 @@ export function StockChart({
                   setRange(item.value);
                 }
               }}
-              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition ${range === item.value ? "bg-white font-semibold text-[#236b50] shadow-sm" : "text-[#617365] hover:text-[#236b50]"}`}
+              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition ${range === item.value ? "bg-[#202329] font-semibold text-[#ffffff] shadow-sm" : "text-[#727680] hover:text-[#3b8879]"}`}
             >
               {item.label}
             </button>
@@ -105,13 +105,13 @@ export function StockChart({
       {loading ? (
         <div
           role="status"
-          className="flex h-72 items-center justify-center text-sm text-[#617365]"
+          className="flex h-72 items-center justify-center text-sm text-[#727680]"
         >
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           차트를 가져오고 있어요
         </div>
       ) : data.length === 0 ? (
-        <div className="flex h-72 flex-col items-center justify-center gap-3 text-sm text-[#617365]">
+        <div className="flex h-72 flex-col items-center justify-center gap-3 text-sm text-[#727680]">
           <p>
             {error
               ? "차트를 불러오지 못했어요."
@@ -120,7 +120,7 @@ export function StockChart({
           <button
             type="button"
             onClick={() => setRetry((value) => value + 1)}
-            className="flex items-center gap-1.5 text-xs font-medium text-[#236b50]"
+            className="flex items-center gap-1.5 text-xs font-medium text-[#3b8879]"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             다시 불러오기
@@ -138,18 +138,18 @@ export function StockChart({
             >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={color} stopOpacity={0.15} />
-                  <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+                  <stop offset="0%" stopColor="#3b8879" stopOpacity={0.13} />
+                  <stop offset="100%" stopColor="#3b8879" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid
                 vertical={false}
-                stroke="#edf0ed"
+                stroke="#e9eaed"
                 strokeDasharray="4 4"
               />
               <XAxis
                 dataKey="date"
-                tick={{ fill: "#617365", fontSize: 10 }}
+                tick={{ fill: "#727680", fontSize: 11 }}
                 tickFormatter={(value: string) =>
                   range === "5y" ? value.slice(0, 7) : value.slice(5)
                 }
@@ -160,7 +160,7 @@ export function StockChart({
               />
               <YAxis
                 orientation="right"
-                tick={{ fill: "#617365", fontSize: 10 }}
+                tick={{ fill: "#727680", fontSize: 11 }}
                 tickFormatter={(value: number) =>
                   value.toLocaleString("ko-KR", { maximumFractionDigits: 0 })
                 }
@@ -170,12 +170,13 @@ export function StockChart({
                 width={65}
               />
               <Tooltip
+                cursor={{ stroke: "#c1d7d0", strokeDasharray: "4 3" }}
                 contentStyle={{
-                  background: "#fff",
-                  border: "1px solid #e8ece9",
+                  background: "#ffffff",
+                  border: "1px solid #e9eaed",
                   borderRadius: "12px",
-                  color: "#1b2c26",
-                  boxShadow: "0 4px 24px #1b2c2610",
+                  color: "#202329",
+                  boxShadow: "0 8px 28px #2023290d",
                   fontSize: "12px",
                 }}
                 formatter={(value) => [
@@ -186,7 +187,7 @@ export function StockChart({
               <Area
                 type="monotone"
                 dataKey="close"
-                stroke={color}
+                stroke="#3b8879"
                 fill={`url(#${gradientId})`}
                 strokeWidth={2.2}
                 isAnimationActive={false}

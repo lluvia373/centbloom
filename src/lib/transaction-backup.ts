@@ -1,7 +1,7 @@
 import type { Transaction } from "./types";
 import { validateTransactionHistory } from "./portfolio";
 
-export const TRANSACTION_BACKUP_FORMAT = "stockfolio-transactions";
+export const TRANSACTION_BACKUP_FORMAT = "centifolio-transactions";
 export const TRANSACTION_BACKUP_VERSION = 1;
 export const MAX_BACKUP_FILE_BYTES = 5 * 1024 * 1024;
 
@@ -192,8 +192,12 @@ export function parseTransactionBackup(
   }
 
   const errors: string[] = [];
-  if (value.format !== TRANSACTION_BACKUP_FORMAT) {
-    errors.push("Stockfolio 거래 백업 파일이 아닙니다.");
+  // Keep backups exported before the Centifolio rename importable.
+  if (
+    value.format !== TRANSACTION_BACKUP_FORMAT &&
+    value.format !== "stockfolio-transactions"
+  ) {
+    errors.push("Centifolio 거래 백업 파일이 아닙니다.");
   }
   if (value.version !== TRANSACTION_BACKUP_VERSION) {
     errors.push(

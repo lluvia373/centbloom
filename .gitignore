@@ -14,6 +14,9 @@
 /coverage
 /work/
 
+# Local business planning; excluded from the public repository
+/BUSINESS_MODEL.md
+
 # next.js
 /.next/
 /out/
@@ -36,6 +39,11 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Cloudflare build output and local secrets
+/.open-next/
+/.wrangler/
+.dev.vars*
 
 # typescript
 *.tsbuildinfo

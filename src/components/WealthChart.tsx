@@ -103,10 +103,10 @@ function ChartView({
     <section className="surface">
       <div className="surface-header">
         <div>
-          <h2>{mode === "assets" ? "자산의 흐름" : "수익률의 흐름"}</h2>
+          <h2>{mode === "assets" ? "투자자산 추이" : "운용수익률 추이"}</h2>
           <p>
             {mode === "assets"
-              ? "시간이 쌓이면, 자산도 달라집니다."
+              ? "평가액과 누적 순투입금의 변화"
               : "자금 유입과 유출을 제외한 운용 성과"}
           </p>
         </div>
@@ -159,13 +159,13 @@ function ChartView({
             >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#adcba0" stopOpacity={0.32} />
-                  <stop offset="100%" stopColor="#eaf2e5" stopOpacity={0.03} />
+                  <stop offset="0%" stopColor="#3b8879" stopOpacity={0.16} />
+                  <stop offset="100%" stopColor="#3b8879" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid
                 vertical={false}
-                stroke="#edf1e9"
+                stroke="#e9eaed"
                 strokeDasharray="3 5"
               />
               <XAxis
@@ -174,7 +174,7 @@ function ChartView({
                 tickLine={false}
                 minTickGap={42}
                 tickMargin={13}
-                tick={{ fill: "#65745f", fontSize: 9 }}
+                tick={{ fill: "#727680", fontSize: 11 }}
                 tickFormatter={(date) =>
                   `${Number(date.slice(5, 7))}.${date.slice(8)}`
                 }
@@ -183,8 +183,8 @@ function ChartView({
                 axisLine={false}
                 tickLine={false}
                 tickMargin={8}
-                width={49}
-                tick={{ fill: "#65745f", fontSize: 9 }}
+                width={59}
+                tick={{ fill: "#727680", fontSize: 11 }}
                 domain={["auto", "auto"]}
                 tickFormatter={(value) =>
                   mode === "return"
@@ -195,7 +195,7 @@ function ChartView({
                 }
               />
               <Tooltip
-                cursor={{ stroke: "#aac39c", strokeDasharray: "4 3" }}
+                cursor={{ stroke: "#c1d7d0", strokeDasharray: "4 3" }}
                 content={({ active, payload, label }) =>
                   active && payload?.length ? (
                     <div className="chart-tooltip">
@@ -231,7 +231,7 @@ function ChartView({
                 <Line
                   type="monotone"
                   dataKey="cost"
-                  stroke="#bdcbb2"
+                  stroke="#a1a7ae"
                   strokeDasharray="4 4"
                   strokeWidth={1.3}
                   dot={false}
@@ -242,14 +242,14 @@ function ChartView({
               <Area
                 type="monotone"
                 dataKey={valueKey}
-                stroke="#4e895e"
+                stroke="#3b8879"
                 strokeWidth={2.2}
                 fill={`url(#${gradientId})`}
                 activeDot={{
                   r: 5,
-                  stroke: "#fff",
+                  stroke: "#ffffff",
                   strokeWidth: 3,
-                  fill: "#4e895e",
+                  fill: "#3b8879",
                 }}
                 dot={data.length === 1 ? { r: 4 } : false}
                 isAnimationActive={false}
@@ -265,7 +265,7 @@ function ChartView({
             <ChartNoAxesCombined size={30} />
           )}
           <strong>
-            {loading ? "자산 기록을 불러오고 있어요" : "나의 투자가 쌓이는 곳"}
+            {loading ? "자산 기록을 불러오고 있어요" : "아직 자산 기록이 없습니다"}
           </strong>
           <p>{error ?? "첫 거래부터 나만의 자산 그래프가 시작됩니다."}</p>
         </div>

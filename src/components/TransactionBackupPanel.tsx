@@ -29,7 +29,7 @@ function backupFileName(): string {
   const date = new Date().toLocaleDateString("sv-SE", {
     timeZone: "Asia/Seoul",
   });
-  return `stockfolio-transactions-${date}.json`;
+  return `centifolio-transactions-${date}.json`;
 }
 
 export function TransactionBackupPanel() {
@@ -134,17 +134,17 @@ export function TransactionBackupPanel() {
 
   return (
     <>
-      <section className="rounded-2xl border border-[#e8ece9] bg-white p-4">
+      <section className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1b2c26]">
-              <FileJson className="h-4 w-4 text-[#236b50]" />
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#202329]">
+              <FileJson className="h-4 w-4 text-[#727680]" />
               거래 데이터 백업
             </h3>
-            <p className="mt-1 text-xs leading-5 text-[#617365]">
+            <p className="mt-1 text-xs leading-5 text-[#727680]">
               전체 거래를 JSON으로 보관하거나 검증된 백업을 복원합니다.
             </p>
-            <p className="mt-1 text-xs leading-5 text-[#617365]">
+            <p className="mt-1 text-xs leading-5 text-[#727680]">
               백업에는 실제 투자 기록이 포함되므로 안전한 장소에 보관하세요.
             </p>
           </div>
@@ -158,7 +158,7 @@ export function TransactionBackupPanel() {
                   ? "내보낼 거래가 없습니다."
                   : undefined
               }
-              className="inline-flex items-center gap-2 rounded-lg border border-[#e1e7e2] px-3 py-2 text-sm font-medium text-[#1b2c26] transition-colors hover:bg-[#f7f9f7] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#e6e8eb] px-3 py-2 text-sm font-medium text-[#202329] transition-colors hover:bg-[#ffffff] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Download className="h-4 w-4" />
               JSON 내보내기
@@ -166,7 +166,7 @@ export function TransactionBackupPanel() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#236b50] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1b563f]"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#25282e] px-3 py-2 text-sm font-semibold text-[#ffffff] transition-colors hover:bg-[#25282e]"
             >
               <Upload className="h-4 w-4" />
               백업 가져오기
@@ -184,7 +184,7 @@ export function TransactionBackupPanel() {
 
         {notice && (
           <p
-            className="mt-3 flex items-center gap-2 text-xs text-[#26764f]"
+            className="mt-3 flex items-center gap-2 text-xs text-[#727680]"
             aria-live="polite"
           >
             <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -193,14 +193,14 @@ export function TransactionBackupPanel() {
         )}
         {errors.length > 0 && (
           <div
-            className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3"
+            className="mt-3 rounded-lg border border-[#edc4c4]/30 bg-[#fceeee]/10 p-3"
             role="alert"
           >
-            <p className="flex items-center gap-2 text-xs font-semibold text-[#ab4e42]">
+            <p className="flex items-center gap-2 text-xs font-semibold text-[#d65353]">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               백업을 적용하지 않았습니다.
             </p>
-            <ul className="mt-2 space-y-1 pl-6 text-xs text-[#ab4e42]">
+            <ul className="mt-2 space-y-1 pl-6 text-xs text-[#d65353]">
               {errors.map((error, index) => (
                 <li key={`${error}-${index}`} className="list-disc">
                   {error}
@@ -212,25 +212,25 @@ export function TransactionBackupPanel() {
       </section>
 
       {preview && previewSummary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1b2c26]/30 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="backup-preview-title"
-            className="w-full max-w-lg rounded-2xl border border-[#e1e7e2] bg-white p-5 shadow-2xl sm:p-6"
+            className="w-full max-w-lg rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-5 shadow-2xl sm:p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#236b50]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#727680]">
                   검증 완료
                 </p>
                 <h3
                   id="backup-preview-title"
-                  className="mt-1 text-lg font-semibold text-[#1b2c26]"
+                  className="mt-1 text-lg font-semibold text-[#202329]"
                 >
                   이 백업을 어떻게 적용할까요?
                 </h3>
-                <p className="mt-1 break-all text-xs text-[#617365]">
+                <p className="mt-1 break-all text-xs text-[#727680]">
                   {fileName}
                 </p>
               </div>
@@ -238,7 +238,7 @@ export function TransactionBackupPanel() {
                 type="button"
                 onClick={closePreview}
                 disabled={Boolean(importingMode)}
-                className="rounded-lg p-2 text-[#617365] hover:bg-[#f7f9f7] hover:text-[#1b2c26] disabled:opacity-40"
+                className="rounded-lg p-2 text-[#727680] hover:bg-[#ffffff] hover:text-[#202329] disabled:opacity-40"
                 aria-label="백업 미리보기 닫기"
               >
                 <X className="h-4 w-4" />
@@ -246,26 +246,26 @@ export function TransactionBackupPanel() {
             </div>
 
             <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-lg bg-[#f7f9f7] p-3">
-                <dt className="text-xs text-[#617365]">거래</dt>
-                <dd className="mt-1 font-semibold text-[#1b2c26]">
+              <div className="rounded-lg bg-[#ffffff] p-3">
+                <dt className="text-xs text-[#727680]">거래</dt>
+                <dd className="mt-1 font-semibold text-[#202329]">
                   {preview.transactions.length.toLocaleString("ko-KR")}건
                 </dd>
               </div>
-              <div className="rounded-lg bg-[#f7f9f7] p-3">
-                <dt className="text-xs text-[#617365]">종목</dt>
-                <dd className="mt-1 font-semibold text-[#1b2c26]">
+              <div className="rounded-lg bg-[#ffffff] p-3">
+                <dt className="text-xs text-[#727680]">종목</dt>
+                <dd className="mt-1 font-semibold text-[#202329]">
                   {previewSummary.symbolCount.toLocaleString("ko-KR")}개
                 </dd>
               </div>
-              <div className="col-span-2 rounded-lg bg-[#f7f9f7] p-3">
-                <dt className="text-xs text-[#617365]">거래 기간</dt>
-                <dd className="mt-1 font-medium text-[#1b2c26]">
+              <div className="col-span-2 rounded-lg bg-[#ffffff] p-3">
+                <dt className="text-xs text-[#727680]">거래 기간</dt>
+                <dd className="mt-1 font-medium text-[#202329]">
                   {previewSummary.firstDate && previewSummary.lastDate
                     ? `${previewSummary.firstDate} ~ ${previewSummary.lastDate}`
                     : "거래 없음"}
                 </dd>
-                <dd className="mt-1 text-xs text-[#617365]">
+                <dd className="mt-1 text-xs text-[#727680]">
                   백업 생성: {formatDateTime(preview.exportedAt)}
                 </dd>
               </div>
@@ -274,7 +274,7 @@ export function TransactionBackupPanel() {
             {errors.length > 0 && (
               <p
                 role="alert"
-                className="mt-4 rounded-lg bg-[#fcf2ef] p-3 text-xs leading-5 text-[#ab4e42]"
+                className="mt-4 rounded-lg bg-[#f3f4f6] p-3 text-xs leading-5 text-[#d65353]"
               >
                 {errors.join(" ")}
               </p>
@@ -284,36 +284,36 @@ export function TransactionBackupPanel() {
                 type="button"
                 onClick={() => void handleImport("merge")}
                 disabled={Boolean(importingMode)}
-                className="flex w-full items-center justify-between rounded-xl border border-[#cce0d2] bg-[#edf5ef] px-4 py-3 text-left transition-colors hover:bg-[#e3eee6] disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-xl border border-[#e6e8eb] bg-[#f3f4f6] px-4 py-3 text-left transition-colors hover:bg-[#f3f4f6] disabled:opacity-50"
               >
                 <span>
-                  <span className="block text-sm font-semibold text-[#26764f]">
+                  <span className="block text-sm font-semibold text-[#727680]">
                     기존 거래와 병합
                   </span>
-                  <span className="mt-1 block text-xs text-[#617365]">
+                  <span className="mt-1 block text-xs text-[#727680]">
                     같은 거래 ID는 유지하고 새로운 거래만 추가합니다.
                   </span>
                 </span>
                 {importingMode === "merge" && (
-                  <Loader2 className="h-5 w-5 animate-spin text-[#26764f]" />
+                  <Loader2 className="h-5 w-5 animate-spin text-[#727680]" />
                 )}
               </button>
               <button
                 type="button"
                 onClick={() => void handleImport("replace")}
                 disabled={Boolean(importingMode)}
-                className="flex w-full items-center justify-between rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left transition-colors hover:bg-red-500/15 disabled:opacity-50"
+                className="flex w-full items-center justify-between rounded-xl border border-[#edc4c4]/30 bg-[#fceeee]/10 px-4 py-3 text-left transition-colors hover:bg-[#fceeee]/15 disabled:opacity-50"
               >
                 <span>
-                  <span className="block text-sm font-semibold text-[#ab4e42]">
+                  <span className="block text-sm font-semibold text-[#d65353]">
                     전체 교체
                   </span>
-                  <span className="mt-1 block text-xs text-[#617365]">
+                  <span className="mt-1 block text-xs text-[#727680]">
                     현재 거래를 이 백업 내용으로 완전히 바꿉니다.
                   </span>
                 </span>
                 {importingMode === "replace" && (
-                  <Loader2 className="h-5 w-5 animate-spin text-[#ab4e42]" />
+                  <Loader2 className="h-5 w-5 animate-spin text-[#d65353]" />
                 )}
               </button>
             </div>

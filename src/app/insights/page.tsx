@@ -26,9 +26,9 @@ export default function InsightsPage() {
   return (
     <>
       <PageHeading
-        eyebrow="A CLEARER PERSPECTIVE"
-        title="숫자 너머의 투자성과"
-        description="수익이 어디에서 왔는지, 나의 투자는 어떻게 달라졌는지."
+        eyebrow="PERFORMANCE"
+        title="성과 분석"
+        description="종목별 손익과 환율이 수익에 미친 영향을 확인하세요."
       >
         <AddTransactionLink />
       </PageHeading>

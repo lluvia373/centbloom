@@ -1,4 +1,6 @@
 "use client";
+import { BrandMark } from "@/components/BrandMark";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -11,12 +13,11 @@ import {
   ChevronRight,
   CircleHelp,
   LayoutDashboard,
-  Leaf,
   LogOut,
   Plus,
   Search,
   Settings2,
-  Sparkles,
+  Layers3,
   Wallet,
   Star,
   X,
@@ -72,23 +73,15 @@ export function Header() {
         본문으로 건너뛰기
       </a>
       <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="Stockfolio 홈">
-          <span className="brand-symbol">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span>
-            stockfolio<span className="brand-period">.</span>
-          </span>
+        <Link href="/" className="brand" aria-label="Centifolio 홈">
+          <BrandMark size={44} />
+          <span>centifolio</span>
         </Link>
         <div className="workspace-selector">
-          <span className="workspace-icon">
-            <Leaf size={17} />
-          </span>
+          <span className="workspace-icon"><Layers3 size={17} /></span>
           <span>
             <strong>나의 투자 공간</strong>
-            <small>Personal workspace</small>
+            <small>개인 투자 워크스페이스</small>
           </span>
         </div>
         <p className="nav-label">WORKSPACE</p>
@@ -112,6 +105,7 @@ export function Header() {
             href="/search"
             onClick={() => setDemo(false)}
             className={pathname === "/search" ? "active" : ""}
+            aria-current={pathname === "/search" ? "page" : undefined}
           >
             <ArrowDownUp size={18} strokeWidth={1.7} />
             <span>거래 기록</span>
@@ -119,36 +113,17 @@ export function Header() {
           <Link
             href="/settings"
             className={pathname === "/settings" ? "active" : ""}
+            aria-current={pathname === "/settings" ? "page" : undefined}
           >
             <Settings2 size={18} strokeWidth={1.7} />
             <span>설정 및 데이터</span>
           </Link>
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <div className="sidebar-note-art">
-              <span />
-              <span />
-              <span />
-              <Leaf size={22} />
-            </div>
-            <p>
-              좋은 투자는
-              <br />
-              <strong>나를 아는 것부터.</strong>
-            </p>
-            <Link href="/journal">
-              오늘의 생각 기록하기 <ArrowUpRight size={14} />
-            </Link>
-          </div>
-          <Link className="profile" href="/settings">
-            <span className="profile-avatar">
-              {user?.email?.slice(0, 1).toUpperCase() ?? "S"}
-            </span>
+          <Link className="profile" href="/settings" aria-label="계정 설정">
+            <span className="profile-avatar">{user?.email?.slice(0, 1).toUpperCase() ?? "C"}</span>
             <span>
-              <strong>
-                {user?.user_metadata?.full_name ?? "나의 포트폴리오"}
-              </strong>
+              <strong>{user?.user_metadata?.full_name ?? "나의 포트폴리오"}</strong>
               <small>{user ? "개인 계정" : "로컬 워크스페이스"}</small>
             </span>
             <ChevronRight size={15} />
@@ -161,13 +136,9 @@ export function Header() {
           <ChevronRight size={13} />
           <strong>{pageName}</strong>
         </div>
-        <Link href="/" className="mobile-brand">
-          <span className="brand-symbol">
-            <i />
-            <i />
-            <i />
-          </span>
-          stockfolio.
+        <Link href="/" className="mobile-brand" aria-label="Centifolio 홈">
+          <BrandMark size={36} />
+          <span>centifolio</span>
         </Link>
         <div className="topbar-actions" ref={panelRef}>
           <Link
@@ -191,6 +162,9 @@ export function Header() {
               </button>
             ))}
           </div>
+          <Link href="/settings" className="icon-button mobile-settings" aria-label="설정 및 데이터">
+            <Settings2 size={18} />
+          </Link>
           <button
             className="icon-button"
             aria-label="업데이트 상태"
@@ -234,7 +208,7 @@ export function Header() {
           {panel === "help" && (
             <div className="topbar-popover">
               <h3>
-                Stockfolio 사용 안내{" "}
+                Centifolio 사용 안내{" "}
                 <button aria-label="닫기" onClick={() => setPanel(null)}>
                   <X size={15} />
                 </button>
@@ -311,12 +285,12 @@ export function PortfolioMode() {
     <div className={`portfolio-mode ${isDemo ? "sample" : "personal"}`}>
       <div>
         <span className="mode-icon">
-          {isDemo ? <Sparkles size={15} /> : <Wallet size={15} />}
+          {isDemo ? <Layers3 size={15} /> : <Wallet size={15} />}
         </span>
         <strong>{isDemo ? "샘플 포트폴리오" : "내 포트폴리오"}</strong>
         <span>
           {isDemo
-            ? "예시 데이터로 나의 새로운 투자 공간을 둘러보세요."
+            ? "예시 데이터로 기능을 살펴보세요."
             : "나의 거래 기록을 바탕으로 보여드려요."}
         </span>
       </div>

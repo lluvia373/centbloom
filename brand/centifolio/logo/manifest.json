@@ -1,0 +1,109 @@
+{
+  "brand": "Centifolio",
+  "status": "User-approved gold rose identity; original and earlier derivative archived; exact-white background derivative active locally",
+  "approvedDate": "2026-09-05",
+  "sourceAttachment": "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",
+  "originalSha256": "8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3",
+  "originalDimensions": {
+    "width": 1254,
+    "height": 1254
+  },
+  "identity": "The gold rose itself is the logo. Preserve its shape, angle and gold character. Black is an optional presentation background, not part of the logo identity.",
+  "activeDerivative": {
+    "file": "centifolio-logo-gold-on-white.png",
+    "sha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
+    "background": "opaque pure white RGB(255,255,255) in the recorded background mask",
+    "method": "Earlier built-in image_gen derivative followed by explicitly authorized background-only RGB pixel normalization and deterministic resizing",
+    "provenance": "background-edit.json",
+    "pixelValidation": "background-pixel-validation.json",
+    "limitation": "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original. No transparent extraction is shipped."
+  },
+  "exportTool": {
+    "name": "sharp",
+    "version": "0.35.4",
+    "libvips": "8.18.6"
+  },
+  "resolutionNote": "The 4096px image is an interpolated enlargement, not a higher-detail original or a vector master. Lossless encoding preserves the resampled output, not new source detail.",
+  "files": [
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-on-black.original.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 954981,
+      "sha256": "8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3",
+      "method": "Byte-for-byte copy of the user-approved attachment; no processing."
+    },
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.pre-pixel-edit.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 961741,
+      "sha256": "105631ec014d89463e43b42d2a9aba7afaaa7c5e024d00021ad0dd276c5b2dcd",
+      "method": "Byte-for-byte archive of the earlier image_gen white-background derivative, before user-authorized background pixel normalization."
+    },
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 453372,
+      "sha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
+      "method": "User-authorized deterministic normalization of near-white neutral background pixels to RGB(255,255,255). Every pixel outside the recorded background mask is unchanged from the archived pre-edit derivative."
+    },
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 2542100,
+      "sha256": "ddcd6b7160d2f8bbe21a03515bb187bdea021e36a51281dc56589f378bddab63",
+      "method": "Lanczos3 resampling from approved original to 4096 × 4096; lossless PNG encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "public/brand/centifolio-logo-gold-on-black.webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 131084,
+      "sha256": "d593aacb59e70d849522bbde11b1c5d44b1a14f3206a760e0fca08755dcbd9e2",
+      "method": "Lanczos3 resampling from approved original to 640 × 640; lossless WEBP encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png",
+      "width": 4096,
+      "height": 4096,
+      "bytes": 2440667,
+      "sha256": "6178beebdc32fb632d0e4e18147ff20ccddf7d7121b93af468e337e52ef7e71f",
+      "method": "Lanczos3 resampling from white-background derivative to 4096 × 4096; lossless PNG encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "public/brand/centifolio-logo-gold-on-white.webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 86588,
+      "sha256": "910cb56cd1a005a25450135655eba892319286d586dbf8e1cc02fa21e085363d",
+      "method": "Lanczos3 resampling from white-background derivative to 640 × 640; lossless WEBP encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "src/app/icon.png",
+      "width": 96,
+      "height": 96,
+      "bytes": 6677,
+      "sha256": "3cec66fa1b8f662e5aa75198b818c82745fe509cf5dfec594cccdfb5c47bafdc",
+      "method": "Lanczos3 resampling from white-background derivative to 96 × 96; lossless PNG encoding; opaque RGBA. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "src/app/apple-icon.png",
+      "width": 180,
+      "height": 180,
+      "bytes": 17858,
+      "sha256": "06a7f5acd95a487295dac844bea1793eccccaccf9fe1c738098600b937672490",
+      "method": "Lanczos3 resampling from white-background derivative to 180 × 180; lossless PNG encoding; opaque RGBA. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "src/app/favicon.ico",
+      "width": 64,
+      "height": 64,
+      "bytes": 3719,
+      "sha256": "80fc286b45319cae958863929c0971175c3e6a0baf6dee87cfdd507fd168e7d4",
+      "method": "Lanczos3 resampling from white-background derivative to 64 × 64; opaque RGBA lossless PNG wrapped in a 32-bit ICO container."
+    }
+  ]
+}

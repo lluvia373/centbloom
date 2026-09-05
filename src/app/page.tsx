@@ -20,7 +20,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeading
-        eyebrow="YOUR WEALTH, YOUR WAY"
+        eyebrow="OVERVIEW"
         title="나의 투자 대시보드"
         description="오늘의 자산을 확인하고, 다음 투자를 준비하세요."
       >
@@ -31,7 +31,7 @@ export default function DashboardPage() {
       {!isDemo && marketDataError && (
         <p
           role="status"
-          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800"
+          className="mb-4 rounded-lg border border-[#e9d9b8] bg-[#fff9ed] px-4 py-3 text-xs text-[#727680]"
         >
           {marketDataError}
         </p>
@@ -58,8 +58,8 @@ export default function DashboardPage() {
               <BookOpen size={17} />
             </span>
             <div>
-              <h3>숫자 뒤에 있는 나의 생각</h3>
-              <p>오늘의 투자 이유를 짧게 남겨보세요.</p>
+              <h3>투자 노트</h3>
+              <p>매수와 매도의 이유를 기록해두세요.</p>
             </div>
             <Link href="/journal" aria-label="투자 노트 작성하기">
               <ArrowUpRight size={18} />
