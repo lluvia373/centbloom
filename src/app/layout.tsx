@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthGate } from "@/components/AuthGate";
 import { Header } from "@/components/Header";
@@ -7,6 +7,7 @@ import { PortfolioProvider } from "@/hooks/usePortfolio";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { StorageNotice } from "@/components/StorageNotice";
 import "./globals.css";
+import "./brand.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,9 +20,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stockfolio — 나의 투자를, 나답게.",
+  applicationName: "Centifolio",
+  title: "Centifolio — 나의 투자를, 나답게.",
   description:
     "자산의 흐름과 투자성과, 관심종목과 투자 생각을 연결하는 나만의 투자 공간.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -46,9 +53,9 @@ export default function RootLayout({
                     {children}
                     <footer className="app-footer">
                       <span>
-                        stockfolio. <span>나의 투자를, 나답게.</span>
+                        centifolio <span>나의 투자를, 나답게.</span>
                       </span>
-                      <span>차곡차곡 쌓이는 투자 기록</span>
+                      <span>Centifolio</span>
                     </footer>
                   </main>
                 </div>

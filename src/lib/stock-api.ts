@@ -36,7 +36,9 @@ export async function getChartSeries(
   const res = await fetch(
     `/api/chart/${encodeURIComponent(symbol)}?${params.toString()}`
   );
-  if (!res.ok) throw new Error("차트 데이터 조회에 실패했습니다.");
+  if (!res.ok) {
+    throw new Error(`차트 데이터 조회에 실패했습니다. (${symbol}, HTTP ${res.status})`);
+  }
   return res.json();
 }
 

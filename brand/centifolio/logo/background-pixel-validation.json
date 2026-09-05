@@ -1,0 +1,27 @@
+{
+  "authorization": "User explicitly requested: 배경 픽셀만 직접 수정해",
+  "input": "centifolio-logo-gold-on-white.pre-pixel-edit.png",
+  "inputSha256": "105631ec014d89463e43b42d2a9aba7afaaa7c5e024d00021ad0dd276c5b2dcd",
+  "output": "centifolio-logo-gold-on-white.png",
+  "outputSha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
+  "dimensions": {
+    "width": 1254,
+    "height": 1254
+  },
+  "method": "Replace only near-white neutral background RGB pixels with (255,255,255); no crop, rotation, resampling, foreground recoloring or generation.",
+  "mask": {
+    "minimumChannel": 245,
+    "maximumChannelSpread": 6
+  },
+  "backgroundPixels": 1275151,
+  "changedPixels": 1122731,
+  "unchangedOutsideMask": 297365,
+  "preservedGoldPixels": 294705,
+  "goldCheck": "Every warm-gold pixel with R minus B greater than 20 is outside the background mask and unchanged.",
+  "changedOutsideMask": 0,
+  "nonWhiteInsideMask": 0,
+  "tool": {
+    "name": "sharp",
+    "version": "0.35.4"
+  }
+}

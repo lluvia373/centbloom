@@ -36,7 +36,7 @@ export function AllocationChart({
       <div className="surface-header">
         <div>
           <h2>자산 배분</h2>
-          <p>내 포트폴리오를 이루는 조각들</p>
+          <p>평가액 기준 보유 비중</p>
         </div>
         <select
           value={mode}
@@ -69,7 +69,7 @@ export function AllocationChart({
                 cy="100"
                 r="73"
                 fill="none"
-                stroke="#f3f5ef"
+                stroke="#f0f1f3"
                 strokeWidth="22"
               />
               {data.map((d, i) => {

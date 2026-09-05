@@ -8,12 +8,14 @@ import type {
 // Deliberately fictional, isolated fixtures. Never saved to the user's portfolio.
 export const DEMO_FX = 1370;
 export const ASSET_COLORS = [
-  "#276c50",
-  "#79a689",
-  "#bdcdb2",
-  "#d8b66b",
-  "#a5b5c9",
-  "#d6dfda",
+  "#3b8879",
+  "#6d91aa",
+  "#a1b7bf",
+  "#91ad9c",
+  "#b9a46e",
+  "#b5b9c4",
+  "#687b85",
+  "#d0d8d5",
 ];
 const positions = [
   {

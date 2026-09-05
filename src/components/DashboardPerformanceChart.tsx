@@ -70,7 +70,7 @@ export function DashboardPerformanceChart() {
 
   if (loading && points.length === 0) {
     return (
-      <div className="flex h-44 items-center justify-center text-xs text-slate-500 sm:h-48">
+      <div className="flex h-44 items-center justify-center text-xs text-[#727680] sm:h-48">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 성과 기록을 불러오는 중
       </div>
     );
@@ -78,7 +78,7 @@ export function DashboardPerformanceChart() {
 
   if (points.length === 0) {
     return (
-      <div className="flex h-44 items-center justify-center rounded-2xl bg-indigo-500/[0.04] px-6 text-center text-xs leading-5 text-slate-500 sm:h-48">
+      <div className="flex h-44 items-center justify-center rounded-2xl bg-[#202329]/[0.04] px-6 text-center text-xs leading-5 text-[#727680] sm:h-48">
         첫 거래를 등록하면 포트폴리오를 만든 날부터 성과 그래프가 시작됩니다.
       </div>
     );
@@ -88,13 +88,13 @@ export function DashboardPerformanceChart() {
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[11px] font-medium text-slate-500">운용수익률 · {rangeLabel(range)}</p>
-          <p className={cn("mt-1 text-base font-semibold", currentReturn >= 0 ? "text-emerald-300" : "text-rose-300")}>
+          <p className="text-[11px] font-medium text-[#727680]">운용수익률 · {rangeLabel(range)}</p>
+          <p className={cn("mt-1 text-base font-semibold", currentReturn >= 0 ? "text-[#16856b]" : "text-[#d65353]")}>
             {formatPercent(currentReturn)}
           </p>
         </div>
 
-        <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-white/5 p-1" aria-label="성과 조회 기간">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f6f7f8] p-1" aria-label="성과 조회 기간">
           {RANGES.map((item) => (
             <button
               key={item.key}
@@ -105,8 +105,8 @@ export function DashboardPerformanceChart() {
               className={cn(
                 "shrink-0 rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-colors sm:px-3",
                 range === item.key
-                  ? "bg-white text-slate-950"
-                  : "text-slate-500 hover:text-white"
+                  ? "bg-[#202329] text-[#ffffff]"
+                  : "text-[#727680] hover:text-[#202329]"
               )}
             >
               {item.label}
@@ -118,19 +118,19 @@ export function DashboardPerformanceChart() {
       <div className="mt-3 h-36 sm:h-40">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
-            <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.08)" />
+            <CartesianGrid vertical={false} stroke="#edf0f2" />
             <XAxis
               dataKey="date"
               tickFormatter={shortDate}
-              tick={{ fill: "#64748b", fontSize: 10 }}
+              tick={{ fill: "#727680", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               minTickGap={48}
             />
             <YAxis hide domain={chartDomain} />
-            <ReferenceLine y={0} stroke="rgba(148,163,184,0.18)" strokeDasharray="4 4" />
+            <ReferenceLine y={0} stroke="#d8dcdf" strokeDasharray="4 4" />
             <Tooltip
-              cursor={{ stroke: "rgba(129,140,248,0.25)", strokeWidth: 1 }}
+              cursor={{ stroke: "#c1d7d0", strokeWidth: 1 }}
               contentStyle={tooltipStyle}
               labelFormatter={(value) => String(value ?? "").replaceAll("-", ".")}
               formatter={(value) => [formatPercent(Number(value)), "운용수익률"]}
@@ -138,21 +138,21 @@ export function DashboardPerformanceChart() {
             <Line
               type="monotone"
               dataKey="portfolioReturn"
-              stroke="#818cf8"
+              stroke="#3b8879"
               strokeWidth={2.5}
-              dot={chartData.length === 1 ? { r: 4, fill: "#a5b4fc", strokeWidth: 0 } : false}
-              activeDot={{ r: 4, fill: "#c7d2fe", stroke: "#818cf8", strokeWidth: 2 }}
+              dot={chartData.length === 1 ? { r: 4, fill: "#3b8879", strokeWidth: 0 } : false}
+              activeDot={{ r: 4, fill: "#ffffff", stroke: "#3b8879", strokeWidth: 2 }}
               isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-1 flex items-center justify-between gap-3 text-[10px] text-slate-600">
+      <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-[#727680]">
         <span>{trackingStartedAt ? `기록 시작 ${longDate(firstDate)}` : longDate(firstDate)}</span>
         <span>{chartData.length === 1 ? "첫 기록" : `${chartData.length}일 기록`}</span>
       </div>
-      {error && <p className="mt-2 text-[11px] text-amber-300">{error}</p>}
+      {error && <p className="mt-2 text-[11px] text-[#946a24]">{error}</p>}
     </div>
   );
 }
@@ -170,9 +170,9 @@ function longDate(value: string): string {
 }
 
 const tooltipStyle = {
-  background: "#11182a",
-  border: "1px solid rgba(148,163,184,0.16)",
+  background: "#ffffff",
+  border: "1px solid #e9eaed",
   borderRadius: "12px",
-  color: "#f8fafc",
+  color: "#202329",
   fontSize: "12px",
 };

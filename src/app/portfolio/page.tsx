@@ -84,7 +84,7 @@ export default function PortfolioPage() {
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `stockfolio-${isDemo ? "sample" : "holdings"}.csv`;
+    anchor.download = `centifolio-${isDemo ? "sample" : "holdings"}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -95,7 +95,7 @@ export default function PortfolioPage() {
       <PageHeading
         eyebrow="MY PORTFOLIO"
         title="내 포트폴리오"
-        description="모든 투자 기록을 한곳에. 나의 자산을 더 가까이."
+        description="보유종목과 거래 내역을 한눈에 확인하세요."
       >
         <AddTransactionLink />
       </PageHeading>
@@ -103,7 +103,7 @@ export default function PortfolioPage() {
       {!isDemo && marketDataError && (
         <p
           role="status"
-          className="mb-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800"
+          className="mb-4 rounded-lg bg-[#fff9ed] p-3 text-xs text-[#727680]"
         >
           {marketDataError}
         </p>
@@ -184,14 +184,14 @@ export default function PortfolioPage() {
       {lastDeleted && (
         <div
           role="status"
-          className="fixed bottom-24 left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-xl border border-[#dce7dc] bg-white px-4 py-3 shadow-xl md:bottom-6"
+          className="fixed bottom-24 left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-xl border border-[#e6e8eb] bg-[#ffffff] px-4 py-3 shadow-xl md:bottom-6"
         >
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">
                 {lastDeleted.symbol} 거래를 삭제했습니다.
               </p>
-              <p className="mt-1 text-xs text-[#85947d]">
+              <p className="mt-1 text-xs text-[#727680]">
                 {undoError ?? "8초 안에 되돌릴 수 있습니다."}
               </p>
             </div>

@@ -198,12 +198,12 @@ export function PerformanceAnalytics() {
 
   if (!loading && points.length === 0) {
     return (
-      <section className="rounded-2xl border border-[#e3eae1] bg-white px-5 py-16 text-center sm:px-7">
-        <CalendarRange className="mx-auto h-6 w-6 text-[#4f7e5a]" />
-        <h2 className="mt-4 font-semibold text-[#263d2e]">
+      <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] px-5 py-16 text-center sm:px-7">
+        <CalendarRange className="mx-auto h-6 w-6 text-[#3b8879]" />
+        <h2 className="mt-4 font-semibold text-[#202329]">
           첫 거래부터 기록을 시작합니다
         </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#7c8c76]">
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#727680]">
           거래를 하나 등록하면 생성 시각부터 오늘까지의 일별 자산과 수익률을
           만듭니다.
         </p>
@@ -212,29 +212,30 @@ export function PerformanceAnalytics() {
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e3eae1] bg-white ">
-      <div className="border-b border-[#e3eae1] px-5 py-5 sm:px-7">
+    <section className="overflow-hidden rounded-2xl border border-[#e9eaed] bg-[#ffffff] ">
+      <div className="border-b border-[#e9eaed] px-5 py-5 sm:px-7">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#263d2e]">
-              <TrendingUp className="h-4 w-4 text-[#4f7e5a]" />내 성과 기록
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#202329]">
+              <TrendingUp className="h-4 w-4 text-[#3b8879]" />내 성과 기록
             </div>
-            <p className="mt-1 text-xs text-[#7c8c76]">
+            <p className="mt-1 text-xs text-[#727680]">
               전체 {trackingLabel} · 매일 23:59:59 KST 기준
             </p>
           </div>
 
-          <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f4f7f1] p-1">
+          <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f6f7f8] p-1">
             {RANGES.map((item) => (
               <button
                 key={item.key}
                 type="button"
+                aria-pressed={range === item.key}
                 onClick={() => setRange(item.key)}
                 className={cn(
                   "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                   range === item.key
-                    ? "bg-white text-slate-950"
-                    : "text-[#7c8c76] hover:text-[#263d2e]",
+                    ? "bg-[#202329] text-[#ffffff]"
+                    : "text-[#727680] hover:text-[#202329]",
                 )}
               >
                 {item.label}
@@ -242,12 +243,13 @@ export function PerformanceAnalytics() {
             ))}
             <button
               type="button"
+              aria-expanded={datePanelOpen}
               onClick={() => setDatePanelOpen((open) => !open)}
               className={cn(
                 "flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                 range === "custom"
-                  ? "bg-white text-slate-950"
-                  : "text-[#7c8c76] hover:text-[#263d2e]",
+                  ? "bg-[#202329] text-[#ffffff]"
+                  : "text-[#727680] hover:text-[#202329]",
               )}
             >
               직접 선택 <ChevronDown className="h-3 w-3" />
@@ -256,7 +258,7 @@ export function PerformanceAnalytics() {
         </div>
 
         {datePanelOpen && firstDate && lastDate && (
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#e3eae1] bg-[#f7f9f4] p-4 sm:flex-row sm:items-end">
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#e9eaed] bg-[#f6f7f8] p-4 sm:flex-row sm:items-end">
             <DateField
               label="시작일"
               value={customStart || effectiveStart}
@@ -280,7 +282,7 @@ export function PerformanceAnalytics() {
             <button
               type="button"
               onClick={() => setDatePanelOpen(false)}
-              className="flex h-10 items-center justify-center gap-1 rounded-xl bg-white px-4 text-sm font-semibold text-slate-950"
+              className="flex h-10 items-center justify-center gap-1 rounded-xl bg-[#202329] px-4 text-sm font-semibold text-[#ffffff]"
             >
               <Check className="h-4 w-4" /> 적용
             </button>
@@ -288,7 +290,7 @@ export function PerformanceAnalytics() {
         )}
       </div>
 
-      <div className="grid gap-px bg-[#edf2e9] sm:grid-cols-3">
+      <div className="grid gap-px bg-[#e9eaed] sm:grid-cols-3">
         <MetricCard
           label="운용수익률"
           value={
@@ -312,27 +314,29 @@ export function PerformanceAnalytics() {
 
       <div className="p-5 sm:p-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex rounded-full bg-[#f4f7f1] p-1">
+          <div className="flex rounded-full bg-[#f6f7f8] p-1">
             <button
               type="button"
+              aria-pressed={chartMode === "return"}
               onClick={() => setChartMode("return")}
               className={cn(
                 "rounded-full px-3 py-1.5 text-xs font-medium",
                 chartMode === "return"
-                  ? "bg-[#e9f1e2] text-[#406d4a]"
-                  : "text-[#7c8c76]",
+                  ? "bg-[#ffffff] text-[#202329] shadow-sm"
+                  : "text-[#727680]",
               )}
             >
               수익률 비교
             </button>
             <button
               type="button"
+              aria-pressed={chartMode === "assets"}
               onClick={() => setChartMode("assets")}
               className={cn(
                 "rounded-full px-3 py-1.5 text-xs font-medium",
                 chartMode === "assets"
-                  ? "bg-[#e9f1e2] text-[#406d4a]"
-                  : "text-[#7c8c76]",
+                  ? "bg-[#ffffff] text-[#202329] shadow-sm"
+                  : "text-[#727680]",
               )}
             >
               자산 추이
@@ -341,12 +345,12 @@ export function PerformanceAnalytics() {
 
           <div className="relative w-full lg:w-80">
             {benchmark ? (
-              <div className="flex h-10 items-center justify-between rounded-xl border border-[#d4e2ca] bg-[#f1f6ea] px-3">
+              <div className="flex h-10 items-center justify-between rounded-xl border border-[#dce7e2] bg-[#f2f7f5] px-3">
                 <div className="min-w-0">
-                  <span className="text-xs font-semibold text-[#406d4a]">
+                  <span className="text-xs font-semibold text-[#3b8879]">
                     {benchmark.symbol}
                   </span>
-                  <span className="ml-2 truncate text-xs text-[#7c8c76]">
+                  <span className="ml-2 truncate text-xs text-[#727680]">
                     {benchmark.name}
                   </span>
                 </div>
@@ -357,7 +361,7 @@ export function PerformanceAnalytics() {
                     setBenchmarkSeries(null);
                     setQuery("");
                   }}
-                  className="rounded-md p-1 text-[#7c8c76] hover:text-[#263d2e]"
+                  className="rounded-md p-1 text-[#727680] hover:text-[#202329]"
                   aria-label="비교 자산 제거"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -365,18 +369,19 @@ export function PerformanceAnalytics() {
               </div>
             ) : (
               <>
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#82917b]" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#727680]" />
                 <input
+                  aria-label="비교할 주식·ETF·지수 검색"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="비교할 주식·ETF·지수 검색"
-                  className="h-10 w-full rounded-xl border border-[#e3eae1] bg-[#f9fbf7] pl-9 pr-9 text-sm text-[#263d2e] outline-none placeholder:text-[#82917b] focus:border-[#9ab78c]"
+                  className="h-10 w-full rounded-xl border border-[#e9eaed] bg-[#ffffff] pl-9 pr-9 text-sm text-[#202329] outline-none placeholder:text-[#727680] focus:border-[#3b8879]"
                 />
                 {searching && (
-                  <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[#7c8c76]" />
+                  <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[#727680]" />
                 )}
                 {searchResults.length > 0 && (
-                  <div className="absolute right-0 top-12 z-20 max-h-64 w-full overflow-y-auto rounded-2xl border border-[#e3eae1] bg-white p-1 shadow-2xl">
+                  <div className="absolute right-0 top-12 z-20 max-h-64 w-full overflow-y-auto rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-1 shadow-2xl">
                     {searchResults.map((result) => (
                       <button
                         key={`${result.symbol}-${result.exchange}`}
@@ -387,17 +392,17 @@ export function PerformanceAnalytics() {
                           setQuery(result.name);
                           setSearchResults([]);
                         }}
-                        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#f4f7f1]"
+                        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#f6f7f8]"
                       >
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-[#263d2e]">
+                          <span className="block text-sm font-semibold text-[#202329]">
                             {result.symbol}
                           </span>
-                          <span className="block truncate text-xs text-[#7c8c76]">
+                          <span className="block truncate text-xs text-[#727680]">
                             {result.name}
                           </span>
                         </span>
-                        <span className="shrink-0 text-[10px] text-[#82917b]">
+                        <span className="shrink-0 text-[11px] text-[#727680]">
                           {result.type}
                         </span>
                       </button>
@@ -411,7 +416,7 @@ export function PerformanceAnalytics() {
 
         <div className="mt-6 h-72 sm:h-80">
           {loading && points.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-[#7c8c76]">
+            <div className="flex h-full items-center justify-center text-sm text-[#727680]">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 일별 기록 구성
               중
             </div>
@@ -426,7 +431,7 @@ export function PerformanceAnalytics() {
           )}
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 text-xs text-[#7c8c76] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-col gap-2 text-xs text-[#727680] sm:flex-row sm:items-center sm:justify-between">
           <p>
             {inactivePeriods.length > 0
               ? "회색 구간은 자산이 0원이었던 미운용 기간입니다. 자산선은 0원, 수익률선은 고정됩니다."
@@ -440,7 +445,7 @@ export function PerformanceAnalytics() {
                 : "비교 자산을 검색해 추가할 수 있습니다"}
           </p>
         </div>
-        {error && <p className="mt-3 text-xs text-amber-700">{error}</p>}
+        {error && <p className="mt-3 text-xs text-[#946a24]">{error}</p>}
       </div>
     </section>
   );
@@ -461,7 +466,7 @@ function ReturnChart({
         data={data}
         margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
       >
-        <CartesianGrid vertical={false} stroke="#edf1e8" />
+        <CartesianGrid vertical={false} stroke="#e9eaed" />
         <XAxis
           dataKey="date"
           tickFormatter={shortDate}
@@ -492,14 +497,14 @@ function ReturnChart({
             key={`${period.start}-${period.end}`}
             x1={period.start}
             x2={period.end}
-            fill="#94a3b8"
+            fill="#727680"
             fillOpacity={0.06}
           />
         ))}
         <Line
           type="monotone"
           dataKey="portfolioReturn"
-          stroke="#579263"
+          stroke="#3b8879"
           strokeWidth={2.5}
           dot={false}
           activeDot={{ r: 4 }}
@@ -508,7 +513,7 @@ function ReturnChart({
           <Line
             type="monotone"
             dataKey="benchmarkReturn"
-            stroke="#c1ab70"
+            stroke="#727680"
             strokeWidth={1.8}
             strokeDasharray="5 4"
             dot={false}
@@ -532,11 +537,11 @@ function AssetChart({
       <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 2 }}>
         <defs>
           <linearGradient id="asset-history-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#579263" stopOpacity={0.28} />
-            <stop offset="100%" stopColor="#579263" stopOpacity={0} />
+            <stop offset="0%" stopColor="#3b8879" stopOpacity={0.16} />
+            <stop offset="100%" stopColor="#3b8879" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="#edf1e8" />
+        <CartesianGrid vertical={false} stroke="#e9eaed" />
         <XAxis
           dataKey="date"
           tickFormatter={shortDate}
@@ -565,14 +570,14 @@ function AssetChart({
             key={`${period.start}-${period.end}`}
             x1={period.start}
             x2={period.end}
-            fill="#94a3b8"
+            fill="#727680"
             fillOpacity={0.06}
           />
         ))}
         <Area
           type="monotone"
           dataKey="assetValueKRW"
-          stroke="#579263"
+          stroke="#3b8879"
           strokeWidth={2.5}
           fill="url(#asset-history-fill)"
         />
@@ -591,12 +596,12 @@ function MetricCard({
   description: string;
 }) {
   return (
-    <div className="bg-white px-5 py-4 sm:px-7">
-      <p className="text-xs text-[#7c8c76]">{label}</p>
-      <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#263d2e]">
+    <div className="bg-[#ffffff] px-5 py-4 sm:px-7">
+      <p className="text-xs text-[#727680]">{label}</p>
+      <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#202329]">
         {value}
       </p>
-      <p className="mt-1 text-[11px] text-[#82917b]">{description}</p>
+      <p className="mt-1 text-[11px] text-[#727680]">{description}</p>
     </div>
   );
 }
@@ -616,14 +621,14 @@ function DateField({
 }) {
   return (
     <label className="flex-1">
-      <span className="mb-1.5 block text-xs text-[#7c8c76]">{label}</span>
+      <span className="mb-1.5 block text-xs text-[#727680]">{label}</span>
       <input
         type="date"
         value={value}
         min={min}
         max={max}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-xl border border-[#e3eae1] bg-[#f9fbf7] px-3 text-sm text-[#263d2e] outline-none focus:border-[#9ab78c]"
+        className="h-10 w-full rounded-xl border border-[#e9eaed] bg-[#ffffff] px-3 text-sm text-[#202329] outline-none focus:border-[#3b8879]"
       />
     </label>
   );
@@ -684,10 +689,10 @@ function percentAxis(value: number): string {
   return `${normalized.toFixed(digits)}%`;
 }
 
-const axisTick = { fill: "#64748b", fontSize: 11 };
+const axisTick = { fill: "#727680", fontSize: 11 };
 const tooltipStyle = {
   background: "#ffffff",
-  border: "1px solid rgba(148,163,184,0.16)",
+  border: "1px solid #e9eaed",
   borderRadius: "12px",
-  color: "#40583c",
+  color: "#202329",
 };

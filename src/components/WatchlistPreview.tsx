@@ -11,8 +11,8 @@ const samples = [
     price: 441.85,
     currency: "USD",
     change: -0.42,
-    color: "#eaf1fd",
-    ink: "#3e609d",
+    color: "#eef2f7",
+    ink: "#54718c",
   },
   {
     symbol: "AMZN",
@@ -20,8 +20,8 @@ const samples = [
     price: 186.49,
     currency: "USD",
     change: 1.24,
-    color: "#fff4e5",
-    ink: "#815d26",
+    color: "#f7f2e8",
+    ink: "#8a703b",
   },
   {
     symbol: "005930.KS",
@@ -29,8 +29,8 @@ const samples = [
     price: 72400,
     currency: "KRW",
     change: 0.84,
-    color: "#edf0fc",
-    ink: "#536391",
+    color: "#f0f1f5",
+    ink: "#626d89",
   },
 ];
 
@@ -48,18 +48,18 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           price: quotes[item.symbol]?.price,
           currency: quotes[item.symbol]?.currency,
           change: quotes[item.symbol]?.changePercent,
-          color: "#edf4ef",
-          ink: "#416d53",
+          color: "#f2f4f5",
+          ink: "#3b8879",
         }));
   return (
-    <section className="rounded-2xl border border-[#e8ece9] bg-white p-5 sm:p-6">
+    <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-5 sm:p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#1b2c26]">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[#202329]">
             관심종목
           </h2>
           {isDemo ? (
-            <span className="rounded bg-[#f1f5f2] px-1.5 py-0.5 text-[9px] text-[#617365]">
+            <span className="rounded bg-[#f2f4f5] px-1.5 py-0.5 text-[11px] text-[#727680]">
               샘플
             </span>
           ) : null}
@@ -67,13 +67,13 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
         <Link
           href="/watchlist"
           aria-label="관심종목 모두 보기"
-          className="rounded-lg p-1 text-[#617365] transition hover:bg-[#f3f7f4] hover:text-[#236b50]"
+          className="rounded-lg p-1 text-[#727680] transition hover:bg-[#f6f7f8] hover:text-[#3b8879]"
         >
           <ChevronRight size={17} />
         </Link>
       </div>
       {!isDemo && !ready ? (
-        <p className="py-10 text-center text-xs text-[#617365]">
+        <p className="py-10 text-center text-xs text-[#727680]">
           관심종목을 불러오고 있어요.
         </p>
       ) : rows.length ? (
@@ -91,10 +91,10 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
                   {row.symbol === "005930.KS" ? "SS" : row.symbol.slice(0, 2)}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-[#314039]">
+                  <p className="truncate text-xs font-semibold text-[#202329]">
                     {row.name}
                   </p>
-                  <p className="mt-1 text-[10px] text-[#65745f]">
+                  <p className="mt-1 text-[11px] text-[#727680]">
                     {row.symbol}
                   </p>
                 </div>
@@ -102,12 +102,12 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
               <div className="shrink-0 text-right">
                 {row.price !== undefined && row.currency ? (
                   <>
-                    <p className="text-xs font-semibold tabular-nums text-[#314039]">
+                    <p className="text-xs font-semibold tabular-nums text-[#202329]">
                       {formatWatchPrice(row.price, row.currency)}
                     </p>
                     {row.change !== undefined && Number.isFinite(row.change) ? (
                       <p
-                        className={`mt-1 text-[10px] tabular-nums ${row.change >= 0 ? "text-[#26764f]" : "text-[#b9564a]"}`}
+                        className={`mt-1 text-[11px] tabular-nums ${row.change >= 0 ? "text-[#16856b]" : "text-[#d65353]"}`}
                       >
                         {row.change > 0 ? "+" : ""}
                         {row.change.toFixed(2)}%
@@ -115,7 +115,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
                     ) : null}
                   </>
                 ) : (
-                  <p className="text-[10px] text-[#65745f]">
+                  <p className="text-[11px] text-[#727680]">
                     {quotesLoading ? "조회 중…" : "시세 확인 불가"}
                   </p>
                 )}
@@ -126,23 +126,23 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
       ) : (
         <div className="py-5 text-center">
           <Star
-            className="mx-auto text-[#617365]"
+            className="mx-auto text-[#727680]"
             size={22}
             strokeWidth={1.5}
           />
-          <p className="mt-3 text-xs text-[#617365]">
+          <p className="mt-3 text-xs text-[#727680]">
             관심 있는 기업을 모아보세요.
           </p>
         </div>
       )}
       {!isDemo && error ? (
-        <p role="alert" className="mt-3 text-[10px] leading-5 text-[#855c37]">
+        <p role="alert" className="mt-3 text-[11px] leading-5 text-[#946a24]">
           {error}
         </p>
       ) : null}
       <Link
         href="/watchlist"
-        className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e8ece9] py-2.5 text-[11px] font-medium text-[#617365] transition hover:bg-[#f4f8f5]"
+        className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e9eaed] py-2.5 text-[11px] font-medium text-[#727680] transition hover:bg-[#f6f7f8]"
       >
         {isDemo ? (
           <>
@@ -155,7 +155,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
         )}
       </Link>
       {isDemo ? (
-        <p className="mt-3 text-center text-[9px] text-[#65745f]">
+        <p className="mt-3 text-center text-[11px] text-[#727680]">
           예시 가격이며 실제 시세가 아닙니다
         </p>
       ) : null}
