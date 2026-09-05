@@ -1,8 +1,9 @@
 "use client";
 
+import { AssetAvatar } from "@/components/AssetAvatar";
+import { formatWatchPrice,useWatchlist } from "@/hooks/useWatchlist";
+import { ArrowUpRight,ChevronRight,Plus,Star } from "lucide-react";
 import Link from "next/link";
-import { ArrowUpRight, ChevronRight, Plus, Star } from "lucide-react";
-import { formatWatchPrice, useWatchlist } from "@/hooks/useWatchlist";
 
 const samples = [
   {
@@ -11,8 +12,6 @@ const samples = [
     price: 441.85,
     currency: "USD",
     change: -0.42,
-    color: "#eef2f7",
-    ink: "#54718c",
   },
   {
     symbol: "AMZN",
@@ -20,8 +19,6 @@ const samples = [
     price: 186.49,
     currency: "USD",
     change: 1.24,
-    color: "#f7f2e8",
-    ink: "#8a703b",
   },
   {
     symbol: "005930.KS",
@@ -29,14 +26,12 @@ const samples = [
     price: 72400,
     currency: "KRW",
     change: 0.84,
-    color: "#f0f1f5",
-    ink: "#626d89",
   },
 ];
 
 export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
-  const { items, quotes, ready, quotesLoading, error } = useWatchlist({
-    loadQuotes: !isDemo,
+  const { items, quotes, ready, quotesLoading, error, failedSymbols } = useWatchlist({
+    loadQuotes: !isDemo, quoteLimit: 3,
   });
   const rows = isDemo
     ? samples
@@ -48,8 +43,6 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           price: quotes[item.symbol]?.price,
           currency: quotes[item.symbol]?.currency,
           change: quotes[item.symbol]?.changePercent,
-          color: "#f2f4f5",
-          ink: "#3b8879",
         }));
   return (
     <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-5 sm:p-6">
@@ -84,12 +77,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
               className="flex items-center justify-between gap-3"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span
-                  style={{ background: row.color, color: row.ink }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold"
-                >
-                  {row.symbol === "005930.KS" ? "SS" : row.symbol.slice(0, 2)}
-                </span>
+                <AssetAvatar symbol={row.symbol} logoUrl={quotes[row.symbol]?.logoUrl} />
                 <div className="min-w-0">
                   <p className="truncate text-xs font-semibold text-[#202329]">
                     {row.name}
@@ -140,6 +128,10 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           {error}
         </p>
       ) : null}
+      {!isDemo && failedSymbols.length > 0 ? (
+        <p role="status" className="mt-3 text-[11px] text-[#b46926]">일부 종목 갱신 실패 · 마지막 확인 가격을 표시합니다</p>
+      ) : null}
+      {!isDemo && items.length > 0 ? <p className="mt-3 text-[11px] text-[#727680]">30초 자동 갱신 · 지연 시세 포함</p> : null}
       <Link
         href="/watchlist"
         className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e9eaed] py-2.5 text-[11px] font-medium text-[#727680] transition hover:bg-[#f6f7f8]"

@@ -1,5 +1,5 @@
-import { deriveHoldings } from "./portfolio";
 import { normalizeCurrency, toKRW } from "./currency";
+import { createHoldingAccumulator } from "./portfolio";
 import type {
   ChartPoint,
   PortfolioPerformancePoint,
@@ -9,7 +9,7 @@ import type {
 const DAY_MS = 86_400_000;
 const VALUE_EPSILON = 0.01;
 
-interface BuildPerformanceInput {
+export interface BuildPerformanceInput {
   transactions: Transaction[];
   trackingStartDate: string;
   endDate: string;
@@ -17,6 +17,8 @@ interface BuildPerformanceInput {
   fxByCurrency: Record<string, ChartPoint[]>;
   currentPrices?: Record<string, number>;
   currentFxRates?: Record<string, number>;
+  previousPoints?: PortfolioPerformancePoint[];
+  strict?: boolean;
 }
 
 export interface PerformanceMetrics {
@@ -65,41 +67,55 @@ export function buildDailyPerformance({
   fxByCurrency,
   currentPrices = {},
   currentFxRates = {},
+  previousPoints = [],
+  strict = false,
 }: BuildPerformanceInput): PortfolioPerformancePoint[] {
   if (trackingStartDate > endDate) return [];
 
   const today = kstDate();
-  const points: PortfolioPerformancePoint[] = [];
-  let twrIndex = 100;
-  let cumulativeNetFlowKRW = 0;
-  let initialValueKRW = 0;
+  const points: PortfolioPerformancePoint[] = [...previousPoints];
+  const last = points.at(-1);
+  let twrIndex = last?.twrIndex ?? 100;
+  let cumulativeNetFlowKRW = last?.cumulativeNetFlowKRW ?? 0;
+  let initialValueKRW = points[0]?.assetValueKRW ?? 0;
+  const sorted = [...transactions].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
+  );
+  const positions = createHoldingAccumulator();
+  let transactionIndex = 0;
+  const prices = valueCursors(pricesBySymbol);
+  const rates = valueCursors(fxByCurrency);
+  const flows = new Map<string, number>();
+  // Preserve input order for daily floating-point flow accumulation.
+  for (const tx of transactions) {
+    if (
+      strict &&
+      (!tx.currency || (tx.currency !== "KRW" && !(tx.fxRateToKRW! > 0)))
+    )
+      throw new Error("거래 환율 보완이 필요합니다.");
+    flows.set(tx.date, (flows.get(tx.date) ?? 0) + transactionFlowKRW(tx));
+  }
 
   for (
-    let date = trackingStartDate;
+    let date = last ? addCalendarDays(last.date, 1) : trackingStartDate;
     date <= endDate;
     date = addCalendarDays(date, 1)
   ) {
-    const relevantTransactions = transactions.filter((tx) => tx.date <= date);
-    const holdings = deriveHoldings(relevantTransactions);
+    while (
+      transactionIndex < sorted.length &&
+      sorted[transactionIndex].date <= date
+    )
+      positions.apply(sorted[transactionIndex++]);
+    const holdings = positions.holdings();
     const assetValueKRW = holdings.reduce((sum, holding) => {
       const currency = normalizeCurrency(holding.currency ?? "USD");
-      const historicalPrice = latestValueAtOrBefore(
-        pricesBySymbol[holding.symbol] ?? [],
-        date,
-        "close"
-      );
+      const historicalPrice = prices(holding.symbol, date);
       const price =
         date === today && currentPrices[holding.symbol] != null
           ? currentPrices[holding.symbol]
           : historicalPrice;
-      const historicalFx =
-        currency === "KRW"
-          ? 1
-          : latestValueAtOrBefore(
-              fxByCurrency[currency] ?? [],
-              date,
-              "close"
-            );
+      const historicalFx = currency === "KRW" ? 1 : rates(currency, date);
       const fxRate =
         currency === "KRW"
           ? 1
@@ -107,13 +123,21 @@ export function buildDailyPerformance({
             ? currentFxRates[currency]
             : historicalFx;
 
-      if (price == null || fxRate == null) return sum;
+      if (
+        price == null ||
+        fxRate == null ||
+        (strict && (price <= 0 || fxRate <= 0))
+      ) {
+        if (strict)
+          throw new Error(
+            date + " " + holding.symbol + " 가격 또는 환율이 누락되었습니다.",
+          );
+        return sum;
+      }
       return sum + toKRW(price * holding.quantity, currency, fxRate);
     }, 0);
 
-    const netFlowKRW = transactions
-      .filter((tx) => tx.date === date)
-      .reduce((sum, tx) => sum + transactionFlowKRW(tx), 0);
+    const netFlowKRW = flows.get(date) ?? 0;
 
     if (points.length === 0) {
       initialValueKRW = assetValueKRW;
@@ -154,10 +178,10 @@ export function calculatePerformanceMetrics(
   points: PortfolioPerformancePoint[],
   transactions: Transaction[],
   startDate: string,
-  endDate: string
+  endDate: string,
 ): PerformanceMetrics {
   const selected = points.filter(
-    (point) => point.date >= startDate && point.date <= endDate
+    (point) => point.date >= startDate && point.date <= endDate,
   );
   if (selected.length === 0) {
     return {
@@ -172,11 +196,9 @@ export function calculatePerformanceMetrics(
   const first = selected[0];
   const last = selected[selected.length - 1];
   const operatingReturn =
-    first.twrIndex > 0
-      ? ((last.twrIndex / first.twrIndex) - 1) * 100
-      : null;
+    first.twrIndex > 0 ? (last.twrIndex / first.twrIndex - 1) * 100 : null;
   const periodTransactions = transactions.filter(
-    (tx) => tx.date > first.date && tx.date <= last.date
+    (tx) => tx.date > first.date && tx.date <= last.date,
   );
   const flows = periodTransactions.map((tx) => ({
     date: tx.date,
@@ -204,7 +226,7 @@ export function calculatePerformanceMetrics(
 }
 
 export function findInactivePeriods(
-  points: PortfolioPerformancePoint[]
+  points: PortfolioPerformancePoint[],
 ): InactivePeriod[] {
   const periods: InactivePeriod[] = [];
   let start: string | null = null;
@@ -223,20 +245,19 @@ export function findInactivePeriods(
 }
 
 export function normalizePerformancePoints(
-  points: PortfolioPerformancePoint[]
+  points: PortfolioPerformancePoint[],
 ) {
   if (points.length === 0) return [];
   const base = points[0].twrIndex;
   return points.map((point) => ({
     ...point,
-    portfolioReturn:
-      base > 0 ? ((point.twrIndex / base) - 1) * 100 : 0,
+    portfolioReturn: base > 0 ? (point.twrIndex / base - 1) * 100 : 0,
   }));
 }
 
 export function transactionFlowKRW(transaction: Transaction): number {
   const currency = normalizeCurrency(transaction.currency ?? "USD");
-  const fxRate = currency === "KRW" ? 1 : transaction.fxRateToKRW ?? 0;
+  const fxRate = currency === "KRW" ? 1 : (transaction.fxRateToKRW ?? 0);
   if (fxRate <= 0) return 0;
 
   const gross = transaction.quantity * transaction.price;
@@ -247,16 +268,19 @@ export function transactionFlowKRW(transaction: Transaction): number {
   return toKRW(nativeAmount, currency, fxRate);
 }
 
-function latestValueAtOrBefore(
-  points: ChartPoint[],
-  date: string,
-  field: "close" | "adjustedClose"
-): number | null {
-  let value: number | null = null;
-  for (const point of points) {
-    if (point.date > date) break;
-    const candidate = field === "close" ? point.close : point.adjustedClose;
-    if (candidate != null && Number.isFinite(candidate)) value = candidate;
-  }
-  return value;
+function valueCursors(series: Record<string, ChartPoint[]>) {
+  const cursors = new Map<string, { index: number; value: number | null }>();
+  return (key: string, date: string) => {
+    let cursor = cursors.get(key);
+    if (!cursor) {
+      cursor = { index: 0, value: null };
+      cursors.set(key, cursor);
+    }
+    const points = series[key] ?? [];
+    while (cursor.index < points.length && points[cursor.index].date <= date) {
+      const value = points[cursor.index++].close;
+      if (value != null && Number.isFinite(value)) cursor.value = value;
+    }
+    return cursor.value;
+  };
 }

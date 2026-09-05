@@ -1,23 +1,30 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { formatCurrency,formatPercent } from "@/lib/format";
+import { MARKETS,marketForSymbol } from "@/lib/markets";
+import type { DisplayCurrency,HoldingWithQuote } from "@/lib/types";
+import { ArrowDownUp,ArrowUpRight,Pencil,Search,Trash2 } from "lucide-react";
 import Link from "next/link";
-import { ArrowDownUp, ArrowUpRight, Search } from "lucide-react";
-import { AssetAvatar, EmptyPortfolio } from "./AssetAvatar";
-import { formatCurrency, formatPercent } from "@/lib/format";
-import type { DisplayCurrency, HoldingWithQuote } from "@/lib/types";
+import { useMemo,useState } from "react";
+import { AssetAvatar,EmptyPortfolio } from "./AssetAvatar";
+import { HoldingManagement,type HoldingAction } from "./HoldingManagement";
 interface Props {
   holdings: HoldingWithQuote[];
   displayCurrency: DisplayCurrency;
   compact?: boolean;
   loading?: boolean;
-  onRemove?: (id: string) => void;
+  editable?: boolean;
 }
 export function HoldingsTable({
   holdings,
   displayCurrency,
   compact = false,
   loading,
+  editable = false,
 }: Props) {
+  const { user } = useAuth();
+  const scope = user?.id ?? "guest";
+  const [target, setTarget] = useState<(HoldingAction & { scope: string }) | null>(null);
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState<"value" | "gain">("value");
   const [query, setQuery] = useState("");
@@ -28,9 +35,7 @@ export function HoldingsTable({
         .filter(
           (h) =>
             (filter === "all" ||
-              (filter === "kr"
-                ? h.currency === "KRW"
-                : h.currency !== "KRW")) &&
+              marketForSymbol(h.symbol) === filter) &&
             (!query ||
               `${h.symbol} ${h.name}`
                 .toLowerCase()
@@ -72,8 +77,8 @@ export function HoldingsTable({
       >
         {[
           { value: "all", label: "전체" },
-          { value: "us", label: "해외 주식" },
-          { value: "kr", label: "국내 주식" },
+          ...MARKETS.map((market) => ({ value: market.id, label: market.label })),
+          { value: "other", label: "기타" },
         ].map((item) => (
           <button
             key={item.value}
@@ -132,7 +137,7 @@ export function HoldingsTable({
                       href={`/stock/${encodeURIComponent(h.symbol)}`}
                       className="asset-cell"
                     >
-                      <AssetAvatar symbol={h.symbol} />
+                      <AssetAvatar symbol={h.symbol} logoUrl={h.quote?.logoUrl} />
                       <span>
                         <strong>{h.name}</strong>
                         <small>
@@ -141,6 +146,16 @@ export function HoldingsTable({
                         </small>
                       </span>
                     </Link>
+                    {editable && <div className="mt-2 flex items-center gap-1 pl-11">
+                      <button type="button" onClick={() => setTarget({ symbol: h.symbol, name: h.name, action: "edit", scope })}
+                        aria-label={`${h.symbol} 보유종목 수정`} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-[#626873] hover:bg-[#edf0f3] hover:text-[#202329]">
+                        <Pencil size={12} />수정
+                      </button>
+                      <button type="button" onClick={() => setTarget({ symbol: h.symbol, name: h.name, action: "delete", scope })}
+                        aria-label={`${h.symbol} 보유종목 삭제`} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-[#626873] hover:bg-[#fceeee] hover:text-[#b44848]">
+                        <Trash2 size={12} />삭제
+                      </button>
+                    </div>}
                   </td>
                   <td className="holding-quantity">
                     {h.quantity.toLocaleString("ko-KR")}
@@ -204,6 +219,7 @@ export function HoldingsTable({
           </table>
         </div>
       )}
+      {editable && <HoldingManagement key={scope} target={target?.scope === scope ? target : null} onClose={() => setTarget(null)} />}
     </section>
   );
 }

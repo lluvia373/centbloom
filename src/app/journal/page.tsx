@@ -1,6 +1,10 @@
 "use client";
+import { JournalEditor } from "@/features/journal/JournalEditor";
+import { JournalEntryCard } from "@/features/journal/JournalEntryCard";
+import { useJournalController } from "@/features/journal/use-journal-controller";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { JOURNAL_SENTIMENTS } from "@/hooks/useJournal";
 import {
   ArrowDownUp,
   ArrowUpRight,
@@ -10,42 +14,9 @@ import {
   Clock3,
   Eye,
   NotebookPen,
-  Pencil,
   Plus,
   Search,
-  Trash2,
-  X,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  JOURNAL_SENTIMENTS,
-  useJournal,
-  type JournalDraft,
-  type JournalEntry,
-  type JournalSentiment,
-} from "@/hooks/useJournal";
-
-const EMPTY_DRAFT: JournalDraft = {
-  title: "",
-  symbol: "",
-  body: "",
-  sentiment: "관찰",
-};
-const SENTIMENT_STYLE: Record<JournalSentiment, string> = {
-  관찰: "bg-[#f3f4f6] text-[#727680]",
-  "매수 검토": "bg-[#f3f4f6] text-[#727680]",
-  복기: "bg-[#f3f4f6] text-[#d65353]",
-};
-const FIELD_CLASS =
-  "w-full rounded-xl border border-[#e6e8eb] bg-[#ffffff] px-4 py-3 text-sm text-[#202329] outline-none transition placeholder:text-[#727680] focus:border-[#9b9fa7] focus:ring-2 focus:ring-[#25282e]/10";
-
-function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(value));
-}
 
 export default function JournalPage() {
   const { user } = useAuth();
@@ -55,117 +26,34 @@ export default function JournalPage() {
 function JournalWorkspace() {
   const {
     entries,
-    error: storageError,
+    storageError,
     ready,
-    saveEntry,
-    deleteEntry,
-  } = useJournal();
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<JournalSentiment | "전체">("전체");
-  const [oldestFirst, setOldestFirst] = useState(false);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string>();
-  const [draft, setDraft] = useState<JournalDraft>(EMPTY_DRAFT);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
-  const editorRef = useRef<HTMLDivElement>(null);
-
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
-    const result = entries.filter(
-      (entry) =>
-        (filter === "전체" || entry.sentiment === filter) &&
-        (!needle ||
-          `${entry.title} ${entry.symbol} ${entry.body}`
-            .toLocaleLowerCase()
-            .includes(needle)),
-    );
-    return oldestFirst ? result.toReversed() : result;
-  }, [entries, query, filter, oldestFirst]);
-
-  const hasUnsavedChanges = () => {
-    const original = editingId
-      ? entries.find((entry) => entry.id === editingId)
-      : undefined;
-    const initial = original ?? EMPTY_DRAFT;
-    return (
-      draft.title !== initial.title ||
-      draft.body !== initial.body ||
-      draft.symbol !== initial.symbol ||
-      draft.sentiment !== initial.sentiment
-    );
-  };
-
-  const openEditor = (entry?: JournalEntry) => {
-    if (
-      editorOpen &&
-      hasUnsavedChanges() &&
-      !window.confirm("작성 중인 내용을 저장하지 않고 다른 노트를 열까요?")
-    )
-      return;
-    setEditingId(entry?.id);
-    setDraft(
-      entry
-        ? {
-            title: entry.title,
-            symbol: entry.symbol,
-            body: entry.body,
-            sentiment: entry.sentiment,
-          }
-        : EMPTY_DRAFT,
-    );
-    setFormError(null);
-    setNotice(null);
-    setEditorOpen(true);
-    window.setTimeout(() => {
-      editorRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      editorRef.current?.querySelector("input")?.focus({ preventScroll: true });
-    }, 0);
-  };
-
-  const closeEditor = () => {
-    if (
-      hasUnsavedChanges() &&
-      !window.confirm("작성 중인 내용을 저장하지 않고 닫을까요?")
-    )
-      return;
-    setEditorOpen(false);
-  };
-
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const error = saveEntry(draft, editingId);
-    if (error) {
-      setFormError(error);
-      return;
-    }
-    setNotice(editingId ? "노트를 수정했습니다." : "투자 노트를 저장했습니다.");
-    setEditorOpen(false);
-    setDraft(EMPTY_DRAFT);
-    setFilter("전체");
-    setQuery("");
-  };
-
-  const remove = (id: string) => {
-    const error = deleteEntry(id);
-    if (error) {
-      setNotice(error);
-      return;
-    }
-    setPendingDelete(null);
-    if (editingId === id) setEditorOpen(false);
-    setNotice("노트를 삭제했습니다.");
-  };
-
+    query,
+    setQuery,
+    filter,
+    setFilter,
+    oldestFirst,
+    setOldestFirst,
+    editorOpen,
+    editingId,
+    draft,
+    setDraft,
+    formError,
+    notice,
+    pendingDelete,
+    setPendingDelete,
+    editorRef,
+    filtered,
+    openEditor,
+    closeEditor,
+    submit,
+    remove,
+  } = useJournalController();
   return (
     <div className="space-y-7 text-[#202329]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 className="mt-2 text-[28px] font-semibold tracking-tight sm:text-[32px]">
+          <h1 className="mt-2 text-[28px] font-semibold tracking-tight sm:text-[32px]">
             투자 노트
           </h1>
           <p className="mt-2 text-sm leading-6 text-[#727680]">
@@ -240,133 +128,15 @@ function JournalWorkspace() {
           )}
 
           {editorOpen && (
-            <div
-              ref={editorRef}
-              className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-5 shadow-sm sm:p-7"
-            >
-              <div className="mb-6 flex items-start justify-between gap-4">
-                <div>
-                            <h2 className="mt-1.5 text-lg font-semibold">
-                    {editingId ? "노트 수정" : "오늘의 생각을 기록하세요"}
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeEditor}
-                  aria-label="노트 작성 닫기"
-                  className="rounded-lg p-2 text-[#727680] hover:bg-[#f3f4f6]"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <form onSubmit={submit} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="note-title"
-                    className="mb-2 block text-xs font-medium"
-                  >
-                    제목 <span className="text-[#727680]">*</span>
-                  </label>
-                  <input
-                    id="note-title"
-                    value={draft.title}
-                    onChange={(event) =>
-                      setDraft({ ...draft, title: event.target.value })
-                    }
-                    required
-                    maxLength={120}
-                    placeholder="어떤 생각이 들었나요?"
-                    className={FIELD_CLASS}
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="note-symbol"
-                      className="mb-2 block text-xs font-medium"
-                    >
-                      관련 종목{" "}
-                      <span className="font-normal text-[#727680]">선택</span>
-                    </label>
-                    <input
-                      id="note-symbol"
-                      value={draft.symbol}
-                      onChange={(event) =>
-                        setDraft({ ...draft, symbol: event.target.value })
-                      }
-                      maxLength={30}
-                      placeholder="예: AAPL, 005930.KS"
-                      autoCapitalize="characters"
-                      className={FIELD_CLASS}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="note-sentiment"
-                      className="mb-2 block text-xs font-medium"
-                    >
-                      노트 분류
-                    </label>
-                    <select
-                      id="note-sentiment"
-                      value={draft.sentiment}
-                      onChange={(event) =>
-                        setDraft({
-                          ...draft,
-                          sentiment: event.target.value as JournalSentiment,
-                        })
-                      }
-                      className={FIELD_CLASS}
-                    >
-                      {JOURNAL_SENTIMENTS.map((value) => (
-                        <option key={value}>{value}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="note-body"
-                    className="mb-2 block text-xs font-medium"
-                  >
-                    투자 생각 <span className="text-[#727680]">*</span>
-                  </label>
-                  <textarea
-                    id="note-body"
-                    value={draft.body}
-                    onChange={(event) =>
-                      setDraft({ ...draft, body: event.target.value })
-                    }
-                    required
-                    maxLength={12000}
-                    rows={7}
-                    placeholder={
-                      "이 종목에 관심을 갖게 된 이유는 무엇인가요?\n내 생각이 틀렸다는 신호는 무엇일까요?\n다음에 확인할 것은 무엇인가요?"
-                    }
-                    className={`${FIELD_CLASS} resize-y leading-7`}
-                  />
-                  <p className="mt-1 text-right text-xs tabular-nums text-[#727680]">
-                    {draft.body.length.toLocaleString()} / 12,000
-                  </p>
-                </div>
-                {formError && (
-                  <p role="alert" className="text-sm text-[#d65353]">
-                    {formError}
-                  </p>
-                )}
-                <div className="flex items-center justify-between gap-3 border-t border-[#e6e8eb] pt-4">
-                  <span className="text-xs text-[#727680]">
-                    이 브라우저에 비공개로 저장됩니다.
-                  </span>
-                  <button
-                    type="submit"
-                    className="shrink-0 rounded-xl bg-[#25282e] px-5 py-2.5 text-sm font-semibold text-[#ffffff] hover:bg-[#25282e]"
-                  >
-                    {editingId ? "수정 저장" : "노트 저장"}
-                  </button>
-                </div>
-              </form>
-            </div>
+            <JournalEditor
+              editorRef={editorRef}
+              editingId={editingId}
+              closeEditor={closeEditor}
+              submit={submit}
+              draft={draft}
+              setDraft={setDraft}
+              formError={formError}
+            />
           )}
 
           <div className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff]">
@@ -465,81 +235,14 @@ function JournalWorkspace() {
             ) : (
               <div className="divide-y divide-[#e6e8eb]">
                 {filtered.map((entry) => (
-                  <article key={entry.id} className="p-5 sm:p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`rounded-md px-2 py-1 text-xs font-semibold ${SENTIMENT_STYLE[entry.sentiment]}`}
-                        >
-                          {entry.sentiment}
-                        </span>
-                        {entry.symbol && (
-                          <span className="rounded-md border border-[#e6e8eb] px-2 py-1 text-xs font-semibold tracking-wide text-[#727680]">
-                            {entry.symbol}
-                          </span>
-                        )}
-                        <time
-                          dateTime={entry.updatedAt}
-                          className="ml-1 text-xs text-[#727680]"
-                        >
-                          {dateLabel(entry.updatedAt)}
-                          {entry.updatedAt !== entry.createdAt
-                            ? " · 수정됨"
-                            : ""}
-                        </time>
-                      </div>
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          aria-label={`${entry.title} 수정`}
-                          onClick={() => openEditor(entry)}
-                          className="rounded-lg p-2 text-[#727680] hover:bg-[#f3f4f6] hover:text-[#727680]"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`${entry.title} 삭제`}
-                          onClick={() => setPendingDelete(entry.id)}
-                          className="rounded-lg p-2 text-[#727680] hover:bg-[#fceeee] hover:text-[#d65353]"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    <h3 className="mt-3 break-words text-[17px] font-semibold tracking-tight">
-                      {entry.title}
-                    </h3>
-                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-[#727680]">
-                      {entry.body}
-                    </p>
-                    {pendingDelete === entry.id && (
-                      <div
-                        role="alert"
-                        className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#fceeee] px-4 py-3"
-                      >
-                        <p className="text-xs text-[#d65353]">
-                          이 노트를 삭제할까요? 삭제 후 복구할 수 없습니다.
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setPendingDelete(null)}
-                            className="text-xs text-[#727680]"
-                          >
-                            취소
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => remove(entry.id)}
-                            className="text-xs font-semibold text-[#d65353]"
-                          >
-                            삭제하기
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </article>
+                  <JournalEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    openEditor={openEditor}
+                    setPendingDelete={setPendingDelete}
+                    pendingDelete={pendingDelete}
+                    remove={remove}
+                  />
                 ))}
               </div>
             )}

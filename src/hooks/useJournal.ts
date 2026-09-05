@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { legacyStorageKey,readBrandedStorage } from "@/lib/branded-storage";
+
 import { useAuth } from "@/hooks/useAuth";
+import { useCallback,useSyncExternalStore } from "react";
 
 export const JOURNAL_SENTIMENTS = ["관찰", "매수 검토", "복기"] as const;
 export type JournalSentiment = (typeof JOURNAL_SENTIMENTS)[number];
@@ -26,7 +28,7 @@ interface JournalSnapshot {
   ready: boolean;
 }
 
-const CHANGE_EVENT = "stockfolio-journal-change";
+const CHANGE_EVENT = "centifolio-journal-change";
 const MAX_ENTRIES = 1000;
 const SERVER_SNAPSHOT: JournalSnapshot = {
   entries: [],
@@ -70,7 +72,7 @@ function isEntry(value: unknown): value is JournalEntry {
 function readSnapshot(key: string): JournalSnapshot {
   let raw: string | null;
   try {
-    raw = localStorage.getItem(key);
+    raw = readBrandedStorage(localStorage, key);
   } catch {
     return READ_ERROR;
   }
@@ -127,11 +129,11 @@ function writeEntries(key: string, entries: JournalEntry[]): string | null {
 
 export function useJournal() {
   const { user, loading } = useAuth();
-  const storageKey = `stockfolio-journal:v1:${user?.id ?? "local"}`;
+  const storageKey = `centifolio-journal:v1:${user?.id ?? "local"}`;
   const subscribe = useCallback(
     (listener: () => void) => {
       const handleStorage = (event: StorageEvent) => {
-        if (event.key === storageKey || event.key === null) listener();
+        if (event.key === storageKey || event.key === legacyStorageKey(storageKey) || event.key === null) listener();
       };
       window.addEventListener("storage", handleStorage);
       window.addEventListener(CHANGE_EVENT, listener);

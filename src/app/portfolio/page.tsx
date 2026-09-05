@@ -1,31 +1,26 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Download, Loader2, RotateCcw, X } from "lucide-react";
-import {
-  PageHeading,
-  AddTransactionLink,
-  PortfolioMode,
-} from "@/components/Header";
-import { PortfolioMetrics } from "@/components/PortfolioMetrics";
-import { HoldingsTable } from "@/components/HoldingsTable";
-import { TransactionList } from "@/components/TransactionList";
 import { AssetAvatar } from "@/components/AssetAvatar";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { usePortfolio } from "@/hooks/usePortfolio";
+import {
+AddTransactionLink,
+PageHeading,
+PortfolioMode,
+} from "@/components/Header";
+import { HoldingsTable } from "@/components/HoldingsTable";
+import { PortfolioMetrics } from "@/components/PortfolioMetrics";
+import { TransactionList } from "@/components/TransactionList";
+import { usePortfolioMarket,usePreferences,useTransactionCommands,useTransactions } from "@/hooks/usePortfolio";
+import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { DEMO_TRANSACTIONS } from "@/lib/demo";
 import { formatCurrency } from "@/lib/format";
 import type { Transaction } from "@/lib/types";
+import { Download,Loader2,RotateCcw,X } from "lucide-react";
+import { useEffect,useState } from "react";
 export default function PortfolioPage() {
-  const { summary, isDemo } = useWorkspace();
-  const {
-    transactions,
-    loading,
-    updateTransaction,
-    removeTransaction,
-    restoreTransaction,
-    displayCurrency,
-    marketDataError,
-  } = usePortfolio();
+  const { summary, isDemo } = useWorkspaceSummary();
+  const { transactions } = useTransactions();
+  const { updateTransaction, removeTransaction, restoreTransaction } = useTransactionCommands();
+  const { displayCurrency } = usePreferences();
+  const { loading, marketDataError } = usePortfolioMarket();
   const [tab, setTab] = useState("holdings");
   const [lastDeleted, setLastDeleted] = useState<Transaction | null>(null);
   const [undoing, setUndoing] = useState(false);
@@ -141,6 +136,7 @@ export default function PortfolioPage() {
           holdings={summary?.holdings ?? []}
           displayCurrency={displayCurrency}
           loading={!isDemo && loading}
+          editable={!isDemo}
         />
       ) : isDemo ? (
         <section className="surface">

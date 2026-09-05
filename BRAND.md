@@ -1,35 +1,44 @@
 # Centifolio 로고 자산
 
-최종 수정: 2026-09-05
+최종 수정: 2026-09-06
 
-사용자가 확정한 로고는 **금색 장미 문양 자체**입니다. 검정 배경은 로고의 일부나 사이트 전체의 고정 색상이 아닙니다. 밝은 화면에서도 사용할 수 있으며, 장미의 형태·기울기·금색 인상을 유지하는 배경 변경은 가능합니다. 장미 자체를 다른 형태로 다시 해석하거나 회전·색상 변경·잘라내는 작업은 사용자 협의 후 진행합니다.
+**승인 로고는 금색 장미 자체다.** 형태·기울기·금색을 보존한다. 검정 배경은 고정 요소가 아니며 배경 변경은 가능하다. 장미 재해석·회전·색상 변경·잘라내기는 사용자 협의 대상이다.
 
 ## 원본과 배포용 파일
 
-| 용도 | 파일 | 해상도 |
+| 용도 | 파일 | 크기 |
 | --- | --- | --- |
-| 최종 첨부 원본 보관 | [centifolio-logo-gold-on-black.original.png](./brand/centifolio/logo/centifolio-logo-gold-on-black.original.png) | 1254 × 1254 |
-| 원본의 큰 크기 출력용 파생본 | [centifolio-logo-gold-on-black.4096.png](./brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png) | 4096 × 4096 |
-| 배경 픽셀 수정 전 편집본 보관 | [centifolio-logo-gold-on-white.pre-pixel-edit.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.pre-pixel-edit.png) | 1254 × 1254 |
-| 순수 흰색 배경 편집본 | [centifolio-logo-gold-on-white.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.png) | 1254 × 1254 |
-| 브라우저 아이콘용 투명 배경 파생본 | [centifolio-logo-gold-transparent.png](./brand/centifolio/logo/centifolio-logo-gold-transparent.png) | 1254 × 1254 |
-| 흰 배경 확대본 | [centifolio-logo-gold-on-white.4096.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png) | 4096 × 4096 |
-| 현재 로컬 웹 로고 | [centifolio-logo-gold-on-white.webp](./public/brand/centifolio-logo-gold-on-white.webp) | 640 × 640 |
-| 이전 검정 배경 웹 자산 보관 | [centifolio-logo-gold-on-black.webp](./public/brand/centifolio-logo-gold-on-black.webp) | 640 × 640 |
-| 투명 배경 웹 앱 아이콘 | [icon.png](./src/app/icon.png) | 96 × 96 |
-| Apple 홈 화면 아이콘 | [apple-icon.png](./src/app/apple-icon.png) | 180 × 180 |
-| 투명 배경 브라우저 탭 아이콘 | [favicon.ico](./src/app/favicon.ico) | 64 × 64 |
+| 첨부 원본 | [검정 원본](./brand/centifolio/logo/centifolio-logo-gold-on-black.original.png) | 1254px |
+| 검정 확대본 | [4096 PNG](./brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png) | 4096px |
+| 픽셀 수정 전 흰 편집본 | [보관본](./brand/centifolio/logo/centifolio-logo-gold-on-white.pre-pixel-edit.png) | 1254px |
+| 순백색 편집본 | [흰 PNG](./brand/centifolio/logo/centifolio-logo-gold-on-white.png) | 1254px |
+| 투명 파생본 | [투명 PNG](./brand/centifolio/logo/centifolio-logo-gold-transparent.png) | 1254px |
+| 흰 확대본 | [4096 PNG](./brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png) | 4096px |
+| 웹 로고 | [흰 WebP](./public/brand/centifolio-logo-gold-on-white.webp) | 640px |
+| 이전 웹 자산 | [검정 WebP](./public/brand/centifolio-logo-gold-on-black.webp) | 640px |
+| 웹 앱 아이콘 | [icon.png](./src/app/icon.png) | 96px |
+| Apple 아이콘 | [apple-icon.png](./src/app/apple-icon.png) | 180px |
+| 탭 아이콘 | [favicon.ico](./src/app/favicon.ico) | 64px |
 
-원본은 첨부 PNG를 **바이트 단위로 그대로 복사**한 파일입니다. 원본 SHA-256은 `8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3`입니다.
+모두 정사각형이다. 웹 로고·Apple 아이콘은 흰 배경, 웹 앱·탭 아이콘은 투명 배경을 사용한다.
 
-처음 만든 흰 배경 편집본은 내장 이미지 생성 도구로 배경을 교체하고 금색 인상을 원본과 맞춘 **편집 파생본**이며, 원본과 픽셀 단위로 동일한 복사본은 아닙니다. 그 파일은 수정 전 보관본으로 그대로 남겼습니다. 당시 생성 도구의 투명 배경 시안은 가장자리 색 번짐 또는 실제 알파가 없는 체크무늬 때문에 채택하지 않았습니다. 현재 브라우저 아이콘은 아래의 직접 픽셀 처리 방식으로 투명하게 만들었습니다.
+## 종목 마크
 
-흰 배경 편집본은 사용자의 **“배경 픽셀만 직접 수정해”** 요청에 따라, 수정 전 보관본에서 밝고 중립적인 배경 픽셀만 RGB `(255,255,255)`로 바꿨습니다. 배경 선택 기준은 RGB 최솟값 245 이상·최댓값과 최솟값의 차이 6 이하입니다. 배경 마스크 1,275,151픽셀은 모두 순수 흰색이며, 마스크 밖 297,365픽셀은 RGB 값이 하나도 바뀌지 않았습니다. 금색 픽셀 294,705개도 전부 보존됐습니다. 웹 본문 로고와 Apple 홈 화면 아이콘은 이 흰 배경 파일을 사용합니다.
+기업 식별용 마크는 Centifolio 장미와 별도다. 기업 공식 사이트·Yahoo Finance에서 받은 원본 15개를 [public/companies](./public/companies)에 보관한다. URL·수집일·원본 해시는 [sources.json](./public/companies/sources.json), 종목 연결과 허용 공급원은 [company-logos.ts](./src/lib/company-logos.ts)가 기준이다. 제공되지 않는 종목은 티커로 표시한다.
 
-브라우저 탭에 흰 사각형이 보이는 문제는 사용자의 후속 요청에 따라 **배경 알파를 0으로 설정**해 수정했습니다. 투명 파생본은 위에서 검증한 배경 마스크만 투명하게 만들며 RGB 값 전체와 장미 부분의 불투명도는 그대로 보존합니다. 형태·각도·배치를 변경하거나 다시 생성하지 않았습니다. PNG·ICO는 투명 파생본을 Lanczos3로 축소하고, 축소 필터가 바깥에 남긴 4/255 이하의 미세 불투명도만 제거합니다. 나머지 가장자리는 부드러운 반투명을 유지합니다. 아이콘의 모든 바깥 테두리 알파는 0이며, 흰색·캡처의 탭 색상 `#FCF8FA`·어두운 배경에서 사각형 없이 합성되는 것을 확인했습니다.
+## 보존·재생성 기준
 
-4096px 파일은 각각의 입력 이미지를 Lanczos3 방식으로 확대해 무손실 PNG로 저장한 **파생본**입니다. 원본보다 새로운 세부 묘사가 생긴 고해상도 원화나 벡터 파일은 아닙니다.
+- 첨부 원본은 바이트 그대로 보관한다. 해시·크기·변환 기준은 [manifest.json](./brand/centifolio/logo/manifest.json).
+- 최초 흰 편집본은 이미지 생성 도구의 파생본이며 검정 원본과 픽셀 단위로 동일하지 않다. [편집 근거](./brand/centifolio/logo/background-edit.json).
+- 사용자 승인으로 밝고 중립적인 배경만 순백색으로 수정했다. 투명본은 같은 마스크의 알파만 0으로 만들며 RGB·장미 불투명도는 보존한다.
+- PNG·ICO는 Lanczos3 축소 후 알파 4/255 이하만 제거한다. 4096px 파일은 확대 파생본이며 새 고해상도 원화·벡터가 아니다.
+- 마스크·픽셀 보존 수치는 [검증 자료](./brand/centifolio/logo/background-pixel-validation.json)를 따른다. 이전 시안은 최종 로고로 쓰지 않는다.
 
-파일별 크기·해시·변환 방법은 [manifest.json](./brand/centifolio/logo/manifest.json), 배경 편집 프롬프트와 도구는 [background-edit.json](./brand/centifolio/logo/background-edit.json), 픽셀 보존 검사는 [background-pixel-validation.json](./brand/centifolio/logo/background-pixel-validation.json)에 기록합니다. [normalize-white-background.mjs](./brand/centifolio/logo/normalize-white-background.mjs)는 수정 전 보관본에서 동일한 배경 편집을 재현합니다. [export-assets.mjs](./brand/centifolio/logo/export-assets.mjs)는 보관 원본과 편집본의 해시를 확인한 뒤 같은 크기별 파일을 다시 만듭니다. 저장소 루트에서 각각 `node brand/centifolio/logo/normalize-white-background.mjs`, `node brand/centifolio/logo/export-assets.mjs`로 실행합니다.
+저장소 루트에서 실행한다.
 
-이전 장미 시안은 비교 이력을 위해 보존하되 최종 로고로 사용하지 않습니다. 공개 프로젝트 소개는 [README.md](./README.md), 실제 화면 적용과 배포 검증은 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고합니다. 사업 검토 상세는 로컬 전용 `BUSINESS_MODEL.md`에서 관리합니다.
+```sh
+node brand/centifolio/logo/normalize-white-background.mjs
+node brand/centifolio/logo/export-assets.mjs
+```
+
+[배경 정규화](./brand/centifolio/logo/normalize-white-background.mjs)는 수정 전 보관본에서 재현하고, [자산 생성](./brand/centifolio/logo/export-assets.mjs)은 입력 해시 확인 후 크기별 파일을 만든다. 실제 적용·배포 검증은 [PROJECT_STATUS.md](./PROJECT_STATUS.md).

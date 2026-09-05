@@ -1,29 +1,27 @@
 "use client";
+import { BackupPreview } from "@/features/portfolio/ui/BackupPreview";
+import { useAuth } from "@/hooks/useAuth";
+import { useOperationScope } from "@/shared/react/use-operation-scope";
 
-import { useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle,
-  CheckCircle2,
-  Download,
-  FileJson,
-  Loader2,
-  Upload,
-  X,
-} from "lucide-react";
-import { usePortfolio, type TransactionImportMode } from "@/hooks/usePortfolio";
+  useTransactionCommands,
+  useTransactions,
+  type TransactionImportMode,
+} from "@/hooks/usePortfolio";
 import {
   MAX_BACKUP_FILE_BYTES,
   parseTransactionBackup,
   serializeTransactionBackup,
   type TransactionBackup,
 } from "@/lib/transaction-backup";
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  FileJson,
+  Upload,
+} from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 
 function backupFileName(): string {
   const date = new Date().toLocaleDateString("sv-SE", {
@@ -33,7 +31,16 @@ function backupFileName(): string {
 }
 
 export function TransactionBackupPanel() {
-  const { transactions, importTransactions } = usePortfolio();
+  const { user } = useAuth();
+  return <BackupSession key={user?.id ?? "guest"} />;
+}
+function BackupSession() {
+  const { transactions } = useTransactions();
+  const { user } = useAuth();
+  const captureScope = useOperationScope(user?.id ?? "guest");
+  const fileVersion = useRef(0);
+  const importing = useRef(false);
+  const { importTransactions } = useTransactionCommands();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<TransactionBackup | null>(null);
   const [fileName, setFileName] = useState("");
@@ -78,6 +85,8 @@ export function TransactionBackupPanel() {
   };
 
   const handleFile = async (file: File | undefined) => {
+    const isCurrent = captureScope();
+    const version = ++fileVersion.current;
     if (fileInputRef.current) fileInputRef.current.value = "";
     setNotice(null);
     setErrors([]);
@@ -91,6 +100,7 @@ export function TransactionBackupPanel() {
 
     try {
       const raw = JSON.parse(await file.text()) as unknown;
+      if (!isCurrent() || version !== fileVersion.current) return;
       const result = parseTransactionBackup(raw);
       if (!result.ok) {
         setErrors(result.errors);
@@ -99,6 +109,7 @@ export function TransactionBackupPanel() {
       setFileName(file.name);
       setPreview(result.backup);
     } catch {
+      if (!isCurrent() || version !== fileVersion.current) return;
       setErrors([
         "JSON 파일을 읽을 수 없습니다. 파일이 손상되지 않았는지 확인해주세요.",
       ]);
@@ -106,12 +117,15 @@ export function TransactionBackupPanel() {
   };
 
   const handleImport = async (mode: TransactionImportMode) => {
-    if (!preview) return;
+    if (!preview || importing.current) return;
+    importing.current = true;
+    const isCurrent = captureScope();
     setImportingMode(mode);
     setErrors([]);
 
     try {
       const result = await importTransactions(preview.transactions, mode);
+      if (!isCurrent()) return;
       if (result.error) {
         setErrors([result.error]);
         return;
@@ -128,7 +142,8 @@ export function TransactionBackupPanel() {
     } catch {
       setErrors(["백업을 적용하지 못했어요. 다시 시도해 주세요."]);
     } finally {
-      setImportingMode(null);
+      importing.current = false;
+      if (isCurrent()) setImportingMode(null);
     }
   };
 
@@ -212,113 +227,15 @@ export function TransactionBackupPanel() {
       </section>
 
       {preview && previewSummary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="backup-preview-title"
-            className="w-full max-w-lg rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-5 shadow-2xl sm:p-6"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#727680]">
-                  검증 완료
-                </p>
-                <h3
-                  id="backup-preview-title"
-                  className="mt-1 text-lg font-semibold text-[#202329]"
-                >
-                  이 백업을 어떻게 적용할까요?
-                </h3>
-                <p className="mt-1 break-all text-xs text-[#727680]">
-                  {fileName}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closePreview}
-                disabled={Boolean(importingMode)}
-                className="rounded-lg p-2 text-[#727680] hover:bg-[#ffffff] hover:text-[#202329] disabled:opacity-40"
-                aria-label="백업 미리보기 닫기"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-lg bg-[#ffffff] p-3">
-                <dt className="text-xs text-[#727680]">거래</dt>
-                <dd className="mt-1 font-semibold text-[#202329]">
-                  {preview.transactions.length.toLocaleString("ko-KR")}건
-                </dd>
-              </div>
-              <div className="rounded-lg bg-[#ffffff] p-3">
-                <dt className="text-xs text-[#727680]">종목</dt>
-                <dd className="mt-1 font-semibold text-[#202329]">
-                  {previewSummary.symbolCount.toLocaleString("ko-KR")}개
-                </dd>
-              </div>
-              <div className="col-span-2 rounded-lg bg-[#ffffff] p-3">
-                <dt className="text-xs text-[#727680]">거래 기간</dt>
-                <dd className="mt-1 font-medium text-[#202329]">
-                  {previewSummary.firstDate && previewSummary.lastDate
-                    ? `${previewSummary.firstDate} ~ ${previewSummary.lastDate}`
-                    : "거래 없음"}
-                </dd>
-                <dd className="mt-1 text-xs text-[#727680]">
-                  백업 생성: {formatDateTime(preview.exportedAt)}
-                </dd>
-              </div>
-            </dl>
-
-            {errors.length > 0 && (
-              <p
-                role="alert"
-                className="mt-4 rounded-lg bg-[#f3f4f6] p-3 text-xs leading-5 text-[#d65353]"
-              >
-                {errors.join(" ")}
-              </p>
-            )}
-            <div className="mt-5 space-y-3">
-              <button
-                type="button"
-                onClick={() => void handleImport("merge")}
-                disabled={Boolean(importingMode)}
-                className="flex w-full items-center justify-between rounded-xl border border-[#e6e8eb] bg-[#f3f4f6] px-4 py-3 text-left transition-colors hover:bg-[#f3f4f6] disabled:opacity-50"
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-[#727680]">
-                    기존 거래와 병합
-                  </span>
-                  <span className="mt-1 block text-xs text-[#727680]">
-                    같은 거래 ID는 유지하고 새로운 거래만 추가합니다.
-                  </span>
-                </span>
-                {importingMode === "merge" && (
-                  <Loader2 className="h-5 w-5 animate-spin text-[#727680]" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleImport("replace")}
-                disabled={Boolean(importingMode)}
-                className="flex w-full items-center justify-between rounded-xl border border-[#edc4c4]/30 bg-[#fceeee]/10 px-4 py-3 text-left transition-colors hover:bg-[#fceeee]/15 disabled:opacity-50"
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-[#d65353]">
-                    전체 교체
-                  </span>
-                  <span className="mt-1 block text-xs text-[#727680]">
-                    현재 거래를 이 백업 내용으로 완전히 바꿉니다.
-                  </span>
-                </span>
-                {importingMode === "replace" && (
-                  <Loader2 className="h-5 w-5 animate-spin text-[#d65353]" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BackupPreview
+          preview={preview}
+          previewSummary={previewSummary}
+          fileName={fileName}
+          closePreview={closePreview}
+          importingMode={importingMode}
+          errors={errors}
+          handleImport={handleImport}
+        />
       )}
     </>
   );

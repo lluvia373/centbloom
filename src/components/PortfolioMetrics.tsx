@@ -1,18 +1,19 @@
 "use client";
+import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
+import { useWorkspaceSummary } from "@/hooks/useWorkspace";
+import { formatCurrency,formatPercent } from "@/lib/format";
 import {
-  ArrowUpRight,
-  CircleDollarSign,
-  Info,
-  TrendingUp,
-  Wallet,
+ArrowUpRight,
+CircleDollarSign,
+Info,
+TrendingUp,
+Wallet,
 } from "lucide-react";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { usePortfolio } from "@/hooks/usePortfolio";
-import { formatCurrency, formatPercent } from "@/lib/format";
 
 export function PortfolioMetrics() {
-  const { summary, isDemo } = useWorkspace();
-  const { displayCurrency, loading } = usePortfolio();
+  const { summary, isDemo } = useWorkspaceSummary();
+  const { displayCurrency } = usePreferences();
+  const { loading } = usePortfolioMarket();
   const holdings = summary?.holdings ?? [];
   const hasData =
     holdings.length > 0 &&

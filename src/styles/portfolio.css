@@ -1,0 +1,542 @@
+
+.portfolio-mode {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+.portfolio-mode > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #727680;
+}
+.portfolio-mode > div > span:last-child {
+  padding-left: 11px;
+  border-left: 1px solid #e6e8eb;
+}
+.portfolio-mode > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+.portfolio-mode.personal {
+  background: #f3f4f6;
+  border-color: #e6e8eb;
+}
+.metric-grid {
+  display: grid;
+}
+.metric-card {
+  position: relative;
+  overflow: hidden;
+}
+.metric-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.metric-label > svg {
+  color: #727680;
+}
+.metric-icon {
+  position: absolute;
+  place-items: center;
+}
+.metric-number {
+  font-variant-numeric: tabular-nums;
+}
+.metric-number .currency-symbol {
+  font-size: 22px;
+  margin-right: 3px;
+  font-weight: 400;
+  opacity: 0.65;
+}
+.metric-meta {
+  display: flex;
+  align-items: center;
+}
+.return-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.metric-spark {
+  position: absolute;
+  width: 87px;
+  height: 39px;
+  right: 22px;
+  bottom: 25px;
+  opacity: 0.85;
+}
+.table-filters {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 17px 22px 13px;
+}
+.table-filters button {
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+.table-count {
+  margin-left: 6px;
+  font-weight: 400;
+}
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.holdings-table th {
+  text-align: right;
+  padding: 11px 22px 11px 10px;
+  border-top: 1px solid #e6e8eb;
+  border-bottom: 1px solid #e6e8eb;
+  white-space: nowrap;
+}
+.holdings-table th:first-child {
+  text-align: left;
+  padding-left: 22px;
+}
+.holdings-table td {
+  border-bottom: 1px solid #e6e8eb;
+  padding: 14px 22px 14px 10px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.holdings-table tr:last-child td {
+  border-bottom: 0;
+}
+.holdings-table td:first-child {
+  padding-left: 22px;
+  text-align: left;
+}
+.asset-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.asset-cell strong {
+  display: block;
+}
+.asset-cell small {
+  display: block;
+  margin-top: 4px;
+}
+.table-subvalue {
+  display: block;
+  margin-top: 4px;
+}
+.table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.table-overflow {
+  overflow: auto;
+}
+.portfolio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.portfolio-controls input {
+  border: 1px solid var(--line);
+  padding: 9px 12px;
+  border-radius: 7px;
+  width: 200px;
+}
+@media (max-width: 1250px) {
+  .metric-card {
+    padding: 19px;
+  }
+  .metric-number {
+    font-size: 25px;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 28px;
+  }
+  .metric-spark {
+    width: 60px;
+    right: 15px;
+    opacity: 0.55;
+  }
+}
+@media (max-width: 1000px) {
+  .metric-grid {
+    gap: 12px;
+  }
+  .metric-icon {
+    display: none;
+  }
+  .metric-number {
+    font-size: 23px;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 25px;
+  }
+  .metric-spark {
+    display: none;
+  }
+  .portfolio-mode > div > span:last-child {
+    display: none;
+  }
+}
+.table-subvalue.positive {
+  color: var(--positive);
+}
+.table-subvalue.negative {
+  color: var(--negative);
+}
+.metric-meta .return-pill.negative {
+  color: var(--negative);
+}
+.portfolio-mode {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: #727680;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+  font-size: 12px;
+}
+.portfolio-mode strong {
+  color: #6f7480;
+  font-weight: 500;
+}
+.portfolio-mode > button {
+  color: #5e6570;
+  font-size: 12px;
+}
+.portfolio-mode > button:hover {
+  color: #202329;
+}
+.portfolio-mode > div > span:last-child {
+  color: #727680;
+  border-color: #dfe2e6;
+}
+.metric-grid {
+  grid-template-columns: 1.38fr 1fr 1fr;
+  gap: 18px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  margin-bottom: 24px;
+  padding: 0;
+  overflow: visible;
+}
+.metric-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 27px 26px 25px;
+  background: #fff;
+  min-width: 0;
+}
+.metric-card + .metric-card {
+  border-left: 1px solid var(--line);
+}
+.metric-card.primary {
+  background: #fff;
+  border-color: #d8dde3;
+}
+.metric-card.primary::before {
+  display: none;
+}
+.metric-label {
+  color: #737984;
+  font-size: 13px;
+  font-weight: 500;
+}
+.metric-label svg {
+  opacity: 0.65;
+}
+.metric-icon {
+  display: grid;
+  right: 22px;
+  top: 22px;
+  width: 30px;
+  height: 30px;
+  color: #858b95;
+  border: 1px solid #e6e8eb;
+  border-radius: 7px;
+}
+.metric-number {
+  font-size: 30px;
+  font-weight: 550;
+  letter-spacing: -1.2px;
+  margin-top: 23px;
+  line-height: 1.3;
+}
+.metric-card.primary .metric-number {
+  color: #24282f;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -1.5px;
+}
+.metric-meta {
+  gap: 8px;
+  font-size: 12px;
+  color: #727680;
+  flex-wrap: wrap;
+  line-height: 1.6;
+  margin-top: 13px;
+}
+.metric-meta .return-pill {
+  font-size: 11px;
+}
+.return-pill {
+  background: #eaf5ef;
+  color: #16856b;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+.metric-card.primary .return-pill {
+  color: #757b85;
+  background: #f1f3f5;
+}
+.return-pill.negative {
+  background: #fbeeee;
+  color: #d65353;
+}
+.table-filters button {
+  font-size: 12px;
+  color: #727680;
+}
+.table-filters button.selected {
+  background: #edf0f3;
+  color: #363e49;
+}
+.table-filters {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.table-count {
+  color: #727680;
+  font-size: 12px;
+}
+.holdings-table {
+  font-size: 13px;
+}
+.holdings-table th {
+  background: #fafbfc;
+  color: #727680;
+  border-color: #edf0f3;
+  font-size: 11px;
+  padding-block: 13px;
+  font-weight: 400;
+}
+.holdings-table td {
+  border-color: #f0f2f4;
+  padding-top: 19px;
+  padding-bottom: 19px;
+}
+.holdings-table tbody tr:hover {
+  background: #fafbfc;
+}
+.asset-cell strong {
+  font-size: 13px;
+  font-weight: 550;
+  color: #404752;
+}
+.asset-cell small {
+  font-size: 11px;
+  color: #727680;
+}
+.table-subvalue {
+  font-size: 11px;
+  color: #727680;
+}
+.portfolio-controls input {
+  background: #fff;
+  border-color: #e3e6eb;
+  font-size: 13px;
+}
+@media (max-width: 1150px) {
+  .metric-card {
+    padding: 23px 20px;
+  }
+  .metric-number {
+    font-size: 25px;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 34px;
+  }
+  .metric-icon {
+    display: none;
+  }
+  .metric-card.primary .metric-icon {
+    display: grid;
+    right: 20px;
+  }
+}
+@media (max-width: 900px) {
+  .metric-card {
+    padding: 20px;
+  }
+  .metric-number {
+    font-size: 23px;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 34px;
+  }
+  .metric-label {
+    font-size: 12px;
+  }
+  .metric-meta {
+    font-size: 11px;
+  }
+  .metric-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .metric-card.primary {
+    grid-column: 1/-1;
+  }
+}
+@media (max-width: 760px) {
+  .metric-card.primary .metric-icon {
+    top: 25px;
+  }
+  .portfolio-controls {
+    flex-wrap: wrap;
+  }
+  .portfolio-controls input {
+    width: 150px;
+  }
+  .holding-quantity {
+    display: none;
+  }
+  .holding-price {
+    display: none;
+  }
+  .holding-weight {
+    display: none;
+  }
+  .asset-cell > span:last-child {
+    max-width: 90px;
+  }
+  .asset-cell strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .asset-cell small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .holdings-table td {
+    padding-right: 12px;
+  }
+  .holdings-table th {
+    padding-right: 12px;
+  }
+  .portfolio-mode {
+    padding: 11px 12px;
+    font-size: 11px;
+    margin-bottom: 18px;
+  }
+  .portfolio-mode > button {
+    font-size: 11px;
+  }
+  .portfolio-mode > div {
+    gap: 6px;
+  }
+  .portfolio-mode > div > span:last-child {
+    display: none;
+  }
+  .metric-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 0;
+    gap: 12px;
+    border-radius: 0;
+    margin-bottom: 20px;
+  }
+  .metric-card.primary {
+    grid-column: 1/-1;
+    padding: 24px;
+    border: 1px solid #d8dde3;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 37px;
+  }
+  .metric-card.primary .metric-meta {
+    margin-top: 10px;
+  }
+  .metric-card:not(.primary) {
+    padding: 20px 16px;
+  }
+  .metric-card:nth-child(2) {
+    border-left: 1px solid var(--line);
+  }
+  .metric-card:not(.primary) .metric-number {
+    font-size: clamp(16px, 5.1vw, 23px);
+    white-space: nowrap;
+    letter-spacing: -0.9px;
+  }
+  .metric-label {
+    font-size: 12px;
+  }
+  .metric-meta {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .metric-meta .return-pill {
+    font-size: 10px;
+  }
+  .holdings-table {
+    font-size: 12px;
+  }
+  .holdings-table td {
+    padding-block: 17px;
+  }
+  .holdings-table th {
+    font-size: 11px;
+  }
+  .holdings-table td:first-child {
+    padding-left: 20px;
+  }
+  .holdings-table th:first-child {
+    padding-left: 20px;
+  }
+  .asset-cell {
+    gap: 9px;
+  }
+  .asset-cell strong {
+    font-size: 12px;
+  }
+  .asset-cell small {
+    font-size: 10px;
+  }
+  .table-subvalue {
+    font-size: 10px;
+  }
+  .metric-card.primary .metric-icon {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    right: 23px;
+  }
+}
+@media (max-width: 360px) {
+  .metric-card:not(.primary) {
+    padding: 18px 13px;
+  }
+  .metric-card.primary {
+    padding: 22px;
+  }
+  .metric-card.primary .metric-number {
+    font-size: 32px;
+  }
+  .metric-label {
+    font-size: 11px;
+  }
+  .metric-meta {
+    font-size: 10px;
+  }
+}

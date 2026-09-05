@@ -1,15 +1,16 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { legacyStorageKey,readBrandedStorage } from "@/lib/branded-storage";
+
 import { useAuth } from "@/hooks/useAuth";
-import { getQuote } from "@/lib/stock-api";
-import type { StockQuote, StockSearchResult } from "@/lib/types";
+import { useLiveQuotes } from "@/hooks/useLiveQuotes";
+import type { StockSearchResult } from "@/lib/types";
+import {
+useCallback,
+useMemo,
+useState,
+useSyncExternalStore,
+} from "react";
 
 export interface WatchlistItem {
   symbol: string;
@@ -19,7 +20,7 @@ export interface WatchlistItem {
   addedAt: string;
 }
 
-const STORAGE_EVENT = "stockfolio:watchlist-changed";
+const STORAGE_EVENT = "centifolio:watchlist-changed";
 const UNAVAILABLE = "__storage_unavailable__";
 const EMPTY: WatchlistItem[] = [];
 const currencyIsValid = (value: unknown): value is string =>
@@ -95,7 +96,7 @@ function parseStored(raw: string | null): {
 
 function readStorage(key: string) {
   try {
-    return window.localStorage.getItem(key) ?? "";
+    return readBrandedStorage(window.localStorage, key) ?? "";
   } catch {
     return UNAVAILABLE;
   }
@@ -117,15 +118,17 @@ export function formatWatchPrice(price: number, currency: string) {
 
 export function useWatchlist({
   loadQuotes = true,
-}: { loadQuotes?: boolean } = {}) {
+  quoteLimit = 50,
+}: { loadQuotes?: boolean; quoteLimit?: number } = {}) {
   const { user, loading: authLoading } = useAuth();
-  const key = `stockfolio:watchlist:v1:${user?.id ?? "guest"}`;
+  const key = `centifolio:watchlist:v1:${user?.id ?? "guest"}`;
   const subscribe = useCallback(
     (onChange: () => void) => {
       const handler = (event: Event) => {
         if (
           event instanceof StorageEvent &&
           event.key !== key &&
+          event.key !== legacyStorageKey(key) &&
           event.key !== null
         )
           return;
@@ -153,44 +156,9 @@ export function useWatchlist({
     key: string;
     message: string;
   } | null>(null);
-  const [refreshCount, setRefreshCount] = useState(0);
-  const symbols = items.map((item) => item.symbol).join(",");
-  const requestKey = `${key}:${symbols}:${refreshCount}`;
-  const [quoteState, setQuoteState] = useState<{
-    key: string;
-    quotes: Record<string, StockQuote>;
-    failed: string[];
-  }>({ key: "", quotes: {}, failed: [] });
-
-  useEffect(() => {
-    if (!loadQuotes || !ready || !symbols) return;
-    let cancelled = false;
-    const list = symbols.split(",");
-    void Promise.allSettled(
-      list.map(async (symbol) => {
-        const quote = await getQuote(symbol);
-        if (
-          !Number.isFinite(quote.price) ||
-          quote.price <= 0 ||
-          !currencyIsValid(quote.currency)
-        )
-          throw new Error("Invalid quote");
-        return { ...quote, symbol };
-      }),
-    ).then((results) => {
-      if (cancelled) return;
-      const quotes: Record<string, StockQuote> = {};
-      const failed: string[] = [];
-      results.forEach((result, index) => {
-        if (result.status === "fulfilled") quotes[list[index]] = result.value;
-        else failed.push(list[index]);
-      });
-      setQuoteState({ key: requestKey, quotes, failed });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [loadQuotes, ready, symbols, requestKey]);
+  const live = useLiveQuotes(items.slice(0,quoteLimit).map((item) => item.symbol), {
+    enabled: loadQuotes && ready, scope: key,
+  });
 
   const mutate = useCallback(
     (update: (items: WatchlistItem[]) => WatchlistItem[]): string | null => {
@@ -286,10 +254,10 @@ export function useWatchlist({
     setTarget,
     error:
       stored.error ?? (writeError?.key === key ? writeError.message : null),
-    quotes: quoteState.key === requestKey ? quoteState.quotes : {},
-    failedSymbols: quoteState.key === requestKey ? quoteState.failed : [],
-    quotesLoading:
-      loadQuotes && ready && items.length > 0 && quoteState.key !== requestKey,
-    refreshQuotes: () => setRefreshCount((count) => count + 1),
+    quotes: live.quotes,
+    failedSymbols: live.failedSymbols,
+    quotesLoading: live.loading,
+    quotesRefreshing: live.refreshing,
+    refreshQuotes: live.refresh,
   };
 }

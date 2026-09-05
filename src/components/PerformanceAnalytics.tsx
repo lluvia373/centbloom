@@ -1,18 +1,18 @@
 "use client";
-
-import { useEffect, useMemo, useState } from "react";
+import { useStockSearch } from "@/features/market/use-stock-search";
+import { AssetChart, ReturnChart } from "@/features/performance/Charts";
+import { DateField, MetricCard } from "@/features/performance/Controls";
+import { useBenchmarkSeries } from "@/features/performance/use-benchmark-series";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceArea,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  RANGES,
+  usePerformanceRange,
+} from "@/features/performance/use-performance-range";
+
+import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
+import { useTransactions } from "@/hooks/usePortfolio";
+import { formatCurrency, formatPercent } from "@/lib/format";
+import type { ChartSeries, StockSearchResult } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
   CalendarRange,
   Check,
@@ -22,151 +22,42 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
-import { usePortfolio } from "@/hooks/usePortfolio";
-import {
-  addCalendarDays,
-  calculatePerformanceMetrics,
-  findInactivePeriods,
-  normalizePerformancePoints,
-} from "@/lib/performance";
-import { formatCurrency, formatPercent } from "@/lib/format";
-import { getChartSeries, searchStocks } from "@/lib/stock-api";
-import type { ChartSeries, StockSearchResult } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { useMemo, useState } from "react";
 
-const RANGES = [
-  { key: "1d", label: "1일", days: 1 },
-  { key: "1w", label: "1주", days: 7 },
-  { key: "1m", label: "1개월", days: 30 },
-  { key: "3m", label: "3개월", days: 90 },
-  { key: "6m", label: "6개월", days: 180 },
-  { key: "ytd", label: "올해" },
-  { key: "1y", label: "1년", days: 365 },
-  { key: "all", label: "전체" },
-] as const;
-
-type RangeKey = (typeof RANGES)[number]["key"] | "custom";
 type ChartMode = "return" | "assets";
 
 export function PerformanceAnalytics() {
-  const { transactions } = usePortfolio();
+  const { transactions } = useTransactions();
   const { points, trackingStartedAt, loading, error } = usePerformanceHistory();
-  const [range, setRange] = useState<RangeKey>("all");
-  const [customStart, setCustomStart] = useState("");
-  const [customEnd, setCustomEnd] = useState("");
   const [chartMode, setChartMode] = useState<ChartMode>("return");
   const [datePanelOpen, setDatePanelOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<StockSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
+
   const [benchmark, setBenchmark] = useState<StockSearchResult | null>(null);
-  const [benchmarkSeries, setBenchmarkSeries] = useState<ChartSeries | null>(
-    null,
-  );
-  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const { results: searchResults, loading: searching } = useStockSearch(query, {
+    delay: 250,
+    enabled: benchmark?.name !== query,
+  });
 
-  const firstDate = points[0]?.date ?? "";
-  const lastDate = points.at(-1)?.date ?? "";
-  const effectiveEnd = range === "custom" && customEnd ? customEnd : lastDate;
-  const effectiveStart = useMemo(() => {
-    if (!firstDate || !effectiveEnd) return "";
-    if (range === "custom" && customStart) {
-      return customStart < firstDate ? firstDate : customStart;
-    }
-    if (range === "all") return firstDate;
-    if (range === "ytd") {
-      const ytd = `${effectiveEnd.slice(0, 4)}-01-01`;
-      return ytd < firstDate ? firstDate : ytd;
-    }
-    const definition = RANGES.find((item) => item.key === range);
-    const candidate =
-      definition && "days" in definition
-        ? addCalendarDays(effectiveEnd, -definition.days)
-        : firstDate;
-    return candidate < firstDate ? firstDate : candidate;
-  }, [customStart, effectiveEnd, firstDate, range]);
+  const {
+    range,
+    setRange,
+    customStart,
+    setCustomStart,
+    customEnd,
+    setCustomEnd,
+    firstDate,
+    lastDate,
+    effectiveEnd,
+    effectiveStart,
+    normalizedPoints,
+    metrics,
+    inactivePeriods,
+    entirelyInactive,
+  } = usePerformanceRange(points, transactions);
 
-  const selectedPoints = useMemo(
-    () =>
-      points.filter(
-        (point) => point.date >= effectiveStart && point.date <= effectiveEnd,
-      ),
-    [effectiveEnd, effectiveStart, points],
-  );
-  const normalizedPoints = useMemo(
-    () => normalizePerformancePoints(selectedPoints),
-    [selectedPoints],
-  );
-  const metrics = useMemo(
-    () =>
-      calculatePerformanceMetrics(
-        points,
-        transactions,
-        effectiveStart,
-        effectiveEnd,
-      ),
-    [effectiveEnd, effectiveStart, points, transactions],
-  );
-  const inactivePeriods = useMemo(
-    () => findInactivePeriods(selectedPoints),
-    [selectedPoints],
-  );
-  const entirelyInactive =
-    selectedPoints.length > 0 && selectedPoints.every((point) => !point.active);
-
-  useEffect(() => {
-    if (!query.trim() || benchmark?.name === query) {
-      return;
-    }
-
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      setSearching(true);
-      searchStocks(query)
-        .then((results) => {
-          if (!cancelled) setSearchResults(results);
-        })
-        .catch(() => {
-          if (!cancelled) setSearchResults([]);
-        })
-        .finally(() => {
-          if (!cancelled) setSearching(false);
-        });
-    }, 250);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [benchmark?.name, query]);
-
-  useEffect(() => {
-    if (!benchmark || !effectiveStart || !effectiveEnd) {
-      return;
-    }
-
-    let cancelled = false;
-    getChartSeries(
-      benchmark.symbol,
-      addCalendarDays(effectiveStart, -7),
-      effectiveEnd,
-    )
-      .then((series) => {
-        if (!cancelled) setBenchmarkSeries(series);
-      })
-      .catch(() => {
-        if (!cancelled) setBenchmarkSeries(null);
-      })
-      .finally(() => {
-        if (!cancelled) setBenchmarkLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [benchmark, effectiveEnd, effectiveStart]);
-
+  const { benchmarkSeries, benchmarkLoading, benchmarkError } =
+    useBenchmarkSeries(benchmark?.symbol, effectiveStart, effectiveEnd);
   const chartData = useMemo(() => {
     const useAdjusted =
       benchmarkSeries?.dividendStatus !== "unavailable" &&
@@ -213,6 +104,11 @@ export function PerformanceAnalytics() {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-[#e9eaed] bg-[#ffffff] ">
+      {benchmarkError && (
+        <p role="alert" className="text-sm text-[#d65353]">
+          {benchmarkError}
+        </p>
+      )}
       <div className="border-b border-[#e9eaed] px-5 py-5 sm:px-7">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
@@ -358,7 +254,6 @@ export function PerformanceAnalytics() {
                   type="button"
                   onClick={() => {
                     setBenchmark(null);
-                    setBenchmarkSeries(null);
                     setQuery("");
                   }}
                   className="rounded-md p-1 text-[#727680] hover:text-[#202329]"
@@ -388,9 +283,7 @@ export function PerformanceAnalytics() {
                         type="button"
                         onClick={() => {
                           setBenchmark(result);
-                          setBenchmarkLoading(true);
                           setQuery(result.name);
-                          setSearchResults([]);
                         }}
                         className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#f6f7f8]"
                       >
@@ -451,189 +344,6 @@ export function PerformanceAnalytics() {
   );
 }
 
-function ReturnChart({
-  data,
-  inactivePeriods,
-  benchmarkName,
-}: {
-  data: Array<Record<string, unknown>>;
-  inactivePeriods: Array<{ start: string; end: string }>;
-  benchmarkName?: string;
-}) {
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart
-        data={data}
-        margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
-      >
-        <CartesianGrid vertical={false} stroke="#e9eaed" />
-        <XAxis
-          dataKey="date"
-          tickFormatter={shortDate}
-          tick={axisTick}
-          axisLine={false}
-          tickLine={false}
-          minTickGap={28}
-        />
-        <YAxis
-          tickFormatter={percentAxis}
-          tick={axisTick}
-          axisLine={false}
-          tickLine={false}
-          width={58}
-        />
-        <Tooltip
-          contentStyle={tooltipStyle}
-          labelFormatter={(value) => longDate(String(value ?? ""))}
-          formatter={(value, name) => [
-            formatPercent(Number(value)),
-            name === "portfolioReturn"
-              ? "내 포트폴리오"
-              : (benchmarkName ?? "비교 자산"),
-          ]}
-        />
-        {inactivePeriods.map((period) => (
-          <ReferenceArea
-            key={`${period.start}-${period.end}`}
-            x1={period.start}
-            x2={period.end}
-            fill="#727680"
-            fillOpacity={0.06}
-          />
-        ))}
-        <Line
-          type="monotone"
-          dataKey="portfolioReturn"
-          stroke="#3b8879"
-          strokeWidth={2.5}
-          dot={false}
-          activeDot={{ r: 4 }}
-        />
-        {benchmarkName && (
-          <Line
-            type="monotone"
-            dataKey="benchmarkReturn"
-            stroke="#727680"
-            strokeWidth={1.8}
-            strokeDasharray="5 4"
-            dot={false}
-            connectNulls
-          />
-        )}
-      </LineChart>
-    </ResponsiveContainer>
-  );
-}
-
-function AssetChart({
-  data,
-  inactivePeriods,
-}: {
-  data: Array<Record<string, unknown>>;
-  inactivePeriods: Array<{ start: string; end: string }>;
-}) {
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 2 }}>
-        <defs>
-          <linearGradient id="asset-history-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b8879" stopOpacity={0.16} />
-            <stop offset="100%" stopColor="#3b8879" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid vertical={false} stroke="#e9eaed" />
-        <XAxis
-          dataKey="date"
-          tickFormatter={shortDate}
-          tick={axisTick}
-          axisLine={false}
-          tickLine={false}
-          minTickGap={28}
-        />
-        <YAxis
-          tickFormatter={(value) => compactKRW(Number(value))}
-          tick={axisTick}
-          axisLine={false}
-          tickLine={false}
-          width={58}
-        />
-        <Tooltip
-          contentStyle={tooltipStyle}
-          labelFormatter={(value) => longDate(String(value ?? ""))}
-          formatter={(value) => [
-            formatCurrency(Number(value), "KRW"),
-            "총 투자자산",
-          ]}
-        />
-        {inactivePeriods.map((period) => (
-          <ReferenceArea
-            key={`${period.start}-${period.end}`}
-            x1={period.start}
-            x2={period.end}
-            fill="#727680"
-            fillOpacity={0.06}
-          />
-        ))}
-        <Area
-          type="monotone"
-          dataKey="assetValueKRW"
-          stroke="#3b8879"
-          strokeWidth={2.5}
-          fill="url(#asset-history-fill)"
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  description,
-}: {
-  label: string;
-  value: string;
-  description: string;
-}) {
-  return (
-    <div className="bg-[#ffffff] px-5 py-4 sm:px-7">
-      <p className="text-xs text-[#727680]">{label}</p>
-      <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#202329]">
-        {value}
-      </p>
-      <p className="mt-1 text-[11px] text-[#727680]">{description}</p>
-    </div>
-  );
-}
-
-function DateField({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  min: string;
-  max: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="flex-1">
-      <span className="mb-1.5 block text-xs text-[#727680]">{label}</span>
-      <input
-        type="date"
-        value={value}
-        min={min}
-        max={max}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-xl border border-[#e9eaed] bg-[#ffffff] px-3 text-sm text-[#202329] outline-none focus:border-[#3b8879]"
-      />
-    </label>
-  );
-}
-
 function latestBenchmarkValue(
   series: ChartSeries | null,
   date: string,
@@ -667,32 +377,3 @@ function formatTrackingAge(startedAt: string): string {
   if (hours < 24) return `${Math.max(1, hours)}시간`;
   return `${Math.floor(hours / 24) + 1}일`;
 }
-
-function shortDate(value: string): string {
-  return value.slice(5).replace("-", ".");
-}
-
-function longDate(value: string): string {
-  return value.replaceAll("-", ".");
-}
-
-function compactKRW(value: number): string {
-  if (Math.abs(value) >= 100_000_000)
-    return `${(value / 100_000_000).toFixed(1)}억`;
-  if (Math.abs(value) >= 10_000) return `${(value / 10_000).toFixed(0)}만`;
-  return `${Math.round(value)}`;
-}
-
-function percentAxis(value: number): string {
-  const normalized = Math.abs(value) < 0.005 ? 0 : value;
-  const digits = Math.abs(normalized) < 10 ? 2 : 0;
-  return `${normalized.toFixed(digits)}%`;
-}
-
-const axisTick = { fill: "#727680", fontSize: 11 };
-const tooltipStyle = {
-  background: "#ffffff",
-  border: "1px solid #e9eaed",
-  borderRadius: "12px",
-  color: "#202329",
-};

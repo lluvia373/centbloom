@@ -1,0 +1,126 @@
+{
+  "retrievedAt": "2026-09-06",
+  "note": "Original image bytes from company websites or Yahoo Finance. Company marks identify the listed companies; availability is not universal.",
+  "images": [
+    {
+      "symbol": "AAPL",
+      "path": "/companies/aapl.png",
+      "source": "https://s.yimg.com/lb/brands/150x150_apple.png",
+      "mime": "image/png",
+      "sha256": "b42bb017f97b6ee233b8f4a50c2624988898e72d2955a5bd839c85dbbb5eebb5",
+      "bytes": 3981
+    },
+    {
+      "symbol": "MSFT",
+      "path": "/companies/msft.png",
+      "source": "https://s.yimg.com/lb/brands/150x150_microsoft.png",
+      "mime": "image/png",
+      "sha256": "e2aabff183b9a800f28d8a30d895b63edd4079d0b8211fdc75d395a2dffc1eba",
+      "bytes": 523
+    },
+    {
+      "symbol": "NVDA",
+      "path": "/companies/nvda.png",
+      "source": "https://s.yimg.com/lb/brands/150x150_nvidia.png",
+      "mime": "image/png",
+      "sha256": "8045781a02e0a19a7fc948d0db8e54ae67954e4e035c8394f5ba56def8775300",
+      "bytes": 7920
+    },
+    {
+      "symbol": "AMZN",
+      "path": "/companies/amzn.png",
+      "source": "https://s.yimg.com/lb/brands/150x150_amazon.png",
+      "mime": "image/png",
+      "sha256": "262cacece1992ee5643c02c3543f2ef8951149e046ff1a5de1fe838ec5e965f4",
+      "bytes": 3524
+    },
+    {
+      "symbol": "005930.KS",
+      "path": "/companies/005930-ks.ico",
+      "source": "https://www.samsung.com/sec/static/_images/favicon.ico",
+      "mime": "image/x-icon",
+      "sha256": "13f0161d9f5cf1135c0418688c096acfaf816b26ba16152ef84edccb71b07b26",
+      "bytes": 5430
+    },
+    {
+      "symbol": "000660.KS",
+      "path": "/companies/000660-ks.ico",
+      "source": "https://mis-prod-koce-skhynixhomepage-cdn-01-ep.azureedge.net/img/favicon.ico",
+      "mime": "image/x-icon",
+      "sha256": "2abaf67fe3591a90ae5ef6e12666da0a1fc2b1acea8c25d9171f506338f171b7",
+      "bytes": 2550
+    },
+    {
+      "symbol": "035420.KS",
+      "path": "/companies/035420-ks.ico",
+      "source": "https://www.navercorp.com/img/favicon.ico",
+      "mime": "image/x-icon",
+      "sha256": "cddaaa35e5464c57990c0674cca6e331c2a492ce7a7ed8f7ac1105da76709ecf",
+      "bytes": 1540
+    },
+    {
+      "symbol": "7203.T",
+      "path": "/companies/7203-t.png",
+      "source": "https://global.toyota/apple-touch-icon-precomposed.png",
+      "mime": "image/png",
+      "sha256": "bf2771b5efcb96aa89d775d120f19a087691c948b4b77f35d851bd934ae65990",
+      "bytes": 2169
+    },
+    {
+      "symbol": "6758.T",
+      "path": "/companies/6758-t.ico",
+      "source": "https://www.sony.com/en/favicon.ico",
+      "mime": "image/vnd.microsoft.icon",
+      "sha256": "5de8e2e57dc7b8b6213b1925a670af2173f92ffd795fe7ddeecc88b156379bc1",
+      "bytes": 13382
+    },
+    {
+      "symbol": "7974.T",
+      "path": "/companies/7974-t.png",
+      "source": "https://www.nintendo.com/jp/apple-touch-icon-precomposed.png",
+      "mime": "image/png",
+      "sha256": "d9825bd7a6d704249e151c44590a576a161f5a958a15ef8c1e88ff170f4fcdda",
+      "bytes": 4366
+    },
+    {
+      "symbol": "0700.HK",
+      "path": "/companies/0700-hk.png",
+      "source": "https://www.tencent.com/wp-content/themes/tencent-web/assets/favicon/apple-touch-icon.png",
+      "mime": "image/png",
+      "sha256": "a4f9bdeedcbc3851f15a234da08ed2bd34e84f384e597e59175677601106c924",
+      "bytes": 1798
+    },
+    {
+      "symbol": "9988.HK",
+      "path": "/companies/9988-hk.ico",
+      "source": "https://static.alibabagroup.com/static/favicon.ico",
+      "mime": "image/vnd.microsoft.icon",
+      "sha256": "359ba97f797b1e19ae0525bf67e66e2e2d7e6cf384fe709583ad5111efb2a1b3",
+      "bytes": 3603
+    },
+    {
+      "symbol": "1810.HK",
+      "path": "/companies/1810-hk.png",
+      "source": "https://i02.appmifile.com/i18n/scm/favicon.png",
+      "mime": "image/png",
+      "sha256": "cbd7602e878c987180cbb14e86aa241541e3523e85362e1ac0bc7b896f93ea65",
+      "bytes": 4594
+    },
+    {
+      "symbol": "600519.SS",
+      "path": "/companies/600519-ss.ico",
+      "source": "https://www.moutaichina.com/mtgf/imageDir/siteIcon.ico",
+      "mime": "image/x-icon",
+      "sha256": "7d902652f99ecbee9893c81bbbdd0079fd48ecda31d31af352216d7e274c15a1",
+      "bytes": 9662
+    },
+    {
+      "symbol": "300750.SZ",
+      "path": "/companies/300750-sz.svg",
+      "source": "https://www.catl.com/en/template/1/en/_files/svg/logo.svg",
+      "mime": "image/svg+xml",
+      "sha256": "1a617b4da945612d929a98691c596f8be11f301fc2d2dc38db1b3a7dff10e722",
+      "bytes": 1340
+    }
+  ]
+}

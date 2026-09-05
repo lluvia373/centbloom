@@ -1,14 +1,14 @@
-import type { Holding, Transaction } from "./types";
 import { toKRW } from "./currency";
+import type { Holding, Transaction } from "./types";
 
 const QUANTITY_EPSILON = 1e-8;
 
 export function validateTransactionHistory(
-  transactions: Transaction[]
+  transactions: Transaction[],
 ): string | null {
   const sorted = [...transactions].sort(
     (a, b) =>
-      a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)
+      a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
   );
   const quantities = new Map<string, number>();
 
@@ -40,12 +40,7 @@ export function validateTransactionHistory(
   return null;
 }
 
-export function deriveHoldings(transactions: Transaction[]): Holding[] {
-  const sorted = [...transactions].sort(
-    (a, b) =>
-      a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)
-  );
-
+export function createHoldingAccumulator() {
   const positions = new Map<
     string,
     {
@@ -60,7 +55,7 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
     }
   >();
 
-  for (const tx of sorted) {
+  const apply = (tx: Transaction) => {
     if (tx.type === "buy") {
       const existing = positions.get(tx.symbol);
       const cost = tx.quantity * tx.price + tx.fee;
@@ -69,7 +64,9 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
           ? toKRW(cost, tx.currency, tx.fxRateToKRW)
           : undefined;
       const costUSD =
-        costKRW != null && tx.usdKrwRateAtTransaction != null && tx.usdKrwRateAtTransaction > 0
+        costKRW != null &&
+        tx.usdKrwRateAtTransaction != null &&
+        tx.usdKrwRateAtTransaction > 0
           ? costKRW / tx.usdKrwRateAtTransaction
           : undefined;
 
@@ -80,7 +77,11 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
 
         if (costKRW != null && existing.totalCostKRW != null) {
           existing.totalCostKRW += costKRW;
-        } else if (costKRW != null && existing.totalCostKRW == null && existing.quantity === tx.quantity) {
+        } else if (
+          costKRW != null &&
+          existing.totalCostKRW == null &&
+          existing.quantity === tx.quantity
+        ) {
           existing.totalCostKRW = costKRW;
         } else {
           existing.totalCostKRW = undefined;
@@ -88,7 +89,11 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
 
         if (costUSD != null && existing.totalCostUSD != null) {
           existing.totalCostUSD += costUSD;
-        } else if (costUSD != null && existing.totalCostUSD == null && existing.quantity === tx.quantity) {
+        } else if (
+          costUSD != null &&
+          existing.totalCostUSD == null &&
+          existing.quantity === tx.quantity
+        ) {
           existing.totalCostUSD = costUSD;
         } else {
           existing.totalCostUSD = undefined;
@@ -107,7 +112,7 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
       }
     } else {
       const existing = positions.get(tx.symbol);
-      if (!existing || existing.quantity <= 0) continue;
+      if (!existing || existing.quantity <= 0) return;
 
       const avgCost = existing.totalCost / existing.quantity;
       const avgCostKRW =
@@ -132,36 +137,39 @@ export function deriveHoldings(transactions: Transaction[]): Holding[] {
         positions.delete(tx.symbol);
       }
     }
-  }
+  };
 
-  return Array.from(positions.values()).map((p) => ({
-    id: p.symbol,
-    symbol: p.symbol,
-    name: p.name,
-    quantity: p.quantity,
-    avgCost: p.quantity > 0 ? p.totalCost / p.quantity : 0,
-    currency: p.currency,
-    costBasisKRW: p.totalCostKRW,
-    costBasisUSD: p.totalCostUSD,
-    addedAt: p.firstDate,
-  }));
+  const holdings = () =>
+    Array.from(positions.values()).map((p) => ({
+      id: p.symbol,
+      symbol: p.symbol,
+      name: p.name,
+      quantity: p.quantity,
+      avgCost: p.quantity > 0 ? p.totalCost / p.quantity : 0,
+      currency: p.currency,
+      costBasisKRW: p.totalCostKRW,
+      costBasisUSD: p.totalCostUSD,
+      addedAt: p.firstDate,
+    }));
+  return { apply, holdings };
+}
+
+export function deriveHoldings(transactions: Transaction[]): Holding[] {
+  const accumulator = createHoldingAccumulator();
+  [...transactions]
+    .sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
+    )
+    .forEach(accumulator.apply);
+  return accumulator.holdings();
 }
 
 export function getAvailableQuantity(
   transactions: Transaction[],
-  symbol: string
-): number {
-  return deriveHoldings(transactions).find((h) => h.symbol === symbol)?.quantity ?? 0;
-}
-
-export function validateSell(
-  transactions: Transaction[],
   symbol: string,
-  quantity: number
-): string | null {
-  const available = getAvailableQuantity(transactions, symbol);
-  if (quantity > available) {
-    return `보유 수량(${available})을 초과할 수 없습니다.`;
-  }
-  return null;
+): number {
+  return (
+    deriveHoldings(transactions).find((h) => h.symbol === symbol)?.quantity ?? 0
+  );
 }

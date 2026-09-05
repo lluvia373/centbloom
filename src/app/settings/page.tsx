@@ -1,26 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Check,
-  CheckCircle2,
-  CircleDollarSign,
-  Database,
-  HardDrive,
-  LayoutDashboard,
-  Monitor,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { usePortfolio } from "@/hooks/usePortfolio";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { TransactionBackupPanel } from "@/components/TransactionBackupPanel";
+import { useAuth } from "@/hooks/useAuth";
+import { usePreferences,useTransactions } from "@/hooks/usePortfolio";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import type { DisplayCurrency } from "@/lib/types";
+import {
+Check,
+CheckCircle2,
+CircleDollarSign,
+Database,
+HardDrive,
+LayoutDashboard,
+Monitor,
+ShieldCheck,
+UserRound,
+} from "lucide-react";
+import { useState } from "react";
 
 export default function SettingsPage() {
   const { user, configured } = useAuth();
-  const { displayCurrency, setDisplayCurrency, transactions } = usePortfolio();
+  const { displayCurrency, setDisplayCurrency } = usePreferences();
+  const { transactions } = useTransactions();
   const { isDemo, setDemo } = useWorkspace();
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

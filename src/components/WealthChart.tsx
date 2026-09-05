@@ -1,22 +1,22 @@
 "use client";
-import { useId, useMemo, useState } from "react";
-import {
-  Area,
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { ChartNoAxesCombined, Info, Loader2 } from "lucide-react";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { usePortfolio } from "@/hooks/usePortfolio";
 import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
-import { DEMO_FX, demoHistory } from "@/lib/demo";
+import { usePreferences } from "@/hooks/usePortfolio";
+import { useWorkspace,useWorkspaceSummary } from "@/hooks/useWorkspace";
+import { DEMO_FX,demoHistory } from "@/lib/demo";
 import { formatCurrency } from "@/lib/format";
 import { addCalendarDays } from "@/lib/performance";
+import { ChartNoAxesCombined,Info,Loader2 } from "lucide-react";
+import { useId,useMemo,useState } from "react";
+import {
+Area,
+CartesianGrid,
+ComposedChart,
+Line,
+ResponsiveContainer,
+Tooltip,
+XAxis,
+YAxis,
+} from "recharts";
 
 interface WealthPoint {
   date: string;
@@ -75,8 +75,8 @@ function ChartView({
   error?: string | null;
   expanded?: boolean;
 }) {
-  const { displayCurrency } = usePortfolio();
-  const { summary } = useWorkspace();
+  const { displayCurrency } = usePreferences();
+  const { summary } = useWorkspaceSummary();
   const [range, setRange] = useState("6m");
   const [mode, setMode] = useState("assets");
   const gradientId = useId().replace(/:/g, "");
