@@ -10,20 +10,20 @@
 
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
-| 공개 Cloudflare | 09-06 이름·주소를 `centifolio`로 변경. main `ac7525b`, Worker 버전 `dc22f9d9-59ac-467d-a48f-d2e9b59ffb4d` 유지. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. 대시보드 Builds에 연결된 Git 저장소 없음 |
-| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10)을 main `ebcc367`에 병합하고 로컬 main 동기화. 구조 리팩터링과 기존 로컬 기능 포함 | 운영 DB 적용 완료. 개인 기록 반출 없이 DB 내부 비공개 복구 사본을 사용했으며 앱 배포 진행 중 |
+| 공개 Cloudflare | 09-06 main 앱 `1a9d1c4` 배포. Worker `b89cd2dc-e248-41ae-9161-c03f7849a231`. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. Git 자동 Builds 미연결 |
+| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10), 개발 지도, DB 복구 사본, 검색/자산 요약 수정까지 main 반영·로컬 동기화 | 배포 앱 이후 변경은 결과 문서뿐이며 소스는 위 커밋과 동일 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 연동 완료·승인 기록 없음 | 공개 콘텐츠·고지·신고 기능과 광고 연동 준비 |
 
 ## 구현된 범위
 
-- 밝은 중립색·고정 사이드바·자산 카드 3개·차트·반응형 탐색, 금색 장미·투명 탭 아이콘. 밝은 화면 [PR #8](https://github.com/lluvia373/centifolio/pull/8)·아이콘 [PR #9](https://github.com/lluvia373/centifolio/pull/9)까지 공개 반영.
+- 밝은 중립색·고정 사이드바·자산 카드 3개·차트·반응형 탐색, 금색 장미·투명 탭 아이콘. 초기 디자인은 PR #8·#9, 최신 공개 범위는 위 환경별 상태를 따른다.
 - 샘플/개인 포트폴리오, 종목 검색·시세·거래 관리, 기간별 자산·수익률·환율 기여·배분, CSV.
-- 로컬 보유종목 행의 수정/삭제: 원본 거래 편집 연결, 종목 전체 기록 삭제 확인, 동일 저장 큐·원자적 커밋 및 중복 제출 차단. 상세 의미는 PRODUCT_SPEC.md.
-- 로컬 거래 입력: 단가 직접 입력·매수일/매도일 선택 입력으로 변경. 날짜 생략 시 한국시간 오늘로 저장하며 기존 거래 날짜도 수정 가능. 저장·성과 의미는 PRODUCT_SPEC.md.
-- 로컬 관심종목·목표가·계정별 투자 노트, 표시 통화·거래 JSON 백업/복구.
-- 로컬 종목 마크: 대표 기업 원본 15개·공급원 로고·미지원/로드 실패 시 티커 대체. 출처는 BRAND.md.
-- 로컬 추가: 실제 세계 주식 시세, 상장 시장별 필터/배분, 국가별 숫자 코드·대표 종목 별칭 검색. 관심종목/상세는 최초 1회 조회에서 30초 자동 갱신으로 변경. 공급원 연결은 정상이며 샘플 가격과 별개로 실제 시세를 표시한다. 지연·휴장 의미는 PRODUCT_SPEC.md.
+- 보유종목 행의 수정/삭제: 원본 거래 편집 연결, 종목 전체 기록 삭제 확인, 동일 저장 큐·원자적 커밋 및 중복 제출 차단. 상세 의미는 PRODUCT_SPEC.md.
+- 거래 입력: 단가 직접 입력·매수일/매도일 선택 입력으로 변경. 날짜 생략 시 한국시간 오늘로 저장하며 기존 거래 날짜도 수정 가능. 저장·성과 의미는 PRODUCT_SPEC.md.
+- 관심종목·목표가·계정별 투자 노트, 표시 통화·거래 JSON 백업/복구.
+- 종목 마크: 대표 기업 원본 15개·공급원 로고·미지원/로드 실패 시 티커 대체. 출처는 BRAND.md.
+- 추가: 실제 세계 주식 시세, 상장 시장별 필터/배분, 국가별 숫자 코드·대표 종목 별칭 검색. 관심종목/상세는 최초 1회 조회에서 30초 자동 갱신으로 변경. 공급원 연결은 정상이며 샘플 가격과 별개로 실제 시세를 표시한다. 지연·휴장 의미는 PRODUCT_SPEC.md.
 - 손상된 로컬 원본 보호·저장 실패 표시·이전 백업 호환. 저장·계산 의미는 PRODUCT_SPEC.md.
 
 ## 검증 기록
@@ -32,6 +32,7 @@
 
 | 날짜·환경·대상 | 통과 범위 | 한계 |
 | --- | --- | --- |
+| 09-06 최종 배포 · main 앱 `1a9d1c4` | 40개 자동 테스트·ESLint·TypeScript·Next.js/OpenNext 빌드 통과. 격리 PostgreSQL 18.4 두 연결 경합, 비공개 복구 사본 권한·롤백 보존 검증. 공개 페이지 8개·5개국 시세/환율·검색/차트/과거 가격·오류 400·BUILD_ID 확인. 로그인된 공개 대시보드에서 자산 카드·시세·모바일 메뉴 표시 확인 | 운영 데이터 보존/권한은 실제 DB 확인. 운영 합성 계정 쓰기는 자동 승인 검토가 거부하여 격리 DB에서만 검사. 다중 기기·실제 모바일 기기·운영 대용량 Worker는 미검증 |
 | 09-06 Windows 로컬 · 구조 리팩터링 전체 | 38개 자동 테스트·ESLint·TypeScript·Next.js/OpenNext 빌드, 격리 CRUD/백업/차트 및 스타일 비교 통과. 상세 근거는 아래 구조 검토 | 운영 DB/배포·다중 기기·실제 모바일 기기 미검증. 로컬 전용 |
 | 09-06 main · 개발 안내 점검 | 실제 import/export·파일 역할·공개 훅을 대조해 DEVELOPMENT 지도/확장 절차 추가, README 중복·버전 불일치 정리. 문서 링크/경로·정적 순환 검사 확인 | 문서 변경이며 앱 동작·운영 배포 재검증 아님. 실제 모델 토큰 절감량 미측정; 기능 경계가 자동으로 전부 강제되는 구조는 아님 |
 | 09-06 Windows 로컬 · 거래 날짜 선택화 | 빌드·TypeScript·ESLint·회귀 테스트 10개 통과(한국시간 자정·월/연도 경계 포함). 별도 3001 브라우저에서 날짜 없이 매수/매도→오늘 저장, 선택한 과거 매수일 저장, 날짜 변경 후 단가 유지·과거 환율 반영, 저장된 날짜 09-06→09-04 수정 확인 | 테스트 거래만 사용. 실제 계정 서버 쓰기·모바일 미검증, 공개 미반영. 과거 환율이 없는 날짜는 기존 조회 오류로 저장 차단 |
@@ -55,7 +56,7 @@
 
 | 항목 | 상태 | 변경·검증 근거 |
 | --- | --- | --- |
-| P1 거래 저장 손실·거짓 성공·비원자적 교체 | 로컬 해결 / 운영 검증 대기 | [명령 큐](./src/features/portfolio/data/ledger-store.ts), 로컬 Web Locks·revision 검증, 서버 CAS·요청 영수증·원자적 전체 교체 [RPC](./supabase/migrations/20260905225656_atomic_portfolio_ledger.sql). 서버 기준 동기화로 로컬 삭제 부활 차단, outbox·원본 보존, 실패/사본 실패·재시도·계정 세대 가드. [동시 명령·실패 테스트](./tests/ledger-store.test.mjs), [SQL/RLS·롤백](./tests/sql-ledger.test.mjs). 운영 migration·권한·원본 보존 확인. 실제 로그인 후 쓰기는 미검증 |
+| P1 거래 저장 손실·거짓 성공·비원자적 교체 | 구현 해결 / 운영 쓰기 미검증 | [명령 큐](./src/features/portfolio/data/ledger-store.ts), 로컬 Web Locks·revision 검증, 서버 CAS·요청 영수증·원자적 전체 교체 [RPC](./supabase/migrations/20260905225656_atomic_portfolio_ledger.sql). 서버 기준 동기화로 로컬 삭제 부활 차단, outbox·원본 보존, 실패/사본 실패·재시도·계정 세대 가드. [동시 명령·실패 테스트](./tests/ledger-store.test.mjs), [SQL/RLS·롤백](./tests/sql-ledger.test.mjs). 운영 migration·권한·원본 보존 확인. 실제 로그인 후 쓰기는 미검증 |
 | P2 usePortfolio 책임 집중 | 해결 | [Provider](./src/hooks/usePortfolio.tsx)는 거래·설정·시장 Provider 조립과 공개 훅만 제공. features/portfolio의 model(명령·검증·보완·요약), data(로컬·서버·매핑·동기화), state(각 구독), ui(입력·편집·백업)로 분리. 순수 저장소·계산은 React 없이 테스트 |
 | P2 직렬 조회·중복 요청 | 해결 | [요청 캐시](./src/shared/async/request-cache.ts)의 공통 키·진행 공유·최종 소비자 취소·20초 제한·오류 미캐시. [거래 시장 조회](./src/features/market/use-trade-market.ts)와 [보완](./src/features/portfolio/model/enrichment.ts)에서 USD 독립 시작·동일 USD 재사용. 상세 quote/chart 독립 마운트. [요청/폴링](./tests/requests.test.mjs), [통화 병렬성](./tests/enrichment.test.mjs), [API 키/오류](./tests/market-api.test.mjs) 검증 |
 | P2 성과 조회·계산·저장 중복 | 해결 | [공유 실행](./src/shared/async/shared-resource.ts) + [성과 서비스](./src/features/performance/service.ts) + [저장소](./src/features/performance/repository.ts). 사용자·revision·KST 오늘 키, 시작시각/연속된 확정 prefix 검사, 이후 기간만 계산·저장, 수정 시 무효화, 서버 revision CAS. [중복 소비자·부분 실패·계정 취소·prefix 테스트](./tests/performance-service.test.mjs) |
@@ -85,9 +86,11 @@
 
 브라우저 Worker는 별도 KRW 20,000건·10종목·1,825일 fixture에서 1회 왕복 97ms, 결과 1,825일·마지막 평가액 2,000,000원 확인. 위 비교 데이터와 다른 입력이므로 동일 벤치마크 수치로 취급하지 않는다.
 
-### 운영 반영 전 남은 검증
+### 운영 반영과 남은 검증
 
-운영 스키마·RLS·제약은 읽기 전용 메타데이터로 대조했고 사용자 행은 변경하지 않았다. 증분 마이그레이션·호출 코드·로컬 SQL 검사·[적용/복구 절차](./CLOUDFLARE.md#거래-저장-원자성-업데이트)를 준비했다. 독립 로컬 PostgreSQL 18.4의 다중 연결 advisory lock 경합 검사는 통과했다. 실제 Supabase/PostgREST 응답 유실·JWT 전환·다중 기기, 새 공개 Worker에서 Yahoo/Worker 동작은 남은 절차다. PGlite 단일 연결과 모의 I/O 결과를 이 검증의 대체로 표시하지 않는다. 이미 전량 매도한 과거 종목은 성과 조회에서 제외한다. 장기 거래정지는 필요한 종목의 조회 범위를 거래 시작까지 확장하며, 확장 후에도 가격이 없으면 오류를 표시하고 저장하지 않는다.
+운영 migration 적용 직후 기존 거래 18건·설정 1건·성과 30건의 원본/사본 내용 일치와 RPC 권한을 확인했다. 개인 기록을 로컬로 반출하지 않았고 비공개 DB 복구 사본·[복구 절차](./CLOUDFLARE.md#거래-저장-원자성-업데이트)를 보존했다. 공개 검증에서 발견한 전체 시장 검색의 잘못된 400 응답, KRW 단위 환율 누락으로 자산 카드가 숨겨지는 문제를 수정하고 회귀 테스트를 추가했다.
+
+실제 로그인 후 거래 쓰기·PostgREST 응답 유실·JWT 전환·다중 기기·운영 대용량 브라우저 Worker는 남은 검증이다. 합성 auth 계정의 운영 쓰기 검사는 롤백으로 외부 부작용을 보장할 수 없다는 자동 승인 검토 결과에 따라 격리 DB에서만 실행했다. 로컬 SQL/모의 I/O·두 연결 경합 결과를 운영 쓰기 검증으로 표시하지 않는다.
 
 ## 현재 제약
 
@@ -101,7 +104,7 @@
 
 ## 다음 작업
 
-1. Cloudflare 앱 배포 및 공개 응답 확인 후 버전 기록 갱신. 실제 계정 쓰기·다중 기기 검증은 별도 진행.
+1. 별도 승인된 테스트 계정/환경에서 실제 로그인 후 쓰기·다중 기기 검증. 운영 복구 사본은 검증 완료 후 별도 보존/정리 결정.
 2. 핵심 주식 커뮤니티 구현·저장/권한 검증·이용 지표 수집.
 3. 콘텐츠·운영·시세 권한 확인과 AdSense 준비.
 
