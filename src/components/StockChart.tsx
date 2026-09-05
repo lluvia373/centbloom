@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { getChart } from "@/lib/stock-api";
 import { formatCurrency } from "@/lib/format";
+import { getChart } from "@/lib/stock-api";
 import type { ChartPoint } from "@/lib/types";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2,RefreshCw } from "lucide-react";
+import { useEffect,useId,useState } from "react";
+import {
+Area,
+AreaChart,
+CartesianGrid,
+ResponsiveContainer,
+Tooltip,
+XAxis,
+YAxis,
+} from "recharts";
 
 const RANGES = [
   { label: "1주", value: "5d" },
@@ -31,6 +31,7 @@ export function StockChart({
   symbol: string;
   currency: string;
 }) {
+  const chartCurrency = (value: number) => currency ? formatCurrency(value,currency) : value.toLocaleString("ko-KR");
   const [range, setRange] = useState("6mo");
   const [data, setData] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +41,12 @@ export function StockChart({
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       setLoading(true);
       setError(false);
       try {
-        const points = await getChart(symbol, range);
+        const points = await getChart(symbol, range, controller.signal);
         if (!cancelled) setData(points);
       } catch {
         if (!cancelled) {
@@ -57,6 +59,7 @@ export function StockChart({
     }, 0);
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [symbol, range, retry]);
@@ -180,7 +183,7 @@ export function StockChart({
                   fontSize: "12px",
                 }}
                 formatter={(value) => [
-                  formatCurrency(Number(value), currency),
+                  chartCurrency(Number(value)),
                   "종가",
                 ]}
               />

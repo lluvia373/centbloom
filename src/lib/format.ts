@@ -26,8 +26,10 @@ export function formatDate(dateStr: string): string {
   return `${y}년 ${parseInt(m, 10)}월 ${parseInt(d, 10)}일`;
 }
 
-export function todayISO(): string {
-  return new Date().toISOString().split("T")[0];
+export function todayISO(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
 }
 
 export function formatCompactNumber(value: number): string {

@@ -1,44 +1,28 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ChartNoAxesCombined,
-  Loader2,
-  Plus,
-  RefreshCw,
-} from "lucide-react";
-import { getQuote } from "@/lib/stock-api";
-import { formatCompactNumber, formatCurrency } from "@/lib/format";
+import { AssetAvatar } from "@/components/AssetAvatar";
 import { PriceChange } from "@/components/PriceChange";
+import { QuoteStatus } from "@/components/QuoteStatus";
 import { StockChart } from "@/components/StockChart";
-import type { StockQuote } from "@/lib/types";
+import { useLiveQuotes } from "@/hooks/useLiveQuotes";
+import { formatCompactNumber,formatCurrency } from "@/lib/format";
+import {
+ArrowLeft,
+ArrowUpRight,
+ChartNoAxesCombined,
+Loader2,
+Plus,
+RefreshCw,
+} from "lucide-react";
+import Link from "next/link";
 
 export function StockDetail({ symbol }: { symbol: string }) {
-  const [quote, setQuote] = useState<StockQuote | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [retry, setRetry] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const result = await getQuote(symbol);
-        if (!cancelled) setQuote(result);
-      } catch {
-        if (!cancelled) setQuote(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, 0);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [symbol, retry]);
+  const live=useLiveQuotes([symbol]);const quote=live.quotes[symbol];
+  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}</div>;
+}
+function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof useLiveQuotes> }) {
+  const { quotes, loading, refreshing, failedSymbols, refresh } = live;
+  const quote = quotes[symbol];
 
   if (loading)
     return (
@@ -64,7 +48,7 @@ export function StockDetail({ symbol }: { symbol: string }) {
         <div className="mt-6 flex justify-center gap-3">
           <button
             type="button"
-            onClick={() => setRetry((value) => value + 1)}
+            onClick={refresh}
             className="inline-flex items-center gap-2 rounded-xl bg-[#25282e] px-4 py-2.5 text-sm text-[#ffffff]"
           >
             <RefreshCw className="h-4 w-4" />
@@ -80,6 +64,60 @@ export function StockDetail({ symbol }: { symbol: string }) {
       </div>
     );
 
+
+  return (
+    <div className="space-y-6">
+      <Link
+        href="/portfolio"
+        className="inline-flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680]"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        포트폴리오로 돌아가기
+      </Link>
+      <div className="flex flex-col justify-between gap-6 rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-6 sm:flex-row sm:items-center sm:p-8">
+        <div>
+          <div className="mb-6 flex items-center gap-4">
+            <AssetAvatar symbol={quote.symbol} logoUrl={quote.logoUrl} />
+            <div>
+              <p className="text-xs uppercase tracking-wider text-[#727680]">
+                {quote.symbol} · {quote.currency}
+              </p>
+              <h1 className="mt-1 text-xl font-semibold text-[#202329]">
+                {quote.name}
+              </h1>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="text-4xl font-semibold tracking-tight text-[#202329]">
+              {formatCurrency(quote.price, quote.currency)}
+            </span>
+            <PriceChange
+              value={quote.change}
+              percent={quote.changePercent}
+              currency={quote.currency}
+              size="lg"
+            />
+          </div>
+          <QuoteStatus quote={quote} failed={failedSymbols.includes(symbol)} />
+          <button type="button" onClick={refresh} disabled={refreshing}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#727680] disabled:opacity-50">
+            <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+            30초 자동 갱신 · 새로고침
+          </button>
+        </div>
+        <Link
+          href={`/search?symbol=${encodeURIComponent(quote.symbol)}`}
+          className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#25282e] px-5 py-3 text-sm font-medium text-[#ffffff] transition-colors hover:bg-[#25282e]"
+        >
+          <Plus className="h-4 w-4" />이 종목 거래 기록
+        </Link>
+      </div>
+
+    </div>
+  );
+}
+
+function StockStats({quote}:{quote:import("@/lib/types").StockQuote}) {
   const stats = [
     {
       label: "시가총액",
@@ -130,53 +168,7 @@ export function StockDetail({ symbol }: { symbol: string }) {
     { label: "거래 통화", value: quote.currency },
   ];
 
-  return (
-    <div className="space-y-6">
-      <Link
-        href="/portfolio"
-        className="inline-flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680]"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        포트폴리오로 돌아가기
-      </Link>
-      <div className="flex flex-col justify-between gap-6 rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-6 sm:flex-row sm:items-center sm:p-8">
-        <div>
-          <div className="mb-6 flex items-center gap-4">
-            <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-[#f3f4f6] text-xl font-bold text-[#727680]">
-              {quote.symbol.slice(0, 1)}
-            </span>
-            <div>
-              <p className="text-xs uppercase tracking-wider text-[#727680]">
-                {quote.symbol} · {quote.currency}
-              </p>
-              <h1 className="mt-1 text-xl font-semibold text-[#202329]">
-                {quote.name}
-              </h1>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-3">
-            <span className="text-4xl font-semibold tracking-tight text-[#202329]">
-              {formatCurrency(quote.price, quote.currency)}
-            </span>
-            <PriceChange
-              value={quote.change}
-              percent={quote.changePercent}
-              currency={quote.currency}
-              size="lg"
-            />
-          </div>
-          <p className="mt-3 text-xs text-[#727680]">
-            최근 조회 시세 · 거래소에 따라 시세가 지연될 수 있습니다
-          </p>
-        </div>
-        <Link
-          href={`/search?symbol=${encodeURIComponent(quote.symbol)}`}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#25282e] px-5 py-3 text-sm font-medium text-[#ffffff] transition-colors hover:bg-[#25282e]"
-        >
-          <Plus className="h-4 w-4" />이 종목 거래 기록
-        </Link>
-      </div>
-      <StockChart key={symbol} symbol={symbol} currency={quote.currency} />
+return <>
       <section className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-6 sm:p-7">
         <h2 className="mb-6 text-base font-semibold text-[#202329]">
           숫자로 보는 {quote.symbol}
@@ -211,6 +203,6 @@ export function StockDetail({ symbol }: { symbol: string }) {
         </div>
         <ArrowUpRight className="h-5 w-5 shrink-0" />
       </Link>
-    </div>
-  );
+
+</>;
 }

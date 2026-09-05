@@ -1,21 +1,21 @@
 "use client";
-import { useState } from "react";
-import { ChevronDown, Leaf, Lightbulb, Scale } from "lucide-react";
+import { AllocationChart } from "@/components/AllocationChart";
 import {
-  PageHeading,
-  AddTransactionLink,
-  PortfolioMode,
+AddTransactionLink,
+PageHeading,
+PortfolioMode,
 } from "@/components/Header";
+import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { WealthChart } from "@/components/WealthChart";
-import { AllocationChart } from "@/components/AllocationChart";
-import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { usePortfolio } from "@/hooks/usePortfolio";
+import { usePreferences } from "@/hooks/usePortfolio";
+import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { formatCurrency } from "@/lib/format";
+import { ChevronDown,Leaf,Lightbulb,Scale } from "lucide-react";
+import { useState } from "react";
 export default function InsightsPage() {
-  const { summary, isDemo } = useWorkspace();
-  const { displayCurrency } = usePortfolio();
+  const { summary, isDemo } = useWorkspaceSummary();
+  const { displayCurrency } = usePreferences();
   const [details, setDetails] = useState(false);
   const holdings = summary?.holdings ?? [];
   const largest = [...holdings].sort(

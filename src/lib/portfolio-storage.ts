@@ -1,9 +1,9 @@
-import type { Transaction } from "./types";
 import {
   parseTransactionBackup,
   TRANSACTION_BACKUP_FORMAT,
   TRANSACTION_BACKUP_VERSION,
 } from "./transaction-backup";
+import type { Transaction } from "./types";
 
 export const TRANSACTIONS_KEY = "stock-transactions";
 const LEGACY_HOLDINGS_KEY = "stock-portfolio";
@@ -50,14 +50,12 @@ export function loadStoredTransactions(
         error: null,
       };
 
-    // Keep the original one-time first-login migration, but validate and copy
-    // successfully before removing the only source of the user's records.
+    // Validate and copy legacy records while retaining the original recovery source.
     if (userId) {
       const unscoped = storage.getItem(TRANSACTIONS_KEY);
       if (unscoped !== null) {
         const transactions = validatedTransactions(JSON.parse(unscoped));
         storage.setItem(transactionKey, unscoped);
-        storage.removeItem(TRANSACTIONS_KEY);
         return { transactions, error: null };
       }
     }
@@ -95,7 +93,6 @@ export function loadStoredTransactions(
       }),
     );
     storage.setItem(transactionKey, JSON.stringify(migrated));
-    storage.removeItem(legacyKey);
     return { transactions: migrated, error: null };
   } catch {
     return { transactions: [], error: STORAGE_READ_ERROR };

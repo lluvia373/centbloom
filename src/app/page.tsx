@@ -1,22 +1,24 @@
 "use client";
-import Link from "next/link";
-import { ArrowUpRight, BookOpen } from "lucide-react";
-import { WorkspaceDate } from "@/components/WorkspaceDate";
-import {
-  PageHeading,
-  AddTransactionLink,
-  PortfolioMode,
-} from "@/components/Header";
-import { PortfolioMetrics } from "@/components/PortfolioMetrics";
-import { WealthChart } from "@/components/WealthChart";
 import { AllocationChart } from "@/components/AllocationChart";
+import {
+AddTransactionLink,
+PageHeading,
+PortfolioMode,
+} from "@/components/Header";
 import { HoldingsTable } from "@/components/HoldingsTable";
+import { LiveMarkets } from "@/components/LiveMarkets";
+import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { WatchlistPreview } from "@/components/WatchlistPreview";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { usePortfolio } from "@/hooks/usePortfolio";
+import { WealthChart } from "@/components/WealthChart";
+import { WorkspaceDate } from "@/components/WorkspaceDate";
+import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
+import { useWorkspaceSummary } from "@/hooks/useWorkspace";
+import { ArrowUpRight,BookOpen } from "lucide-react";
+import Link from "next/link";
 export default function DashboardPage() {
-  const { summary, isDemo } = useWorkspace();
-  const { displayCurrency, loading, marketDataError } = usePortfolio();
+  const { summary, isDemo } = useWorkspaceSummary();
+  const { displayCurrency } = usePreferences();
+  const { loading, marketDataError } = usePortfolioMarket();
   return (
     <>
       <PageHeading
@@ -37,6 +39,7 @@ export default function DashboardPage() {
         </p>
       )}
       <PortfolioMetrics />
+      <LiveMarkets />
       <div className="dashboard-main-grid">
         <WealthChart />
         <AllocationChart
@@ -50,6 +53,7 @@ export default function DashboardPage() {
           holdings={summary?.holdings ?? []}
           displayCurrency={displayCurrency}
           loading={!isDemo && loading}
+          editable={!isDemo}
         />
         <div>
           <WatchlistPreview isDemo={isDemo} />

@@ -1,286 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { WatchlistRow } from "@/features/watchlist/WatchlistRow";
+import { WatchlistSearch } from "@/features/watchlist/WatchlistSearch";
+import { useWatchlist } from "@/hooks/useWatchlist";
 import {
-  ArrowDownRight,
-  ArrowUpRight,
   Check,
   ChevronRight,
   CircleAlert,
   Crosshair,
   ListPlus,
-  LoaderCircle,
-  Pencil,
   Plus,
   RefreshCw,
-  Search,
   Star,
-  Trash2,
   X,
 } from "lucide-react";
-import {
-  formatWatchPrice,
-  useWatchlist,
-  type WatchlistItem,
-} from "@/hooks/useWatchlist";
-import { searchStocks } from "@/lib/stock-api";
-import type { StockQuote, StockSearchResult } from "@/lib/types";
+import { useRef, useState } from "react";
 
 const panel = "rounded-2xl border border-[#e6e8eb] bg-[#ffffff]";
-const smallButton =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#e6e8eb] bg-[#ffffff] px-3 py-2 text-xs font-medium text-[#727680] transition hover:bg-[#f3f4f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25282e] disabled:cursor-not-allowed disabled:opacity-40";
-
-function TargetEditor({
-  item,
-  currency,
-  onSave,
-  onClose,
-}: {
-  item: WatchlistItem;
-  currency: string;
-  onSave: (price: number | null, currency: string | null) => string | null;
-  onClose: () => void;
-}) {
-  const [price, setPrice] = useState(
-    item.targetCurrency === currency ? String(item.targetPrice ?? "") : "",
-  );
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        const parsed = price.trim() ? Number(price) : null;
-        if (parsed !== null && (!Number.isFinite(parsed) || parsed <= 0)) {
-          setError("0보다 큰 가격을 입력해 주세요.");
-          return;
-        }
-        const failure = onSave(parsed, parsed === null ? null : currency);
-        if (failure) setError(failure);
-        else onClose();
-      }}
-      className="mt-4 rounded-xl bg-[#ffffff] p-4"
-    >
-      <label
-        htmlFor={`target-${item.symbol}`}
-        className="text-xs font-semibold text-[#727680]"
-      >
-        목표 매수가 (
-        {currency === "GBp" || currency === "GBX" ? "영국 펜스" : currency})
-      </label>
-      <div className="mt-2 flex flex-wrap gap-2">
-        <input
-          autoFocus
-          id={`target-${item.symbol}`}
-          inputMode="decimal"
-          type="number"
-          min="0.000001"
-          step="any"
-          value={price}
-          onChange={(event) => setPrice(event.target.value)}
-          placeholder="비워두면 목표가 해제"
-          className="min-w-0 flex-1 rounded-lg border border-[#e6e8eb] bg-[#ffffff] px-3 py-2 text-sm outline-none focus:border-[#9b9fa7]"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-[#25282e] px-3 py-2 text-xs font-semibold text-[#ffffff] hover:bg-[#25282e]"
-        >
-          저장
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="목표가 편집 취소"
-          className={smallButton}
-        >
-          <X size={15} />
-        </button>
-      </div>
-      {error ? (
-        <p role="alert" className="mt-2 text-xs text-[#d65353]">
-          {error}
-        </p>
-      ) : (
-        <p className="mt-2 text-xs leading-5 text-[#727680]">
-          이 가격 이하일 때 도달로 표시합니다. 별도 알림은 발송되지 않아요.
-        </p>
-      )}
-    </form>
-  );
-}
-
-function WatchlistRow({
-  item,
-  quote,
-  loading,
-  onRemove,
-  onTarget,
-}: {
-  item: WatchlistItem;
-  quote?: StockQuote;
-  loading: boolean;
-  onRemove: () => string | null;
-  onTarget: (price: number | null, currency: string | null) => string | null;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [confirmRemove, setConfirmRemove] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const currency = quote?.currency ?? item.targetCurrency;
-  const targetComparable =
-    !!quote &&
-    item.targetPrice !== null &&
-    item.targetCurrency === quote.currency;
-  const reached = targetComparable && quote!.price <= item.targetPrice!;
-  const change =
-    quote && Number.isFinite(quote.changePercent) ? quote.changePercent : null;
-  const aboveTarget = targetComparable
-    ? ((quote!.price - item.targetPrice!) / quote!.price) * 100
-    : null;
-  return (
-    <article className="border-t border-[#e6e8eb] p-5 first:border-t-0 sm:px-6">
-      <div className="grid items-center gap-4 md:grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_auto]">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f3f4f6] text-sm font-bold text-[#727680]">
-            {item.symbol.slice(0, 2)}
-          </span>
-          <div className="min-w-0">
-            <h3 className="truncate text-sm font-semibold text-[#202329]">
-              {item.name}
-            </h3>
-            <p className="mt-1 text-xs text-[#727680]">{item.symbol}</p>
-          </div>
-        </div>
-        <div className="flex items-center justify-between md:block">
-          <p className="text-xs text-[#727680] md:hidden">현재가</p>
-          <div className="text-right md:text-left">
-            {quote ? (
-              <>
-                <p className="text-[16px] font-semibold tabular-nums text-[#202329]">
-                  {formatWatchPrice(quote.price, quote.currency)}
-                </p>
-                {change !== null ? (
-                  <p
-                    className={`mt-1 flex items-center justify-end gap-0.5 text-xs tabular-nums md:justify-start ${change >= 0 ? "text-[#16856b]" : "text-[#d65353]"}`}
-                  >
-                    {change >= 0 ? (
-                      <ArrowUpRight size={13} />
-                    ) : (
-                      <ArrowDownRight size={13} />
-                    )}
-                    {change > 0 ? "+" : ""}
-                    {change.toFixed(2)}%{" "}
-                    <span className="ml-1 text-[#727680]">전일 대비</span>
-                  </p>
-                ) : (
-                  <p className="mt-1 text-xs text-[#727680]">
-                    등락률 정보 없음
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-xs text-[#727680]">
-                {loading ? "시세 불러오는 중…" : "시세를 불러오지 못했어요"}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center justify-between md:block">
-          <p className="text-xs text-[#727680] md:hidden">목표 매수가</p>
-          <div className="text-right md:text-left">
-            {item.targetPrice !== null && item.targetCurrency ? (
-              <>
-                <p className="text-sm font-semibold tabular-nums text-[#727680]">
-                  {formatWatchPrice(item.targetPrice, item.targetCurrency)}
-                </p>
-                <p
-                  className={`mt-1 text-xs ${reached ? "font-medium text-[#727680]" : "text-[#727680]"}`}
-                >
-                  {reached
-                    ? "✓ 목표가 도달"
-                    : aboveTarget !== null
-                      ? `목표까지 ${aboveTarget.toFixed(1)}% 하락 필요`
-                      : quote
-                        ? "통화가 달라 목표가 확인 필요"
-                        : "시세 확인 후 비교할 수 있어요"}
-                </p>
-              </>
-            ) : (
-              <p className="text-xs text-[#727680]">아직 설정하지 않았어요</p>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-end gap-1">
-          <button
-            type="button"
-            title={
-              currency
-                ? "목표 매수가 설정"
-                : "시세를 불러온 뒤 목표가를 설정할 수 있습니다"
-            }
-            aria-label={`${item.name} 목표가 설정`}
-            disabled={!currency}
-            onClick={() => {
-              setEditing(!editing);
-              setConfirmRemove(false);
-            }}
-            className="rounded-lg p-2 text-[#727680] hover:bg-[#f3f4f6] hover:text-[#727680] disabled:opacity-30"
-          >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label={`${item.name} 삭제`}
-            onClick={() => {
-              setConfirmRemove(!confirmRemove);
-              setEditing(false);
-            }}
-            className="rounded-lg p-2 text-[#727680] hover:bg-[#ffffff] hover:text-[#d65353]"
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
-      </div>
-      {editing && currency ? (
-        <TargetEditor
-          item={item}
-          currency={currency}
-          onSave={onTarget}
-          onClose={() => setEditing(false)}
-        />
-      ) : null}
-      {confirmRemove ? (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#ffffff] px-4 py-3">
-          <p className="text-xs text-[#d65353]">
-            {item.name}을 관심종목에서 삭제할까요?
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className={smallButton}
-              onClick={() => setConfirmRemove(false)}
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              className="rounded-lg bg-[#f7e9e9] px-3 py-2 text-xs font-semibold text-[#a73d3d]"
-              onClick={() => {
-                const failure = onRemove();
-                if (failure) setError(failure);
-              }}
-            >
-              삭제
-            </button>
-          </div>
-        </div>
-      ) : null}
-      {error ? (
-        <p role="alert" className="mt-2 text-xs text-[#d65353]">
-          {error}
-        </p>
-      ) : null}
-    </article>
-  );
-}
 
 export default function WatchlistPage() {
   const {
@@ -292,23 +28,18 @@ export default function WatchlistPage() {
     setTarget,
     quotes,
     quotesLoading,
+    quotesRefreshing,
     failedSymbols,
     refreshQuotes,
   } = useWatchlist();
-  const [query, setQuery] = useState("");
-  const [searchState, setSearchState] = useState<{
-    query: string;
-    results: StockSearchResult[];
-    error: string | null;
-  }>({ query: "", results: [], error: null });
   const [notice, setNotice] = useState<string | null>(null);
   const searchInput = useRef<HTMLInputElement>(null);
-  const trimmedQuery = query.trim();
-  const searching = !!trimmedQuery && searchState.query !== trimmedQuery;
+
   const reached = items.filter(
     (item) =>
       item.targetPrice !== null &&
       quotes[item.symbol] &&
+      !failedSymbols.includes(item.symbol) &&
       quotes[item.symbol].currency === item.targetCurrency &&
       quotes[item.symbol].price <= item.targetPrice,
   ).length;
@@ -316,44 +47,16 @@ export default function WatchlistPage() {
     (item) =>
       item.targetPrice !== null &&
       (!quotes[item.symbol] ||
+        failedSymbols.includes(item.symbol) ||
         quotes[item.symbol].currency !== item.targetCurrency),
   );
   const targets = items.filter((item) => item.targetPrice !== null).length;
-
-  useEffect(() => {
-    if (!trimmedQuery) return;
-    let cancelled = false;
-    const timer = window.setTimeout(() => {
-      void searchStocks(trimmedQuery)
-        .then((results) => {
-          if (!cancelled)
-            setSearchState({
-              query: trimmedQuery,
-              results: results.slice(0, 8),
-              error: null,
-            });
-        })
-        .catch(() => {
-          if (!cancelled)
-            setSearchState({
-              query: trimmedQuery,
-              results: [],
-              error:
-                "검색 결과를 불러오지 못했습니다. 잠시 후 다시 검색해 주세요.",
-            });
-        });
-    }, 300);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [trimmedQuery]);
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-7 text-[#202329]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h1 className="text-[28px] font-semibold tracking-[-0.04em] sm:text-[32px]">
+          <h1 className="text-[28px] font-semibold tracking-[-0.04em] sm:text-[32px]">
             기다림에도, 나만의 기준을.
           </h1>
           <p className="mt-2 text-sm leading-6 text-[#727680]">
@@ -412,101 +115,13 @@ export default function WatchlistPage() {
         ))}
       </div>
 
-      <section className={`${panel} p-5 sm:p-6`} aria-label="관심종목 검색">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <label htmlFor="watchlist-search" className="text-sm font-semibold">
-            다음으로 지켜볼 기업은?
-          </label>
-          <span className="text-xs text-[#727680]">
-            한국 · 미국 · 글로벌
-          </span>
-        </div>
-        <div className="relative">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#727680]"
-            size={18}
-          />
-          <input
-            ref={searchInput}
-            id="watchlist-search"
-            autoComplete="off"
-            maxLength={80}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="기업명 또는 티커 검색 · 예: 삼성전자, AAPL"
-            className="w-full rounded-xl border border-[#e6e8eb] bg-[#ffffff] py-3.5 pl-11 pr-11 text-sm placeholder:text-[#727680] focus:border-[#9b9fa7] focus:bg-[#ffffff] focus:outline-none"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="검색어 지우기"
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#727680] hover:bg-[#f3f4f6]"
-            >
-              <X size={16} />
-            </button>
-          ) : null}
-        </div>
-        {trimmedQuery ? (
-          <div className="mt-3" aria-live="polite">
-            {searching ? (
-              <p className="flex items-center gap-2 py-4 text-sm text-[#727680]">
-                <LoaderCircle className="animate-spin" size={16} /> 종목을 찾고
-                있어요.
-              </p>
-            ) : searchState.error ? (
-              <p role="alert" className="py-4 text-sm text-[#d65353]">
-                {searchState.error}
-              </p>
-            ) : searchState.results.length ? (
-              <div className="divide-y divide-[#e6e8eb]">
-                {searchState.results.map((stock) => {
-                  const added = items.some(
-                    (item) => item.symbol === stock.symbol,
-                  );
-                  return (
-                    <div
-                      key={stock.symbol}
-                      className="flex items-center justify-between gap-4 py-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {stock.name}
-                        </p>
-                        <p className="mt-0.5 text-xs text-[#727680]">
-                          {stock.symbol}
-                          <span className="mx-2 text-[#727680]">/</span>
-                          {stock.exchange}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={added || !ready}
-                        aria-label={`${stock.name} 관심종목 ${added ? "추가됨" : "추가"}`}
-                        onClick={() => {
-                          const failure = addItem(stock);
-                          setNotice(
-                            failure ?? `${stock.name}을 관심종목에 추가했어요.`,
-                          );
-                          if (!failure) setQuery("");
-                        }}
-                        className={smallButton}
-                      >
-                        {added ? <Check size={14} /> : <Plus size={14} />}
-                        {added ? "추가됨" : "추가"}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="py-4 text-sm text-[#727680]">
-                검색된 종목이 없어요. 기업명이나 정확한 티커로 다시 찾아보세요.
-              </p>
-            )}
-          </div>
-        ) : null}
-      </section>
+      <WatchlistSearch
+        items={items}
+        ready={ready}
+        addItem={addItem}
+        setNotice={setNotice}
+        searchInput={searchInput}
+      />
 
       {error ? (
         <div
@@ -544,12 +159,12 @@ export default function WatchlistPage() {
           <button
             type="button"
             onClick={refreshQuotes}
-            disabled={!items.length || quotesLoading}
+            disabled={!items.length || quotesRefreshing}
             className="inline-flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680] disabled:opacity-40"
           >
             <RefreshCw
               size={13}
-              className={quotesLoading ? "animate-spin" : ""}
+              className={quotesRefreshing ? "animate-spin" : ""}
             />{" "}
             시세 새로고침
           </button>
@@ -572,6 +187,7 @@ export default function WatchlistPage() {
                 item={item}
                 quote={quotes[item.symbol]}
                 loading={quotesLoading}
+                failed={failedSymbols.includes(item.symbol)}
                 onRemove={() => removeItem(item.symbol)}
                 onTarget={(price, currency) =>
                   setTarget(item.symbol, price, currency)
@@ -606,7 +222,7 @@ export default function WatchlistPage() {
           <span>
             {failedSymbols.length
               ? `${failedSymbols.length}개 종목의 시세를 확인하지 못했어요.`
-              : "시세는 지연될 수 있습니다. 목표가 도달 시 별도 알림은 발송되지 않습니다."}
+              : "30초 자동 갱신 · 거래소별 지연 시세 · 목표가 푸시 알림 없음"}
           </span>
         </div>
       </section>

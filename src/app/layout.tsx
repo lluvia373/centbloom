@@ -1,13 +1,15 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { AuthGate } from "@/components/AuthGate";
 import { Header } from "@/components/Header";
+import { StorageNotice } from "@/components/StorageNotice";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PortfolioProvider } from "@/hooks/usePortfolio";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
-import { StorageNotice } from "@/components/StorageNotice";
+import "@/styles/charts.css";
+import "@/styles/portfolio.css";
+import "@/styles/workspace.css";
+import type { Metadata,Viewport } from "next";
+import { Geist,Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./brand.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

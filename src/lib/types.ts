@@ -42,6 +42,13 @@ export interface StockQuote {
   fiftyTwoWeekHigh?: number;
   fiftyTwoWeekLow?: number;
   previousClose?: number;
+  exchange?: string;
+  marketState?: string;
+  quotedAt?: string;
+  fetchedAt?: string;
+  delayMinutes?: number;
+  source?: string;
+  logoUrl?: string;
 }
 
 export interface StockSearchResult {

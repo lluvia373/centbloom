@@ -1,5 +1,9 @@
 "use client";
 
+import { readBrandedStorage } from "@/lib/branded-storage";
+
+import { demoSummary } from "@/lib/demo";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -8,37 +12,37 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { usePathname } from "next/navigation";
-import { usePortfolio } from "./usePortfolio";
 import { useAuth } from "./useAuth";
-import { demoSummary } from "@/lib/demo";
-import type { PortfolioSummary } from "@/lib/types";
+import {
+  usePortfolioMarket,
+  usePreferences,
+  useTransactions,
+} from "./usePortfolio";
 
 interface WorkspaceValue {
   isDemo: boolean;
   setDemo: (value: boolean) => void;
-  summary: PortfolioSummary | null;
 }
 const WorkspaceContext = createContext<WorkspaceValue | null>(null);
 const subscribe = (listener: () => void) => {
   window.addEventListener("storage", listener);
-  window.addEventListener("stockfolio-mode", listener);
+  window.addEventListener("centifolio-mode", listener);
   return () => {
     window.removeEventListener("storage", listener);
-    window.removeEventListener("stockfolio-mode", listener);
+    window.removeEventListener("centifolio-mode", listener);
   };
 };
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const portfolio = usePortfolio();
+  const { transactions } = useTransactions();
   const { user } = useAuth();
   const pathname = usePathname();
-  const key = `stockfolio-view:${user?.id ?? "guest"}`;
+  const key = `centifolio-view:${user?.id ?? "guest"}`;
   const savedMode = useSyncExternalStore(
     subscribe,
     () => {
       try {
-        return localStorage.getItem(key);
+        return readBrandedStorage(localStorage, key);
       } catch {
         return null;
       }
@@ -54,7 +58,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem(key, value ? "sample" : "personal");
         setTemporaryMode(null);
-        window.dispatchEvent(new Event("stockfolio-mode"));
+        window.dispatchEvent(new Event("centifolio-mode"));
       } catch {
         setTemporaryMode({ key, value });
       }
@@ -67,13 +71,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     !isTransactionRoute &&
     ((temporaryMode?.key === key ? temporaryMode.value : null) ??
       (savedMode === "sample" ||
-        (savedMode !== "personal" && portfolio.transactions.length === 0)));
-  const summary = useMemo(
-    () => (isDemo ? demoSummary(portfolio.displayCurrency) : portfolio.summary),
-    [isDemo, portfolio.displayCurrency, portfolio.summary],
-  );
+        (savedMode !== "personal" && transactions.length === 0)));
+  const value = useMemo(() => ({ isDemo, setDemo }), [isDemo, setDemo]);
   return (
-    <WorkspaceContext.Provider value={{ isDemo, setDemo, summary }}>
+    <WorkspaceContext.Provider value={value}>
       {children}
     </WorkspaceContext.Provider>
   );
@@ -84,4 +85,17 @@ export function useWorkspace() {
   if (!value)
     throw new Error("useWorkspace must be used inside WorkspaceProvider");
   return value;
+}
+
+export function useWorkspaceSummary() {
+  const mode = useWorkspace();
+  const { displayCurrency } = usePreferences();
+  const { summary } = usePortfolioMarket();
+  return {
+    ...mode,
+    summary: useMemo(
+      () => (mode.isDemo ? demoSummary(displayCurrency) : summary),
+      [mode.isDemo, displayCurrency, summary],
+    ),
+  };
 }

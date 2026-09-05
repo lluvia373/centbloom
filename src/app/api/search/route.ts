@@ -1,33 +1,11 @@
-import YahooFinance from "yahoo-finance2";
-import { NextRequest, NextResponse } from "next/server";
-import type { StockSearchResult } from "@/lib/types";
-
-const yahooFinance = new YahooFinance();
-
-export async function GET(request: NextRequest) {
-  const query = request.nextUrl.searchParams.get("q");
-
-  if (!query || query.trim().length < 1) {
-    return NextResponse.json([]);
-  }
-
-  try {
-    const results = await yahooFinance.search(query, { quotesCount: 10 });
-
-    const stocks: StockSearchResult[] = (results.quotes ?? [])
-      .filter(
-        (q): q is typeof q & { symbol: string; shortname?: string; longname?: string } =>
-          "symbol" in q && typeof q.symbol === "string"
-      )
-      .map((q) => ({
-        symbol: q.symbol,
-        name: q.shortname ?? q.longname ?? q.symbol,
-        exchange: String(q.exchange ?? ""),
-        type: String(q.quoteType ?? "EQUITY"),
-      }));
-
-    return NextResponse.json(stocks);
-  } catch {
-    return NextResponse.json({ error: "검색에 실패했습니다." }, { status: 500 });
-  }
+import { marketResponseError } from '@/features/market/server/http';
+import { MarketError } from '@/features/market/server/provider';
+import { fetchSearch } from '@/features/market/server/search';
+import { MARKETS,type MarketFilter } from '@/lib/markets';
+import { NextRequest,NextResponse } from 'next/server';
+export async function GET(request:NextRequest) {
+ try {const query=request.nextUrl.searchParams.get('q')?.trim()??'';const market=request.nextUrl.searchParams.get('market')??'all';
+  if(query.length>120||!MARKETS.some(item=>item.id===market)) throw new MarketError('검색 조건을 확인해 주세요.',400);
+  return NextResponse.json(query?await fetchSearch(query,market as MarketFilter,request.signal):[],{headers:{'Cache-Control':'no-store'}});
+ } catch(error) {return marketResponseError(error);}
 }

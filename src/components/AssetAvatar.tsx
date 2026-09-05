@@ -1,49 +1,30 @@
-import { Apple, ArrowUpRight } from "lucide-react";
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { companyLogo } from "@/lib/company-logos";
 
 export function AssetAvatar({
   symbol,
   small = false,
+  logoUrl,
 }: {
   symbol: string;
   small?: boolean;
+  logoUrl?: string;
 }) {
-  const style =
-    symbol === "NVDA"
-      ? "asset-nvidia"
-      : symbol === "005930.KS"
-        ? "asset-samsung"
-        : symbol === "035420.KS"
-          ? "asset-naver"
-          : symbol === "VOO"
-            ? "asset-vanguard"
-            : "";
+  const source = companyLogo(symbol, logoUrl);
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const showLogo = source !== null && source !== failedSource;
   return (
     <span
-      className={`asset-avatar ${style} ${small ? "asset-avatar-small" : ""}`}
+      className={`asset-avatar ${showLogo ? "asset-company-logo" : ""} ${small ? "asset-avatar-small" : ""}`}
       aria-hidden="true"
     >
-      {symbol === "AAPL" ? (
-        <Apple size={small ? 18 : 23} fill="currentColor" strokeWidth={1.3} />
-      ) : symbol === "MSFT" ? (
-        <span className="microsoft-mark">
-          <i />
-          <i />
-          <i />
-          <i />
-        </span>
-      ) : symbol === "NVDA" ? (
-        <span className="nvidia-mark">N</span>
-      ) : symbol === "005930.KS" ? (
-        <span className="samsung-mark">S</span>
-      ) : symbol === "VOO" ? (
-        <span className="vanguard-mark">V</span>
-      ) : symbol === "035420.KS" ? (
-        "N"
-      ) : symbol === "GOOGL" ? (
-        <span style={{ color: "#4285f4" }}>G</span>
-      ) : (
-        symbol.slice(0, 2)
-      )}
+      {showLogo ? <Image src={source} alt="" width={32} height={32} unoptimized
+        className="h-full w-full object-contain" onError={() => setFailedSource(source)} />
+        : <span className="text-xs">{symbol.slice(0, 2)}</span>}
     </span>
   );
 }

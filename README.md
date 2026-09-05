@@ -1,20 +1,20 @@
 # Centifolio
 
-나의 투자를, 나답게. 주식에 대해 편하게 이야기하는 커뮤니티와 포트폴리오·관심종목을 연결하는 앱을 목표로 합니다. 현재 구현은 개인 투자 워크스페이스 단계입니다.
+주식 이야기를 나누는 커뮤니티와 관심종목·수동 포트폴리오를 연결하는 앱. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
+
+[GitHub 저장소](https://github.com/lluvia373/centifolio) · [공개 웹](https://centifolio.stock-web-demo.workers.dev/)
 
 ## 문서 안내
 
-| 확인할 내용 | 기준 파일 |
+| 내용 | 파일 |
 | --- | --- |
-| 확정 로고·원본과 확대본·웹 자산 위치 | [BRAND.md](./BRAND.md) |
-| 화면 동작·데이터 저장·성과 계산의 의미 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
-| 현재 구현·검증 결과·배포 진행·다음 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
-| Cloudflare 빌드·환경 설정·배포 절차 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
-| 모든 문서의 수정 절차·작업자 지침 | [AGENTS.md](./AGENTS.md) |
+| 작업·문서 작성 규칙 | [AGENTS.md](./AGENTS.md) |
+| 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
+| 구현·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
+| Cloudflare 배포·로그인 설정 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
+| 승인 로고·자산·재생성 | [BRAND.md](./BRAND.md) |
 
-처음에는 이 문서와 PROJECT_STATUS를 읽고 필요한 기준 문서로 이동합니다. 문서는 해당 항목을 수정해 최신 상태를 유지하며, 전체 내용을 반복 추가하지 않습니다.
-
-`BUSINESS_MODEL.md`는 별도로 관리하는 로컬 사업 검토 문서이며 공개 저장소에 포함하지 않습니다. 해당 파일이 있는 작업 환경에서는 제품 범위 변경과 정기 사업 검토 시 함께 참고합니다. 새로 복제한 저장소에서는 이 문서의 프로젝트 소개와 공개 기능 명세를 기준으로 시작할 수 있습니다.
+사업 계획은 로컬 전용 BUSINESS_MODEL.md에서 관리하며 공개 저장소에 포함하지 않는다. 파일이 없는 환경은 위 공개 문서를 따른다.
 
 ## 로컬 실행
 
@@ -23,19 +23,36 @@ npm ci
 npm run dev -- --hostname 127.0.0.1 --port 3000
 ```
 
-http://127.0.0.1:3000 에서 열 수 있습니다. Next.js App Router, React, TypeScript, Tailwind CSS를 사용합니다. 의존성과 실행 명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)을 기준으로 합니다.
+http://127.0.0.1:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
 
-## 로그인과 배포 설정
-
-계정 연결 없이 로컬 저장 모드로 시작할 수 있습니다. Google 로그인을 연결할 때는 [.env.example](./.env.example)과 [CLOUDFLARE.md의 환경·로그인 설정](./CLOUDFLARE.md#supabase-연결)을 따릅니다. 설정에는 공개 URL과 publishable key를 사용하며 비밀 키를 문서나 저장소에 기록하지 않습니다.
-
-Cloudflare용 빌드·미리보기·배포는 [CLOUDFLARE.md](./CLOUDFLARE.md)를 참고하세요. 실제 배포 여부와 확인한 주소는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)에서 관리합니다.
+계정 연결 없이 로컬 저장 모드로 시작할 수 있다. Google 로그인은 [.env.example](./.env.example)과 [연결 절차](./CLOUDFLARE.md#supabase-연결)를 따른다.
 
 ## 검증
 
 ```sh
 npm run lint
+npx tsc --noEmit
+node --test tests/*.test.mjs
 npm run build
+npm run build:cloudflare
 ```
 
-검증 결과는 날짜와 환경을 구분해 [PROJECT_STATUS.md](./PROJECT_STATUS.md)에 기록합니다. 기능·계산 기준은 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md)를 참고하세요.
+계산 전후 재현: `node tests/performance.test.mjs --benchmark` (실측 출력은 work/performance-benchmark.json). 고정 입력·기준 구현은 tests/reference, 이번 측정값은 [benchmark fixture](./tests/fixtures/performance-benchmark.json)에 있다.
+
+브라우저 격리 검증은 `node tests/prepare-browser-qa.mjs` 후 `npm --prefix work/refactor-qa run dev -- --port 3001`로 실행한다. 실제 환경 변수와 계정 없이 QA 시세를 사용하는 별도 앱이며 `/qa-fixture`에서 테스트 백업·Worker 계산을 실행한다. `/qa-mobile`은 390px 프레임이다. 이 파일들은 공개 앱에 포함되지 않는다.
+
+실제 검증 결과와 한계는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#코드-구조-검토)에 기록한다. 운영 DB 증분 변경·복구는 [CLOUDFLARE.md](./CLOUDFLARE.md)를 따른다.
+
+Windows에서 실제 PostgreSQL 두 연결의 저장 경합은 다음 별도 검사로 재현한다. 앱 의존성은 바꾸지 않으며 DB는 127.0.0.1:55439에서 실행 후 종료된다. 생성된 격리 데이터는 Git 제외 work 폴더에 남는다.
+
+```sh
+npm install --prefix work/pg-runtime embedded-postgres@18.4.0-beta.17 pg@8.23.0
+node tests/postgres-concurrency.mjs
+```
+
+Windows에서 실제 PostgreSQL 두 연결의 저장 경합은 다음 별도 검사로 재현한다. 앱 의존성은 바꾸지 않으며 DB는 127.0.0.1:55439에서 실행 후 종료된다. 생성된 격리 데이터는 Git 제외 work 폴더에 남는다.
+
+```sh
+npm install --prefix work/pg-runtime embedded-postgres@18.4.0-beta.17 pg@8.20.0
+node tests/postgres-concurrency.mjs
+```

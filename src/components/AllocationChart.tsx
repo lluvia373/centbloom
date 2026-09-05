@@ -4,6 +4,7 @@ import { CircleDot } from "lucide-react";
 import { ASSET_COLORS } from "@/lib/demo";
 import { formatCurrency } from "@/lib/format";
 import type { DisplayCurrency, HoldingWithQuote } from "@/lib/types";
+import { marketLabel } from "@/lib/markets";
 
 export function AllocationChart({
   holdings,
@@ -21,9 +22,7 @@ export function AllocationChart({
     .forEach((h) => {
       const label =
         mode === "market"
-          ? h.currency === "KRW"
-            ? "국내 주식"
-            : "해외 주식"
+          ? marketLabel(h.symbol)
           : h.symbol.replace(".KS", "").replace(".KQ", "");
       groups.set(label, (groups.get(label) ?? 0) + h.displayMarketValue);
     });

@@ -1,30 +1,31 @@
 "use client";
 import { BrandMark } from "@/components/BrandMark";
+import { MarketNotification } from "@/features/market/MarketNotification";
 
+import { useAuth } from "@/hooks/useAuth";
+import { usePreferences } from "@/hooks/usePortfolio";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import {
+ArrowDownUp,
+ArrowUpRight,
+Bell,
+BookOpen,
+ChartNoAxesCombined,
+ChevronRight,
+CircleHelp,
+Layers3,
+LayoutDashboard,
+LogOut,
+Plus,
+Search,
+Settings2,
+Star,
+Wallet,
+X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import {
-  ArrowDownUp,
-  ArrowUpRight,
-  Bell,
-  BookOpen,
-  ChartNoAxesCombined,
-  ChevronRight,
-  CircleHelp,
-  LayoutDashboard,
-  LogOut,
-  Plus,
-  Search,
-  Settings2,
-  Layers3,
-  Wallet,
-  Star,
-  X,
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { usePortfolio } from "@/hooks/usePortfolio";
-import { useWorkspace } from "@/hooks/useWorkspace";
+import { useEffect,useRef,useState } from "react";
 const links = [
   { href: "/", label: "대시보드", icon: LayoutDashboard },
   { href: "/portfolio", label: "내 포트폴리오", icon: Wallet },
@@ -35,12 +36,8 @@ const links = [
 export function Header() {
   const pathname = usePathname();
   const { user, configured, signOut } = useAuth();
-  const {
-    displayCurrency,
-    setDisplayCurrency,
-    lastMarketUpdateAt,
-    marketDataError,
-  } = usePortfolio();
+  const { displayCurrency, setDisplayCurrency } = usePreferences();
+
   const { isDemo, setDemo } = useWorkspace();
   const [panel, setPanel] = useState<"notifications" | "help" | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -77,13 +74,6 @@ export function Header() {
           <BrandMark size={44} />
           <span>centifolio</span>
         </Link>
-        <div className="workspace-selector">
-          <span className="workspace-icon"><Layers3 size={17} /></span>
-          <span>
-            <strong>나의 투자 공간</strong>
-            <small>개인 투자 워크스페이스</small>
-          </span>
-        </div>
         <p className="nav-label">WORKSPACE</p>
         <nav className="sidebar-nav" aria-label="주요 메뉴">
           {links.map(({ href, label, icon: Icon }) => (
@@ -185,25 +175,7 @@ export function Header() {
             <CircleHelp size={18} />
           </button>
           {panel === "notifications" && (
-            <div className="topbar-popover">
-              <h3>
-                업데이트 상태{" "}
-                <button aria-label="닫기" onClick={() => setPanel(null)}>
-                  <X size={15} />
-                </button>
-              </h3>
-              <p>
-                {isDemo && samplePage
-                  ? "지금 보고 있는 자산과 시세는 체험용 샘플입니다."
-                  : (marketDataError ??
-                    (lastMarketUpdateAt
-                      ? `마지막 시세 확인: ${new Date(lastMarketUpdateAt).toLocaleTimeString("ko-KR")}`
-                      : "거래를 기록하면 보유종목 시세를 확인합니다."))}
-              </p>
-              <small>
-                관심종목 목표가는 관심종목 화면에서 확인할 수 있습니다.
-              </small>
-            </div>
+            <MarketNotification isDemo={isDemo} samplePage={samplePage} setPanel={setPanel} />
           )}
           {panel === "help" && (
             <div className="topbar-popover">

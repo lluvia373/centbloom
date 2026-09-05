@@ -37,12 +37,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
-.vercel
-
 # Cloudflare build output and local secrets
 /.open-next/
 /.wrangler/
+/supabase/.temp/
 .dev.vars*
 
 # typescript
