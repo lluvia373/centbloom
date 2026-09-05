@@ -47,8 +47,7 @@ export function buildSummary(
       normalizedCurrency !== BASE_CURRENCY && nativeCostBasisKRWAtUnitRate > 0
         ? resolvedCostBasisKRW / nativeCostBasisKRWAtUnitRate
         : undefined;
-    const currentFxRateToKRW =
-      normalizedCurrency !== BASE_CURRENCY ? fxRate : undefined;
+    const currentFxRateToKRW = fxRate;
     const marketValueAtAcquisitionFxKRW =
       acquisitionFxRateToKRW != null
         ? toKRW(marketValue, currency, acquisitionFxRateToKRW)
