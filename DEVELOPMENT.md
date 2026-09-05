@@ -57,7 +57,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [features/performance](./src/features/performance)의 UI/훅 | `Charts.tsx`, `Controls.tsx`: 분석 차트/선택 UI. `use-performance-range.ts`: 표시 기간. `use-benchmark-series.ts`: 벤치마크 조회 |
 | [features/journal](./src/features/journal), [hooks/useJournal.ts](./src/hooks/useJournal.ts) | controller: 검색·필터·편집 상태, Editor/Card: UI. useJournal: 계정별 로컬 CRUD·저장 오류 |
 | [features/watchlist](./src/features/watchlist), [hooks/useWatchlist.ts](./src/hooks/useWatchlist.ts) | Search/Row/TargetEditor: 검색·행·목표가 UI. useWatchlist: 계정별 로컬 CRUD·시세 구독, quoteLimit으로 미리보기 조회 제한 |
-| [components](./src/components)의 거래 UI | `TransactionForm`: 새 거래 입력. `TransactionList`: 목록/필터·편집 연결. `HoldingManagement`: 보유종목 수정/전체 삭제. `TransactionBackupPanel`: 파일 읽기/검증·내보내기·복구 명령 연결 |
+| [components](./src/components)의 거래 UI | `TransactionForm`: 새 거래 입력. `TransactionList`: 목록/필터·편집 연결. `HoldingManagement`: 종목별 거래 수정/개별 삭제·되돌리기·별도 전체 삭제. `TransactionBackupPanel`: 파일 읽기/검증·내보내기·복구 명령 연결 |
 | [components](./src/components)의 자산 UI | `HoldingsTable`, `PortfolioMetrics`: 보유 목록/지표. `WealthChart`, `AllocationChart`, `PerformanceAnalytics`: 자산 흐름·배분·상세 분석 조립 |
 | [components](./src/components)의 시장 UI | `StockDetail`, `StockChart`: 독립 시세/차트 상태. `LiveMarkets`: 세계 주식. `WatchlistPreview`: 관심 3개. `MarketPicker`, `QuoteStatus`, `PriceChange`: 선택·시세 상태/변동 표시 |
 | [components](./src/components)의 공통 UI | `Header`: 탐색/검색/통화. `AuthGate`: 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |

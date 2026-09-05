@@ -10,6 +10,21 @@ function setup({fail=false,gate,cache}={}) {
  const repository={read:async()=>structuredClone(current),commit:async(change)=>{writes++;if(gate)await gate;if(fail)throw new Error('server failed');assert.equal(change.revision,current.revision);current={transactions:change.transactions,revision:String(Number(current.revision)+1),writable:true};return structuredClone(current)}};
  return {store:createLedgerStore({repository,cache}),read:()=>current,writes:()=>writes};
 }
+
+test('split purchases delete only the selected trade; restore preserves the other buy and oversold deletion is rejected',async()=> {
+ const {store,read}=setup();await store.start();
+ const secondBuy={...record(3),symbol:record(1).symbol,quantity:20,date:'2026-09-02'};
+ assert.equal((await store.execute({type:'add',transaction:secondBuy})).error,null);
+ assert.equal((await store.execute({type:'delete',id:validId(1)})).error,null);
+ assert.deepEqual(Array.from(read().transactions,t=>t.id).sort(),[validId(2),validId(3)]);
+ assert.equal(read().transactions.find(t=>t.id===validId(3)).quantity,20);
+ assert.equal((await store.execute({type:'restore',transaction:record(1)})).error,null);
+ const sale={...record(4),symbol:record(1).symbol,type:'sell',quantity:25,date:'2026-09-03'};
+ assert.equal((await store.execute({type:'add',transaction:sale})).error,null);
+ const before=structuredClone(read().transactions);
+ assert.ok((await store.execute({type:'delete',id:validId(1)})).error);
+ assert.deepEqual(structuredClone(read().transactions),before);
+});
 test('overlapping edits and add/delete run against latest committed records',async()=> {
  const {store,read}=setup();await store.start();
  const results=await Promise.all([
