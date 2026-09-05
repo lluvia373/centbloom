@@ -1,6 +1,6 @@
 {
   "brand": "Centifolio",
-  "status": "User-approved gold rose identity; original and earlier derivative archived; exact-white background derivative active locally",
+  "status": "User-approved gold rose identity; exact-white web logo and transparent browser icons",
   "approvedDate": "2026-09-05",
   "sourceAttachment": "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",
   "originalSha256": "8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3",
@@ -16,7 +16,20 @@
     "method": "Earlier built-in image_gen derivative followed by explicitly authorized background-only RGB pixel normalization and deterministic resizing",
     "provenance": "background-edit.json",
     "pixelValidation": "background-pixel-validation.json",
-    "limitation": "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original. No transparent extraction is shipped."
+    "limitation": "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original."
+  },
+  "browserIconDerivative": {
+    "file": "centifolio-logo-gold-transparent.png",
+    "sha256": "815c222951930976052b43b07cec2979a763e0319c5313cdf0e1c9886e6c3998",
+    "input": "centifolio-logo-gold-on-white.png",
+    "method": "Set alpha to 0 only for the previously verified exact-white background mask before resizing. All source RGB values and foreground alpha remain unchanged.",
+    "transparentBackgroundPixels": 1275151,
+    "unchangedForegroundPixels": 297365,
+    "uses": [
+      "src/app/icon.png",
+      "src/app/favicon.ico"
+    ],
+    "note": "Web logo and Apple home-screen icon keep their white background. Browser icon transparency lets the tab background show through."
   },
   "exportTool": {
     "name": "sharp",
@@ -48,6 +61,14 @@
       "bytes": 453372,
       "sha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
       "method": "User-authorized deterministic normalization of near-white neutral background pixels to RGB(255,255,255). Every pixel outside the recorded background mask is unchanged from the archived pre-edit derivative."
+    },
+    {
+      "file": "brand/centifolio/logo/centifolio-logo-gold-transparent.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 490618,
+      "sha256": "815c222951930976052b43b07cec2979a763e0319c5313cdf0e1c9886e6c3998",
+      "method": "Exact-white background alpha set to 0 before resizing. All source RGB values and all non-background alpha values are unchanged. No crop, rotation, recoloring, or generation."
     },
     {
       "file": "brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png",
@@ -85,9 +106,9 @@
       "file": "src/app/icon.png",
       "width": 96,
       "height": 96,
-      "bytes": 6677,
-      "sha256": "3cec66fa1b8f662e5aa75198b818c82745fe509cf5dfec594cccdfb5c47bafdc",
-      "method": "Lanczos3 resampling from white-background derivative to 96 × 96; lossless PNG encoding; opaque RGBA. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+      "bytes": 8125,
+      "sha256": "4a98673e7e6337c352f1cc641a17ee8b7b57f392a3aba180185d57cc42dfc41a",
+      "method": "Lanczos3 resampling from transparent-background derivative to 96 × 96; lossless PNG encoding; RGBA preserving source transparency; alpha values at most 4/255 cleared to remove resize ringing. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
       "file": "src/app/apple-icon.png",
@@ -95,15 +116,15 @@
       "height": 180,
       "bytes": 17858,
       "sha256": "06a7f5acd95a487295dac844bea1793eccccaccf9fe1c738098600b937672490",
-      "method": "Lanczos3 resampling from white-background derivative to 180 × 180; lossless PNG encoding; opaque RGBA. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+      "method": "Lanczos3 resampling from white-background derivative to 180 × 180; lossless PNG encoding; RGBA preserving source transparency. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
       "file": "src/app/favicon.ico",
       "width": 64,
       "height": 64,
-      "bytes": 3719,
-      "sha256": "80fc286b45319cae958863929c0971175c3e6a0baf6dee87cfdd507fd168e7d4",
-      "method": "Lanczos3 resampling from white-background derivative to 64 × 64; opaque RGBA lossless PNG wrapped in a 32-bit ICO container."
+      "bytes": 4380,
+      "sha256": "2a19817cee1599e2bd33f0053b2f61707b8f266b8c2c3c69abdcd0b19704174e",
+      "method": "Lanczos3 resampling from transparent-background derivative to 64 × 64; alpha values at most 4/255 cleared to remove resize ringing; transparent RGBA lossless PNG wrapped in a 32-bit ICO container."
     }
   ]
 }

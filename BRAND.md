@@ -12,18 +12,21 @@
 | 원본의 큰 크기 출력용 파생본 | [centifolio-logo-gold-on-black.4096.png](./brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png) | 4096 × 4096 |
 | 배경 픽셀 수정 전 편집본 보관 | [centifolio-logo-gold-on-white.pre-pixel-edit.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.pre-pixel-edit.png) | 1254 × 1254 |
 | 순수 흰색 배경 편집본 | [centifolio-logo-gold-on-white.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.png) | 1254 × 1254 |
+| 브라우저 아이콘용 투명 배경 파생본 | [centifolio-logo-gold-transparent.png](./brand/centifolio/logo/centifolio-logo-gold-transparent.png) | 1254 × 1254 |
 | 흰 배경 확대본 | [centifolio-logo-gold-on-white.4096.png](./brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png) | 4096 × 4096 |
 | 현재 로컬 웹 로고 | [centifolio-logo-gold-on-white.webp](./public/brand/centifolio-logo-gold-on-white.webp) | 640 × 640 |
 | 이전 검정 배경 웹 자산 보관 | [centifolio-logo-gold-on-black.webp](./public/brand/centifolio-logo-gold-on-black.webp) | 640 × 640 |
-| 웹 앱 아이콘 | [icon.png](./src/app/icon.png) | 96 × 96 |
+| 투명 배경 웹 앱 아이콘 | [icon.png](./src/app/icon.png) | 96 × 96 |
 | Apple 홈 화면 아이콘 | [apple-icon.png](./src/app/apple-icon.png) | 180 × 180 |
-| 브라우저 탭 아이콘 | [favicon.ico](./src/app/favicon.ico) | 64 × 64 |
+| 투명 배경 브라우저 탭 아이콘 | [favicon.ico](./src/app/favicon.ico) | 64 × 64 |
 
 원본은 첨부 PNG를 **바이트 단위로 그대로 복사**한 파일입니다. 원본 SHA-256은 `8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3`입니다.
 
-처음 만든 흰 배경 편집본은 내장 이미지 생성 도구로 배경을 교체하고 금색 인상을 원본과 맞춘 **편집 파생본**이며, 원본과 픽셀 단위로 동일한 복사본은 아닙니다. 그 파일은 수정 전 보관본으로 그대로 남겼습니다. 투명 배경 추출 결과는 가장자리 색 번짐 또는 실제 알파가 없는 체크무늬 때문에 채택하지 않았습니다.
+처음 만든 흰 배경 편집본은 내장 이미지 생성 도구로 배경을 교체하고 금색 인상을 원본과 맞춘 **편집 파생본**이며, 원본과 픽셀 단위로 동일한 복사본은 아닙니다. 그 파일은 수정 전 보관본으로 그대로 남겼습니다. 당시 생성 도구의 투명 배경 시안은 가장자리 색 번짐 또는 실제 알파가 없는 체크무늬 때문에 채택하지 않았습니다. 현재 브라우저 아이콘은 아래의 직접 픽셀 처리 방식으로 투명하게 만들었습니다.
 
-현재 편집본은 사용자의 **“배경 픽셀만 직접 수정해”** 요청에 따라, 수정 전 보관본에서 밝고 중립적인 배경 픽셀만 RGB `(255,255,255)`로 바꿨습니다. 배경 선택 기준은 RGB 최솟값 245 이상·최댓값과 최솟값의 차이 6 이하입니다. 배경 마스크 1,275,151픽셀은 모두 순수 흰색이며, 마스크 밖 297,365픽셀은 RGB 값이 하나도 바뀌지 않았습니다. 금색 픽셀 294,705개도 전부 보존됐습니다. 크기·기울기·형태를 다시 생성하거나 회전·잘라내지 않았으며 현재 웹·아이콘은 이 편집본 전체의 크기만 변환합니다. 실제 알파가 있는 투명 파일은 아닙니다.
+흰 배경 편집본은 사용자의 **“배경 픽셀만 직접 수정해”** 요청에 따라, 수정 전 보관본에서 밝고 중립적인 배경 픽셀만 RGB `(255,255,255)`로 바꿨습니다. 배경 선택 기준은 RGB 최솟값 245 이상·최댓값과 최솟값의 차이 6 이하입니다. 배경 마스크 1,275,151픽셀은 모두 순수 흰색이며, 마스크 밖 297,365픽셀은 RGB 값이 하나도 바뀌지 않았습니다. 금색 픽셀 294,705개도 전부 보존됐습니다. 웹 본문 로고와 Apple 홈 화면 아이콘은 이 흰 배경 파일을 사용합니다.
+
+브라우저 탭에 흰 사각형이 보이는 문제는 사용자의 후속 요청에 따라 **배경 알파를 0으로 설정**해 수정했습니다. 투명 파생본은 위에서 검증한 배경 마스크만 투명하게 만들며 RGB 값 전체와 장미 부분의 불투명도는 그대로 보존합니다. 형태·각도·배치를 변경하거나 다시 생성하지 않았습니다. PNG·ICO는 투명 파생본을 Lanczos3로 축소하고, 축소 필터가 바깥에 남긴 4/255 이하의 미세 불투명도만 제거합니다. 나머지 가장자리는 부드러운 반투명을 유지합니다. 아이콘의 모든 바깥 테두리 알파는 0이며, 흰색·캡처의 탭 색상 `#FCF8FA`·어두운 배경에서 사각형 없이 합성되는 것을 확인했습니다.
 
 4096px 파일은 각각의 입력 이미지를 Lanczos3 방식으로 확대해 무손실 PNG로 저장한 **파생본**입니다. 원본보다 새로운 세부 묘사가 생긴 고해상도 원화나 벡터 파일은 아닙니다.
 
