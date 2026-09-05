@@ -11,8 +11,8 @@
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
 | 공개 Cloudflare | 09-06 이름·주소를 `centifolio`로 변경. main `ac7525b`, Worker 버전 `dc22f9d9-59ac-467d-a48f-d2e9b59ffb4d` 유지. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. 대시보드 Builds에 연결된 Git 저장소 없음 |
-| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10)을 main `ebcc367`에 병합하고 로컬 main 동기화. 구조 리팩터링과 기존 로컬 기능 포함 | 공개 기능 배포 대기: 운영 DB 변경 전 개인 기록의 로컬 복구 백업에 대한 자동 승인 검토가 명시적 허용을 요구함. 사용자에게 요청했고 아직 응답 없음 |
-| 로그인·동기화 | 09-06 Supabase 이름·Site URL·허용 주소 변경, 새 주소 Google 로그인→대시보드 복귀·기존 계정의 보유종목 4개 읽기 확인. 프로젝트 ID·DB 유지 | 새 거래 서버 저장·다른 기기 동기화 미검증. 이전 주소 로그인 허용은 제거 |
+| GitHub·로컬 | [PR #10](https://github.com/lluvia373/centifolio/pull/10)을 main `ebcc367`에 병합하고 로컬 main 동기화. 구조 리팩터링과 기존 로컬 기능 포함 | 운영 DB 적용 완료. 개인 기록 반출 없이 DB 내부 비공개 복구 사본을 사용했으며 앱 배포 진행 중 |
+| 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 연동 완료·승인 기록 없음 | 공개 콘텐츠·고지·신고 기능과 광고 연동 준비 |
 
 ## 구현된 범위
@@ -55,7 +55,7 @@
 
 | 항목 | 상태 | 변경·검증 근거 |
 | --- | --- | --- |
-| P1 거래 저장 손실·거짓 성공·비원자적 교체 | 로컬 해결 / 운영 검증 대기 | [명령 큐](./src/features/portfolio/data/ledger-store.ts), 로컬 Web Locks·revision 검증, 서버 CAS·요청 영수증·원자적 전체 교체 [RPC](./supabase/migrations/20260905194009_atomic_portfolio_ledger.sql). 서버 기준 동기화로 로컬 삭제 부활 차단, outbox·원본 보존, 실패/사본 실패·재시도·계정 세대 가드. [동시 명령·실패 테스트](./tests/ledger-store.test.mjs), [SQL/RLS·롤백](./tests/sql-ledger.test.mjs). 운영에는 파일을 적용하지 않아 계정 거래 쓰기는 읽기 전용 |
+| P1 거래 저장 손실·거짓 성공·비원자적 교체 | 로컬 해결 / 운영 검증 대기 | [명령 큐](./src/features/portfolio/data/ledger-store.ts), 로컬 Web Locks·revision 검증, 서버 CAS·요청 영수증·원자적 전체 교체 [RPC](./supabase/migrations/20260905225656_atomic_portfolio_ledger.sql). 서버 기준 동기화로 로컬 삭제 부활 차단, outbox·원본 보존, 실패/사본 실패·재시도·계정 세대 가드. [동시 명령·실패 테스트](./tests/ledger-store.test.mjs), [SQL/RLS·롤백](./tests/sql-ledger.test.mjs). 운영 migration·권한·원본 보존 확인. 실제 로그인 후 쓰기는 미검증 |
 | P2 usePortfolio 책임 집중 | 해결 | [Provider](./src/hooks/usePortfolio.tsx)는 거래·설정·시장 Provider 조립과 공개 훅만 제공. features/portfolio의 model(명령·검증·보완·요약), data(로컬·서버·매핑·동기화), state(각 구독), ui(입력·편집·백업)로 분리. 순수 저장소·계산은 React 없이 테스트 |
 | P2 직렬 조회·중복 요청 | 해결 | [요청 캐시](./src/shared/async/request-cache.ts)의 공통 키·진행 공유·최종 소비자 취소·20초 제한·오류 미캐시. [거래 시장 조회](./src/features/market/use-trade-market.ts)와 [보완](./src/features/portfolio/model/enrichment.ts)에서 USD 독립 시작·동일 USD 재사용. 상세 quote/chart 독립 마운트. [요청/폴링](./tests/requests.test.mjs), [통화 병렬성](./tests/enrichment.test.mjs), [API 키/오류](./tests/market-api.test.mjs) 검증 |
 | P2 성과 조회·계산·저장 중복 | 해결 | [공유 실행](./src/shared/async/shared-resource.ts) + [성과 서비스](./src/features/performance/service.ts) + [저장소](./src/features/performance/repository.ts). 사용자·revision·KST 오늘 키, 시작시각/연속된 확정 prefix 검사, 이후 기간만 계산·저장, 수정 시 무효화, 서버 revision CAS. [중복 소비자·부분 실패·계정 취소·prefix 테스트](./tests/performance-service.test.mjs) |
@@ -87,21 +87,21 @@
 
 ### 운영 반영 전 남은 검증
 
-운영 스키마·RLS·제약은 읽기 전용 메타데이터로 대조했고 사용자 행은 변경하지 않았다. 증분 마이그레이션·호출 코드·로컬 SQL 검사·[적용/복구 절차](./CLOUDFLARE.md#거래-저장-원자성-업데이트--운영-미적용)를 준비했다. 독립 로컬 PostgreSQL 18.4의 다중 연결 advisory lock 경합 검사는 통과했다. 실제 Supabase/PostgREST 응답 유실·JWT 전환·다중 기기, 새 공개 Worker에서 Yahoo/Worker 동작은 남은 절차다. PGlite 단일 연결과 모의 I/O 결과를 이 검증의 대체로 표시하지 않는다. 이미 전량 매도한 과거 종목은 성과 조회에서 제외한다. 장기 거래정지는 필요한 종목의 조회 범위를 거래 시작까지 확장하며, 확장 후에도 가격이 없으면 오류를 표시하고 저장하지 않는다.
+운영 스키마·RLS·제약은 읽기 전용 메타데이터로 대조했고 사용자 행은 변경하지 않았다. 증분 마이그레이션·호출 코드·로컬 SQL 검사·[적용/복구 절차](./CLOUDFLARE.md#거래-저장-원자성-업데이트)를 준비했다. 독립 로컬 PostgreSQL 18.4의 다중 연결 advisory lock 경합 검사는 통과했다. 실제 Supabase/PostgREST 응답 유실·JWT 전환·다중 기기, 새 공개 Worker에서 Yahoo/Worker 동작은 남은 절차다. PGlite 단일 연결과 모의 I/O 결과를 이 검증의 대체로 표시하지 않는다. 이미 전량 매도한 과거 종목은 성과 조회에서 제외한다. 장기 거래정지는 필요한 종목의 조회 범위를 거래 시작까지 확장하며, 확장 후에도 가격이 없으면 오류를 표시하고 저장하지 않는다.
 
 ## 현재 제약
 
 - 관심종목·노트는 현재 브라우저 로컬 저장이며 거래 백업에 포함되지 않는다.
 - 현금·배당 현금 기록·알림 발송·커뮤니티 서버 미구현.
 - 출시 전 시세 상용 표시 권한, 공개 글 접근·개인정보 고지·신고/운영 기능 확인 필요.
-- 기존 DB용 원자적 거래/성과 증분 마이그레이션과 롤백을 준비했으나 운영 미적용. 새 DB 전체 초기 스키마는 포함하지 않으며 staging/운영 확인은 위 절차를 따른다.
+- 기존 DB용 원자적 거래/성과 증분 마이그레이션은 운영 적용했고 롤백·비공개 복구 사본을 보존했다. 새 DB 전체 초기 스키마는 포함하지 않으며 staging/운영 확인은 위 절차를 따른다.
 - 09-05 내장 브라우저에서 일부 시세 실패·성과 이력 대체 표시와 환율 직접 탐색 `ERR_BLOCKED_BY_CLIENT`가 관찰됨. 같은 API의 직접 HTTP 검사는 정상. 일반 사용자 브라우저 전체 흐름 확인 필요.
 - 웹주소 변경으로 로그인 세션·브라우저 전용 관심종목/노트는 새 주소로 자동 이동하지 않는다. 계정의 서버 거래는 같은 Supabase 프로젝트에 유지한다.
 - Cloudflare 대시보드에서 09-06 Git 미연결을 확인했다. 자동 배포를 사용하려면 저장소·main 트리거·공개 빌드 변수를 별도로 설정해야 한다.
 
 ## 다음 작업
 
-1. DB 복구 백업의 로컬 저장 허용 후 마이그레이션·운영 검증·Cloudflare 배포를 완료하고 버전 기록 갱신.
+1. Cloudflare 앱 배포 및 공개 응답 확인 후 버전 기록 갱신. 실제 계정 쓰기·다중 기기 검증은 별도 진행.
 2. 핵심 주식 커뮤니티 구현·저장/권한 검증·이용 지표 수집.
 3. 콘텐츠·운영·시세 권한 확인과 AdSense 준비.
 

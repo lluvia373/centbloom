@@ -9,8 +9,12 @@ test('Postgres migration: atomic replacement, CAS, idempotency, RLS, stale perfo
  const db=new PGlite();
  await db.exec(portfolioSchema(owner));
  for(const table of ['portfolio_transactions','portfolio_preferences','portfolio_snapshots']) await db.exec(`alter table public.${table} enable row level security; create policy own on public.${table} for all to authenticated using(auth.uid()=user_id) with check(auth.uid()=user_id); grant select,insert,update,delete on public.${table} to authenticated;`);
- await db.exec(readFileSync('supabase/migrations/20260905194009_atomic_portfolio_ledger.sql','utf8'));
+ await db.query('insert into public.portfolio_transactions select * from jsonb_populate_recordset(null::public.portfolio_transactions,$1)',[JSON.stringify([row(99)])]);
+ await db.exec(readFileSync('supabase/migrations/20260905225656_atomic_portfolio_ledger.sql','utf8'));
+ assert.equal((await db.query('select count(*)::int n from centifolio_release_backup.portfolio_transactions')).rows[0].n,1);
+ for(const role of ['anon','authenticated','service_role']) assert.equal((await db.query("select has_schema_privilege($1,'centifolio_release_backup','usage') allowed",[role])).rows[0].allowed,false);
  await db.exec(`set role authenticated; set request.jwt.claim.sub='${owner}';`);
+ await assert.rejects(db.query('select * from centifolio_release_backup.portfolio_transactions'),/permission denied/);
  const read=async()=> (await db.query('select public.read_portfolio_ledger() snapshot')).rows[0].snapshot;
  const commit=async(revision,id,rows)=>(await db.query('select public.commit_portfolio_ledger($1,$2,$3) snapshot',[revision,`10000000-0000-4000-8000-${String(id).padStart(12,'0')}`,JSON.stringify(rows)])).rows[0].snapshot;
  const empty=await read();const first=await commit(empty.revision,1,[row(10),row(11)]);
@@ -31,7 +35,9 @@ test('Postgres migration: atomic replacement, CAS, idempotency, RLS, stale perfo
  assert.equal(Number((await db.query('select total_assets_krw from public.portfolio_snapshots')).rows[0].total_assets_krw),200);
  await db.exec(`set request.jwt.claim.sub='00000000-0000-4000-8000-000000000002'`);assert.equal((await read()).transactions.length,0);
  await db.exec('reset role;');
+ await db.exec(readFileSync('supabase/tests/atomic-ledger-smoke.sql','utf8'));
  await db.exec(readFileSync('supabase/rollback/atomic_portfolio_ledger.sql','utf8'));
+ assert.equal((await db.query('select count(*)::int n from centifolio_release_backup.portfolio_transactions')).rows[0].n,1,'rollback preserves the recovery copy');
  assert.equal((await db.query('select count(*)::int count from portfolio_transactions')).rows[0].count,2);
  assert.equal((await db.query("select count(*)::int count from information_schema.columns where table_name='portfolio_transactions' and column_name='ledger_position'")).rows[0].count,0);
  await db.close();

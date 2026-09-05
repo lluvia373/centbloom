@@ -1,4 +1,18 @@
--- No production execution is part of the refactor. Apply after the documented preflight.
+-- Apply as one migration transaction. Keep the recovery copy inside this database.
+-- The private schema is not an exposed Data API schema; clients have no access.
+set local lock_timeout = '10s';
+lock table public.portfolio_transactions, public.portfolio_preferences, public.portfolio_snapshots in access exclusive mode;
+create schema centifolio_release_backup;
+revoke all on schema centifolio_release_backup from public, anon, authenticated, service_role;
+create table centifolio_release_backup.portfolio_transactions as table public.portfolio_transactions;
+create table centifolio_release_backup.portfolio_preferences as table public.portfolio_preferences;
+create table centifolio_release_backup.portfolio_snapshots as table public.portfolio_snapshots;
+revoke all on all tables in schema centifolio_release_backup from public, anon, authenticated, service_role;
+alter table centifolio_release_backup.portfolio_transactions enable row level security;
+alter table centifolio_release_backup.portfolio_preferences enable row level security;
+alter table centifolio_release_backup.portfolio_snapshots enable row level security;
+comment on schema centifolio_release_backup is 'Pre atomic-ledger release recovery copy; admin only. Retain until release verification and deliberate cleanup.';
+
 -- Persist stable order for trades sharing a date/created_at (the client uses stable sorting).
 alter table public.portfolio_transactions add column ledger_position bigint check (ledger_position >= 0);
 with positions as (select id,row_number() over (partition by user_id order by trade_date,created_at,id)-1 position from public.portfolio_transactions)

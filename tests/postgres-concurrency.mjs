@@ -25,7 +25,7 @@ try {
  const owner=randomUUID();
  await admin.query(portfolioSchema(owner));
  for(const table of ['portfolio_transactions','portfolio_preferences','portfolio_snapshots']) await admin.query(`alter table public.${table} enable row level security; create policy own on public.${table} for all to authenticated using(auth.uid()=user_id) with check(auth.uid()=user_id); grant select,insert,update,delete on public.${table} to authenticated;`);
- const migration=process.argv[2]||'supabase/migrations/20260905194009_atomic_portfolio_ledger.sql';
+ const migration=process.argv[2]||'supabase/migrations/20260905225656_atomic_portfolio_ledger.sql';
  await admin.query(readFileSync(migration,'utf8'));
  const [a,b]=await Promise.all([connect(),connect()]);
  for(const client of [a,b]) await client.query(`set role authenticated; set request.jwt.claim.sub='${owner}'; set statement_timeout='5s';`);
