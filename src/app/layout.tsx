@@ -4,6 +4,8 @@ import { AuthGate } from "@/components/AuthGate";
 import { Header } from "@/components/Header";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PortfolioProvider } from "@/hooks/usePortfolio";
+import { WorkspaceProvider } from "@/hooks/useWorkspace";
+import { StorageNotice } from "@/components/StorageNotice";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,8 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stockfolio — 주식 포트폴리오 관리",
-  description: "주식 포트폴리오를 관리하고 실시간 시세 정보를 확인하세요.",
+  title: "Stockfolio — 나의 투자를, 나답게.",
+  description:
+    "자산의 흐름과 투자성과, 관심종목과 투자 생각을 연결하는 나만의 투자 공간.",
 };
 
 export default function RootLayout({
@@ -31,16 +34,25 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-950 text-slate-100">
+      <body>
         <AuthProvider>
           <AuthGate>
             <PortfolioProvider>
-              <div className="flex min-h-screen flex-col">
-                <Header />
-                <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 sm:pt-8 lg:pb-10">
-                  {children}
-                </main>
-              </div>
+              <WorkspaceProvider>
+                <div className="app-shell">
+                  <Header />
+                  <main id="main-content" className="main-content">
+                    <StorageNotice />
+                    {children}
+                    <footer className="app-footer">
+                      <span>
+                        stockfolio. <span>나의 투자를, 나답게.</span>
+                      </span>
+                      <span>차곡차곡 쌓이는 투자 기록</span>
+                    </footer>
+                  </main>
+                </div>
+              </WorkspaceProvider>
             </PortfolioProvider>
           </AuthGate>
         </AuthProvider>

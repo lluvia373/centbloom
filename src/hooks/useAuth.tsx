@@ -9,10 +9,7 @@ import {
   useState,
 } from "react";
 import type { User } from "@supabase/supabase-js";
-import {
-  getSupabaseBrowserClient,
-  isSupabaseConfigured,
-} from "@/lib/supabase";
+import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase";
 
 interface AuthContextValue {
   user: User | null;
@@ -32,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setLoading(false);
       return;
     }
 
@@ -81,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({ user, loading, configured, signInWithGoogle, signOut }),
-    [user, loading, configured, signInWithGoogle, signOut]
+    [user, loading, configured, signInWithGoogle, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

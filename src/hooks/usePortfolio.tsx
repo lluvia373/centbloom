@@ -23,6 +23,13 @@ import { deriveHoldings, validateTransactionHistory } from "@/lib/portfolio";
 import { getFxRateToKRW, getQuote } from "@/lib/stock-api";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import {
+  loadStoredTransactions,
+  saveStoredTransactions,
+  scopedKey,
+  STORAGE_WRITE_ERROR,
+  type StoredTransactionsResult,
+} from "@/lib/portfolio-storage";
+import {
   BASE_CURRENCY,
   DEFAULT_DISPLAY_CURRENCY,
   krwToDisplayCurrency,
@@ -30,8 +37,6 @@ import {
   toKRW,
 } from "@/lib/currency";
 
-const TRANSACTIONS_KEY = "stock-transactions";
-const LEGACY_HOLDINGS_KEY = "stock-portfolio";
 const DISPLAY_CURRENCY_KEY = "stock-display-currency";
 const MARKET_REFRESH_INTERVAL_MS = 30_000;
 
@@ -88,87 +93,46 @@ interface PortfolioContextValue {
   displayCurrency: DisplayCurrency;
   lastMarketUpdateAt: number | null;
   marketDataError: string | null;
+  storageError: string | null;
   setDisplayCurrency: (currency: DisplayCurrency) => void;
   addTransaction: (input: AddTransactionInput) => string | null;
   updateTransaction: (
     id: string,
-    input: UpdateTransactionInput
+    input: UpdateTransactionInput,
   ) => Promise<string | null>;
   removeTransaction: (id: string) => Promise<string | null>;
   restoreTransaction: (transaction: Transaction) => Promise<string | null>;
   importTransactions: (
     transactions: Transaction[],
-    mode: TransactionImportMode
+    mode: TransactionImportMode,
   ) => Promise<TransactionImportResult>;
   refreshQuotes: () => Promise<void>;
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
 
-function scopedKey(baseKey: string, userId?: string | null): string {
-  return userId ? `${baseKey}:${userId}` : baseKey;
-}
-
-function loadTransactions(userId?: string | null): Transaction[] {
-  if (typeof window === "undefined") return [];
-
+function loadTransactions(userId?: string | null): StoredTransactionsResult {
   try {
-    const transactionKey = scopedKey(TRANSACTIONS_KEY, userId);
-    const raw = localStorage.getItem(transactionKey);
-    if (raw) return JSON.parse(raw);
-
-    // 로그인 도입 전 기존 데이터는 첫 로그인 계정으로 한 번만 이전합니다.
-    if (userId) {
-      const unscopedTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-      if (unscopedTransactions) {
-        localStorage.setItem(transactionKey, unscopedTransactions);
-        localStorage.removeItem(TRANSACTIONS_KEY);
-        return JSON.parse(unscopedTransactions);
-      }
-    }
-
-    const legacyKey = scopedKey(LEGACY_HOLDINGS_KEY, userId);
-    let legacy = localStorage.getItem(legacyKey);
-
-    if (!legacy && userId) {
-      legacy = localStorage.getItem(LEGACY_HOLDINGS_KEY);
-      if (legacy) localStorage.removeItem(LEGACY_HOLDINGS_KEY);
-    }
-
-    if (!legacy) return [];
-
-    const holdings: Holding[] = JSON.parse(legacy);
-    const migrated: Transaction[] = holdings.map((h) => ({
-      id: h.id,
-      symbol: h.symbol,
-      name: h.name,
-      type: "buy" as const,
-      date: h.addedAt.split("T")[0],
-      quantity: h.quantity,
-      price: h.avgCost,
-      fee: 0,
-      currency: h.currency,
-      createdAt: h.addedAt,
-    }));
-
-    localStorage.setItem(transactionKey, JSON.stringify(migrated));
-    localStorage.removeItem(legacyKey);
-    return migrated;
+    return loadStoredTransactions(window.localStorage, userId);
   } catch {
-    return [];
+    return {
+      transactions: [],
+      error:
+        "브라우저 저장소에 접근할 수 없습니다. 사이트 저장 권한을 허용한 뒤 새로고침해 주세요.",
+    };
   }
 }
 
 function saveTransactions(
   transactions: Transaction[],
-  userId?: string | null
-) {
-  localStorage.setItem(
-    scopedKey(TRANSACTIONS_KEY, userId),
-    JSON.stringify(transactions)
-  );
+  userId?: string | null,
+): string | null {
+  try {
+    return saveStoredTransactions(window.localStorage, transactions, userId);
+  } catch {
+    return STORAGE_WRITE_ERROR;
+  }
 }
-
 function transactionToRow(userId: string, tx: Transaction) {
   return {
     id: tx.id,
@@ -210,17 +174,18 @@ function rowToTransaction(row: PortfolioTransactionRow): Transaction {
 
 async function upsertTransactions(
   userId: string,
-  transactions: Transaction[]
+  transactions: Transaction[],
 ): Promise<string | null> {
   if (transactions.length === 0) return null;
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return "서버 연결을 찾을 수 없습니다.";
 
-  const { error } = await supabase
-    .from("portfolio_transactions")
-    .upsert(transactions.map((tx) => transactionToRow(userId, tx)), {
+  const { error } = await supabase.from("portfolio_transactions").upsert(
+    transactions.map((tx) => transactionToRow(userId, tx)),
+    {
       onConflict: "id",
-    });
+    },
+  );
 
   if (error) {
     console.error("포트폴리오 서버 저장 실패", error);
@@ -231,7 +196,7 @@ async function upsertTransactions(
 
 async function deleteTransactionFromServer(
   userId: string,
-  id: string
+  id: string,
 ): Promise<string | null> {
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return "서버 연결을 찾을 수 없습니다.";
@@ -251,7 +216,7 @@ async function deleteTransactionFromServer(
 
 async function deleteTransactionsFromServer(
   userId: string,
-  ids: string[]
+  ids: string[],
 ): Promise<string | null> {
   if (ids.length === 0) return null;
   const supabase = getSupabaseBrowserClient();
@@ -284,14 +249,14 @@ async function savePreference(userId: string, currency: DisplayCurrency) {
       display_currency: currency,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id" }
+    { onConflict: "user_id" },
   );
 
   if (error) console.error("표시 통화 서버 저장 실패", error);
 }
 
 async function enrichLegacyCurrencies(
-  transactions: Transaction[]
+  transactions: Transaction[],
 ): Promise<Transaction[]> {
   const currencyPromises = new Map<string, Promise<string>>();
   const fxPromises = new Map<string, Promise<number>>();
@@ -335,7 +300,7 @@ async function enrichLegacyCurrencies(
       } catch {
         return tx;
       }
-    })
+    }),
   );
 }
 
@@ -343,7 +308,7 @@ function buildSummary(
   holdings: Holding[],
   quotes: Record<string, StockQuote>,
   fxRatesToKRW: Record<string, number>,
-  displayCurrency: DisplayCurrency
+  displayCurrency: DisplayCurrency,
 ): PortfolioSummary {
   const currentUsdKrwRate = fxRatesToKRW.USD ?? 0;
 
@@ -354,14 +319,15 @@ function buildSummary(
     const fxRate =
       normalizedCurrency === BASE_CURRENCY
         ? 1
-        : fxRatesToKRW[normalizedCurrency] ?? 0;
+        : (fxRatesToKRW[normalizedCurrency] ?? 0);
 
     const marketValue = quote ? quote.price * h.quantity : 0;
     const costBasis = h.avgCost * h.quantity;
     const gainLoss = marketValue - costBasis;
     const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
-    const marketValueKRW = fxRate > 0 ? toKRW(marketValue, currency, fxRate) : 0;
+    const marketValueKRW =
+      fxRate > 0 ? toKRW(marketValue, currency, fxRate) : 0;
     const resolvedCostBasisKRW =
       h.costBasisKRW ?? (fxRate > 0 ? toKRW(costBasis, currency, fxRate) : 0);
     const gainLossKRW = marketValueKRW - resolvedCostBasisKRW;
@@ -389,7 +355,7 @@ function buildSummary(
     const marketValueUSD = krwToDisplayCurrency(
       marketValueKRW,
       "USD",
-      currentUsdKrwRate
+      currentUsdKrwRate,
     );
     const resolvedCostBasisUSD =
       h.costBasisUSD ??
@@ -441,11 +407,11 @@ function buildSummary(
     totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0;
   const stockPriceImpactKRW = enriched.reduce(
     (sum, holding) => sum + holding.stockPriceImpactKRW,
-    0
+    0,
   );
   const fxImpactKRW = enriched.reduce(
     (sum, holding) => sum + holding.fxImpactKRW,
-    0
+    0,
   );
 
   return {
@@ -467,19 +433,26 @@ function buildSummary(
 
 export function PortfolioProvider({ children }: { children: React.ReactNode }) {
   const { user, configured: authConfigured } = useAuth();
-  const storageUserId = authConfigured ? user?.id ?? null : null;
+  const storageUserId = authConfigured ? (user?.id ?? null) : null;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [quotes, setQuotes] = useState<Record<string, StockQuote>>({});
   const [fxRatesToKRW, setFxRatesToKRW] = useState<Record<string, number>>({
     KRW: 1,
   });
-  const [displayCurrency, setDisplayCurrencyState] =
-    useState<DisplayCurrency>(DEFAULT_DISPLAY_CURRENCY);
+  const [displayCurrency, setDisplayCurrencyState] = useState<DisplayCurrency>(
+    DEFAULT_DISPLAY_CURRENCY,
+  );
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [lastMarketUpdateAt, setLastMarketUpdateAt] = useState<number | null>(null);
+  const [lastMarketUpdateAt, setLastMarketUpdateAt] = useState<number | null>(
+    null,
+  );
   const [marketDataError, setMarketDataError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const storageReadErrorRef = useRef<string | null>(null);
+  const loadedStorageScopeRef = useRef<string | null | undefined>(undefined);
+  const transactionVersionRef = useRef(0);
   const refreshInFlightRef = useRef(false);
   const hasLoadedMarketDataRef = useRef(false);
 
@@ -490,6 +463,10 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
     const hydratePortfolio = async () => {
       setHydrated(false);
+      loadedStorageScopeRef.current = undefined;
+      storageReadErrorRef.current = null;
+      setStorageError(null);
+      transactionVersionRef.current += 1;
       setTransactions([]);
       setQuotes({});
       setFxRatesToKRW({ KRW: 1 });
@@ -498,19 +475,28 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       hasLoadedMarketDataRef.current = false;
 
       const displayKey = scopedKey(DISPLAY_CURRENCY_KEY, storageUserId);
-      let localDisplayCurrency = localStorage.getItem(displayKey);
-
-      if (!localDisplayCurrency && storageUserId) {
-        localDisplayCurrency = localStorage.getItem(DISPLAY_CURRENCY_KEY);
-        if (localDisplayCurrency) {
-          localStorage.setItem(displayKey, localDisplayCurrency);
-          localStorage.removeItem(DISPLAY_CURRENCY_KEY);
+      let localDisplayCurrency: string | null = null;
+      try {
+        localDisplayCurrency = localStorage.getItem(displayKey);
+        if (!localDisplayCurrency && storageUserId) {
+          localDisplayCurrency = localStorage.getItem(DISPLAY_CURRENCY_KEY);
+          if (localDisplayCurrency) {
+            localStorage.setItem(displayKey, localDisplayCurrency);
+            localStorage.removeItem(DISPLAY_CURRENCY_KEY);
+          }
         }
+      } catch {
+        setStorageError(
+          "표시 통화를 브라우저에 저장하지 못했습니다. 사이트 저장 권한과 저장 공간을 확인해 주세요.",
+        );
       }
 
       const resolvedLocalCurrency: DisplayCurrency =
         localDisplayCurrency === "USD" ? "USD" : DEFAULT_DISPLAY_CURRENCY;
-      const localTransactions = loadTransactions(storageUserId);
+      const localResult = loadTransactions(storageUserId);
+      const localTransactions = localResult.transactions;
+      storageReadErrorRef.current = localResult.error;
+      if (localResult.error) setStorageError(localResult.error);
 
       let loadedTransactions = localTransactions;
       let loadedDisplayCurrency = resolvedLocalCurrency;
@@ -541,7 +527,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
               await upsertTransactions(storageUserId, localTransactions);
             } else {
               const merged = new Map(
-                serverTransactions.map((tx) => [tx.id, tx] as const)
+                serverTransactions.map((tx) => [tx.id, tx] as const),
               );
               for (const tx of localTransactions) {
                 if (!merged.has(tx.id)) merged.set(tx.id, tx);
@@ -549,7 +535,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
               loadedTransactions = Array.from(merged.values()).sort(
                 (a, b) =>
                   a.date.localeCompare(b.date) ||
-                  a.createdAt.localeCompare(b.createdAt)
+                  a.createdAt.localeCompare(b.createdAt),
               );
 
               if (loadedTransactions.length > serverTransactions.length) {
@@ -557,16 +543,25 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } else {
-            console.error("포트폴리오 서버 불러오기 실패", transactionsResult.error);
+            console.error(
+              "포트폴리오 서버 불러오기 실패",
+              transactionsResult.error,
+            );
           }
 
-          if (!preferenceResult.error && preferenceResult.data?.display_currency) {
+          if (
+            !preferenceResult.error &&
+            preferenceResult.data?.display_currency
+          ) {
             loadedDisplayCurrency =
               preferenceResult.data.display_currency === "USD" ? "USD" : "KRW";
           } else if (!preferenceResult.error) {
             await savePreference(storageUserId, resolvedLocalCurrency);
           } else {
-            console.error("표시 통화 서버 불러오기 실패", preferenceResult.error);
+            console.error(
+              "표시 통화 서버 불러오기 실패",
+              preferenceResult.error,
+            );
           }
         }
       }
@@ -574,33 +569,53 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
 
       setDisplayCurrencyState(loadedDisplayCurrency);
-      localStorage.setItem(displayKey, loadedDisplayCurrency);
+      try {
+        localStorage.setItem(displayKey, loadedDisplayCurrency);
+      } catch {
+        setStorageError(
+          localResult.error ??
+            "표시 통화를 브라우저에 저장하지 못했습니다. 사이트 저장 권한과 저장 공간을 확인해 주세요.",
+        );
+      }
       setTransactions(loadedTransactions);
-      saveTransactions(loadedTransactions, storageUserId);
+      // A failed read is never treated as an empty portfolio to persist.
+      if (!localResult.error) {
+        const writeError = saveTransactions(loadedTransactions, storageUserId);
+        if (writeError) setStorageError(writeError);
+      }
+      loadedStorageScopeRef.current = storageUserId;
       setHydrated(true);
 
       if (
+        !localResult.error &&
         loadedTransactions.some(
           (tx) =>
             !tx.currency ||
             tx.fxRateToKRW == null ||
-            tx.usdKrwRateAtTransaction == null
+            tx.usdKrwRateAtTransaction == null,
         )
       ) {
+        const enrichmentVersion = transactionVersionRef.current;
         const enriched = await enrichLegacyCurrencies(loadedTransactions);
-        if (cancelled) return;
+        if (cancelled || transactionVersionRef.current !== enrichmentVersion)
+          return;
 
         const changed = enriched.some(
           (tx, i) =>
             tx.currency !== loadedTransactions[i]?.currency ||
             tx.fxRateToKRW !== loadedTransactions[i]?.fxRateToKRW ||
             tx.usdKrwRateAtTransaction !==
-              loadedTransactions[i]?.usdKrwRateAtTransaction
+              loadedTransactions[i]?.usdKrwRateAtTransaction,
         );
         if (changed) {
-          setTransactions(enriched);
-          saveTransactions(enriched, storageUserId);
-          if (storageUserId) void upsertTransactions(storageUserId, enriched);
+          const writeError = saveTransactions(enriched, storageUserId);
+          if (writeError) {
+            setStorageError(writeError);
+          } else {
+            setTransactions(enriched);
+            transactionVersionRef.current += 1;
+            if (storageUserId) void upsertTransactions(storageUserId, enriched);
+          }
         }
       }
     };
@@ -612,20 +627,51 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
     };
   }, [authConfigured, storageUserId]);
 
-  useEffect(() => {
-    if (hydrated) saveTransactions(transactions, storageUserId);
-  }, [transactions, hydrated, storageUserId]);
+  const checkStorageReady = useCallback((): string | null => {
+    if (storageReadErrorRef.current) return storageReadErrorRef.current;
+    if (!hydrated || loadedStorageScopeRef.current !== storageUserId) {
+      return "거래 내역을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";
+    }
+    return null;
+  }, [hydrated, storageUserId]);
+
+  const persistTransactions = useCallback(
+    (nextTransactions: Transaction[]): string | null => {
+      const blocked = checkStorageReady();
+      if (blocked) return blocked;
+      const writeError = saveTransactions(nextTransactions, storageUserId);
+      if (writeError) {
+        const message = storageUserId
+          ? `${writeError} 서버에 반영된 거래가 있을 수 있으니 연결 복구 후 거래 내역을 확인해 주세요.`
+          : writeError;
+        setStorageError(message);
+        return message;
+      }
+      setStorageError(null);
+      transactionVersionRef.current += 1;
+      setTransactions(nextTransactions);
+      return null;
+    },
+    [checkStorageReady, storageUserId],
+  );
 
   const setDisplayCurrency = useCallback(
     (currency: DisplayCurrency) => {
       setDisplayCurrencyState(currency);
-      localStorage.setItem(
-        scopedKey(DISPLAY_CURRENCY_KEY, storageUserId),
-        currency
-      );
+      try {
+        localStorage.setItem(
+          scopedKey(DISPLAY_CURRENCY_KEY, storageUserId),
+          currency,
+        );
+      } catch {
+        setStorageError(
+          storageReadErrorRef.current ??
+            "표시 통화를 브라우저에 저장하지 못했습니다. 사이트 저장 권한과 저장 공간을 확인해 주세요.",
+        );
+      }
       if (storageUserId) void savePreference(storageUserId, currency);
     },
-    [storageUserId]
+    [storageUserId],
   );
 
   const refreshQuotes = useCallback(async () => {
@@ -645,7 +691,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const quoteResults = await Promise.allSettled(
-        holdings.map((h) => getQuote(h.symbol))
+        holdings.map((h) => getQuote(h.symbol)),
       );
 
       const successfulQuotes: Record<string, StockQuote> = {};
@@ -671,17 +717,18 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
               normalizeCurrency(
                 successfulQuotes[holding.symbol]?.currency ??
                   holding.currency ??
-                  "USD"
-              )
+                  "USD",
+              ),
             )
             .filter((currency) => currency !== BASE_CURRENCY),
-        ])
+        ]),
       );
 
       const fxResults = await Promise.allSettled(
-        currencies.map(async (currency) =>
-          [currency, await getFxRateToKRW(currency)] as const
-        )
+        currencies.map(
+          async (currency) =>
+            [currency, await getFxRateToKRW(currency)] as const,
+        ),
       );
 
       const successfulFxRates: Record<string, number> = {};
@@ -747,14 +794,17 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    if (document.visibilityState === "visible") {
-      void refreshQuotes();
-      startInterval();
-    }
+    const initialRefreshTimer = window.setTimeout(() => {
+      if (document.visibilityState === "visible") {
+        void refreshQuotes();
+        startInterval();
+      }
+    }, 0);
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      window.clearTimeout(initialRefreshTimer);
       stopInterval();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -762,6 +812,8 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
   const addTransaction = useCallback(
     (input: AddTransactionInput): string | null => {
+      const blocked = checkStorageReady();
+      if (blocked) return blocked;
       const upper = input.symbol.toUpperCase();
       const fee = input.fee ?? 0;
 
@@ -783,15 +835,21 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       const historyError = validateTransactionHistory([...transactions, tx]);
       if (historyError) return historyError;
 
-      setTransactions((prev) => [...prev, tx]);
+      const writeError = persistTransactions([...transactions, tx]);
+      if (writeError) return writeError;
       if (storageUserId) void upsertTransactions(storageUserId, [tx]);
       return null;
     },
-    [transactions, storageUserId]
+    [transactions, storageUserId, checkStorageReady, persistTransactions],
   );
 
   const updateTransaction = useCallback(
-    async (id: string, input: UpdateTransactionInput): Promise<string | null> => {
+    async (
+      id: string,
+      input: UpdateTransactionInput,
+    ): Promise<string | null> => {
+      const blocked = checkStorageReady();
+      if (blocked) return blocked;
       const original = transactions.find((tx) => tx.id === id);
       if (!original) return "수정할 거래를 찾지 못했습니다.";
 
@@ -839,7 +897,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         usdKrwRateAtTransaction,
       };
       const nextTransactions = transactions.map((tx) =>
-        tx.id === id ? updated : tx
+        tx.id === id ? updated : tx,
       );
       const historyError = validateTransactionHistory(nextTransactions);
       if (historyError) return historyError;
@@ -849,14 +907,15 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         if (serverError) return serverError;
       }
 
-      setTransactions(nextTransactions);
-      return null;
+      return persistTransactions(nextTransactions);
     },
-    [transactions, storageUserId]
+    [transactions, storageUserId, checkStorageReady, persistTransactions],
   );
 
   const removeTransaction = useCallback(
     async (id: string): Promise<string | null> => {
+      const blocked = checkStorageReady();
+      if (blocked) return blocked;
       const original = transactions.find((tx) => tx.id === id);
       if (!original) return "삭제할 거래를 찾지 못했습니다.";
 
@@ -867,18 +926,22 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (storageUserId) {
-        const serverError = await deleteTransactionFromServer(storageUserId, id);
+        const serverError = await deleteTransactionFromServer(
+          storageUserId,
+          id,
+        );
         if (serverError) return serverError;
       }
 
-      setTransactions(nextTransactions);
-      return null;
+      return persistTransactions(nextTransactions);
     },
-    [transactions, storageUserId]
+    [transactions, storageUserId, checkStorageReady, persistTransactions],
   );
 
   const restoreTransaction = useCallback(
     async (transaction: Transaction): Promise<string | null> => {
+      const blocked = checkStorageReady();
+      if (blocked) return blocked;
       if (transactions.some((tx) => tx.id === transaction.id)) return null;
 
       const nextTransactions = [...transactions, transaction];
@@ -886,22 +949,26 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       if (historyError) return historyError;
 
       if (storageUserId) {
-        const serverError = await upsertTransactions(storageUserId, [transaction]);
+        const serverError = await upsertTransactions(storageUserId, [
+          transaction,
+        ]);
         if (serverError) return serverError;
       }
 
-      setTransactions(nextTransactions);
-      return null;
+      return persistTransactions(nextTransactions);
     },
-    [transactions, storageUserId]
+    [transactions, storageUserId, checkStorageReady, persistTransactions],
   );
 
   const importTransactions = useCallback(
     async (
       importedTransactions: Transaction[],
-      mode: TransactionImportMode
+      mode: TransactionImportMode,
     ): Promise<TransactionImportResult> => {
-      const enrichedImported = await enrichLegacyCurrencies(importedTransactions);
+      const blocked = checkStorageReady();
+      if (blocked) return { error: blocked, importedCount: 0, skippedCount: 0 };
+      const enrichedImported =
+        await enrichLegacyCurrencies(importedTransactions);
 
       let nextTransactions: Transaction[];
       let transactionsToUpsert: Transaction[];
@@ -909,7 +976,9 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
       if (mode === "merge") {
         const existingIds = new Set(transactions.map((tx) => tx.id));
-        const newTransactions = enrichedImported.filter((tx) => !existingIds.has(tx.id));
+        const newTransactions = enrichedImported.filter(
+          (tx) => !existingIds.has(tx.id),
+        );
         skippedCount = enrichedImported.length - newTransactions.length;
         nextTransactions = [...transactions, ...newTransactions];
         transactionsToUpsert = newTransactions;
@@ -919,7 +988,9 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       }
 
       nextTransactions.sort(
-        (a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)
+        (a, b) =>
+          a.date.localeCompare(b.date) ||
+          a.createdAt.localeCompare(b.createdAt),
       );
 
       const historyError = validateTransactionHistory(nextTransactions);
@@ -932,7 +1003,10 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (storageUserId) {
-        const serverError = await upsertTransactions(storageUserId, transactionsToUpsert);
+        const serverError = await upsertTransactions(
+          storageUserId,
+          transactionsToUpsert,
+        );
         if (serverError) {
           return { error: serverError, importedCount: 0, skippedCount };
         }
@@ -942,23 +1016,29 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
           const removedIds = transactions
             .filter((tx) => !importedIds.has(tx.id))
             .map((tx) => tx.id);
-          const deleteError = await deleteTransactionsFromServer(storageUserId, removedIds);
+          const deleteError = await deleteTransactionsFromServer(
+            storageUserId,
+            removedIds,
+          );
           if (deleteError) {
             return { error: deleteError, importedCount: 0, skippedCount };
           }
         }
       }
 
-      setTransactions(nextTransactions);
-      saveTransactions(nextTransactions, storageUserId);
+      const writeError = persistTransactions(nextTransactions);
+      if (writeError)
+        return { error: writeError, importedCount: 0, skippedCount };
       return {
         error: null,
         importedCount:
-          mode === "merge" ? transactionsToUpsert.length : nextTransactions.length,
+          mode === "merge"
+            ? transactionsToUpsert.length
+            : nextTransactions.length,
         skippedCount,
       };
     },
-    [transactions, storageUserId]
+    [transactions, storageUserId, checkStorageReady, persistTransactions],
   );
 
   const summary = useMemo(
@@ -966,7 +1046,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
       holdings.length > 0
         ? buildSummary(holdings, quotes, fxRatesToKRW, displayCurrency)
         : null,
-    [holdings, quotes, fxRatesToKRW, displayCurrency]
+    [holdings, quotes, fxRatesToKRW, displayCurrency],
   );
 
   return (
@@ -979,6 +1059,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
         displayCurrency,
         lastMarketUpdateAt,
         marketDataError,
+        storageError,
         setDisplayCurrency,
         addTransaction,
         updateTransaction,
@@ -995,6 +1076,7 @@ export function PortfolioProvider({ children }: { children: React.ReactNode }) {
 
 export function usePortfolio() {
   const ctx = useContext(PortfolioContext);
-  if (!ctx) throw new Error("usePortfolio must be used within PortfolioProvider");
+  if (!ctx)
+    throw new Error("usePortfolio must be used within PortfolioProvider");
   return ctx;
 }

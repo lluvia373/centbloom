@@ -16,8 +16,7 @@ export interface TransactionBackup {
 }
 
 export type TransactionBackupParseResult =
-  | { ok: true; backup: TransactionBackup }
-  | { ok: false; errors: string[] };
+  { ok: true; backup: TransactionBackup } | { ok: false; errors: string[] };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -41,7 +40,7 @@ function isValidTimestamp(value: string): boolean {
 function optionalPositiveNumber(
   value: unknown,
   fieldName: string,
-  errors: string[]
+  errors: string[],
 ): number | undefined {
   if (value == null) return undefined;
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
@@ -54,7 +53,7 @@ function optionalPositiveNumber(
 function parseTransaction(
   value: unknown,
   index: number,
-  errors: string[]
+  errors: string[],
 ): Transaction | null {
   const label = `${index + 1}번째 거래`;
   if (!isRecord(value)) {
@@ -63,23 +62,34 @@ function parseTransaction(
   }
 
   const id = typeof value.id === "string" ? value.id.trim() : "";
-  const symbol = typeof value.symbol === "string" ? value.symbol.trim().toUpperCase() : "";
+  const symbol =
+    typeof value.symbol === "string" ? value.symbol.trim().toUpperCase() : "";
   const name = typeof value.name === "string" ? value.name.trim() : "";
   const type = value.type;
   const date = typeof value.date === "string" ? value.date : "";
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : "";
 
-  if (!id || id.length > 128) errors.push(`${label}의 거래 ID가 올바르지 않습니다.`);
-  if (!symbol || symbol.length > 32) errors.push(`${label}의 종목 코드가 올바르지 않습니다.`);
-  if (!name || name.length > 200) errors.push(`${label}의 종목명이 올바르지 않습니다.`);
-  if (type !== "buy" && type !== "sell") errors.push(`${label}의 거래 유형이 올바르지 않습니다.`);
-  if (!isValidDateOnly(date)) errors.push(`${label}의 거래일이 올바르지 않습니다.`);
-  if (!isValidTimestamp(createdAt)) errors.push(`${label}의 생성 시각이 올바르지 않습니다.`);
+  if (!id || id.length > 128)
+    errors.push(`${label}의 거래 ID가 올바르지 않습니다.`);
+  if (!symbol || symbol.length > 32)
+    errors.push(`${label}의 종목 코드가 올바르지 않습니다.`);
+  if (!name || name.length > 200)
+    errors.push(`${label}의 종목명이 올바르지 않습니다.`);
+  if (type !== "buy" && type !== "sell")
+    errors.push(`${label}의 거래 유형이 올바르지 않습니다.`);
+  if (!isValidDateOnly(date))
+    errors.push(`${label}의 거래일이 올바르지 않습니다.`);
+  if (!isValidTimestamp(createdAt))
+    errors.push(`${label}의 생성 시각이 올바르지 않습니다.`);
 
   const quantity = value.quantity;
   const price = value.price;
   const fee = value.fee;
-  if (typeof quantity !== "number" || !Number.isFinite(quantity) || quantity <= 0) {
+  if (
+    typeof quantity !== "number" ||
+    !Number.isFinite(quantity) ||
+    quantity <= 0
+  ) {
     errors.push(`${label}의 수량은 0보다 커야 합니다.`);
   }
   if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
@@ -91,7 +101,10 @@ function parseTransaction(
 
   let currency: string | undefined;
   if (value.currency != null) {
-    currency = typeof value.currency === "string" ? value.currency.trim().toUpperCase() : "";
+    currency =
+      typeof value.currency === "string"
+        ? value.currency.trim().toUpperCase()
+        : "";
     if (!currency || currency.length > 16) {
       errors.push(`${label}의 통화 코드가 올바르지 않습니다.`);
     }
@@ -100,12 +113,12 @@ function parseTransaction(
   const fxRateToKRW = optionalPositiveNumber(
     value.fxRateToKRW,
     `${label}의 원화 환율`,
-    errors
+    errors,
   );
   const usdKrwRateAtTransaction = optionalPositiveNumber(
     value.usdKrwRateAtTransaction,
     `${label}의 달러 환율`,
-    errors
+    errors,
   );
 
   if (errors.length > 20) return null;
@@ -148,25 +161,34 @@ function parseTransaction(
 
 export function createTransactionBackup(
   transactions: Transaction[],
-  exportedAt = new Date().toISOString()
+  exportedAt = new Date().toISOString(),
 ): TransactionBackup {
   return {
     format: TRANSACTION_BACKUP_FORMAT,
     version: TRANSACTION_BACKUP_VERSION,
     exportedAt,
     transactions: [...transactions].sort(
-      (a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)
+      (a, b) =>
+        a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
     ),
   };
 }
 
-export function serializeTransactionBackup(transactions: Transaction[]): string {
+export function serializeTransactionBackup(
+  transactions: Transaction[],
+): string {
   return JSON.stringify(createTransactionBackup(transactions), null, 2);
 }
 
-export function parseTransactionBackup(value: unknown): TransactionBackupParseResult {
+export function parseTransactionBackup(
+  value: unknown,
+  options: { maxTransactions?: number } = {},
+): TransactionBackupParseResult {
   if (!isRecord(value)) {
-    return { ok: false, errors: ["백업 파일의 최상위 형식이 올바르지 않습니다."] };
+    return {
+      ok: false,
+      errors: ["백업 파일의 최상위 형식이 올바르지 않습니다."],
+    };
   }
 
   const errors: string[] = [];
@@ -174,10 +196,13 @@ export function parseTransactionBackup(value: unknown): TransactionBackupParseRe
     errors.push("Stockfolio 거래 백업 파일이 아닙니다.");
   }
   if (value.version !== TRANSACTION_BACKUP_VERSION) {
-    errors.push(`지원하지 않는 백업 버전입니다. 현재 지원 버전은 ${TRANSACTION_BACKUP_VERSION}입니다.`);
+    errors.push(
+      `지원하지 않는 백업 버전입니다. 현재 지원 버전은 ${TRANSACTION_BACKUP_VERSION}입니다.`,
+    );
   }
 
-  const exportedAt = typeof value.exportedAt === "string" ? value.exportedAt : "";
+  const exportedAt =
+    typeof value.exportedAt === "string" ? value.exportedAt : "";
   if (!isValidTimestamp(exportedAt)) {
     errors.push("백업 생성 시각이 올바르지 않습니다.");
   }
@@ -186,14 +211,21 @@ export function parseTransactionBackup(value: unknown): TransactionBackupParseRe
     errors.push("거래 목록이 없습니다.");
     return { ok: false, errors };
   }
-  if (value.transactions.length > MAX_TRANSACTION_COUNT) {
-    errors.push(`한 번에 최대 ${MAX_TRANSACTION_COUNT.toLocaleString("ko-KR")}건까지 가져올 수 있습니다.`);
+  const maxTransactions = options.maxTransactions ?? MAX_TRANSACTION_COUNT;
+  if (value.transactions.length > maxTransactions) {
+    errors.push(
+      `한 번에 최대 ${maxTransactions.toLocaleString("ko-KR")}건까지 가져올 수 있습니다.`,
+    );
     return { ok: false, errors };
   }
 
   const transactions: Transaction[] = [];
   for (let index = 0; index < value.transactions.length; index += 1) {
-    const transaction = parseTransaction(value.transactions[index], index, errors);
+    const transaction = parseTransaction(
+      value.transactions[index],
+      index,
+      errors,
+    );
     if (transaction) transactions.push(transaction);
     if (errors.length > 20) break;
   }

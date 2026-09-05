@@ -1,32 +1,35 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Loader2, RotateCcw, X } from "lucide-react";
-import { PortfolioSummaryCards } from "@/components/PortfolioSummaryCards";
+import { Download, Loader2, RotateCcw, X } from "lucide-react";
+import {
+  PageHeading,
+  AddTransactionLink,
+  PortfolioMode,
+} from "@/components/Header";
+import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { HoldingsTable } from "@/components/HoldingsTable";
 import { TransactionList } from "@/components/TransactionList";
-import { MarketDataStatus } from "@/components/MarketDataStatus";
-import { TransactionBackupPanel } from "@/components/TransactionBackupPanel";
+import { AssetAvatar } from "@/components/AssetAvatar";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePortfolio } from "@/hooks/usePortfolio";
+import { DEMO_TRANSACTIONS } from "@/lib/demo";
+import { formatCurrency } from "@/lib/format";
 import type { Transaction } from "@/lib/types";
-
 export default function PortfolioPage() {
+  const { summary, isDemo } = useWorkspace();
   const {
-    summary,
     transactions,
     loading,
     updateTransaction,
     removeTransaction,
     restoreTransaction,
     displayCurrency,
-    lastMarketUpdateAt,
     marketDataError,
   } = usePortfolio();
+  const [tab, setTab] = useState("holdings");
   const [lastDeleted, setLastDeleted] = useState<Transaction | null>(null);
   const [undoing, setUndoing] = useState(false);
   const [undoError, setUndoError] = useState<string | null>(null);
-
   useEffect(() => {
     if (!lastDeleted) return;
     const timeout = window.setTimeout(() => {
@@ -35,119 +38,181 @@ export default function PortfolioPage() {
     }, 8000);
     return () => window.clearTimeout(timeout);
   }, [lastDeleted]);
-
-  const handleDeleted = (transaction: Transaction) => {
-    setUndoError(null);
-    setLastDeleted(transaction);
-  };
-
   const handleUndo = async () => {
     if (!lastDeleted) return;
     setUndoing(true);
     setUndoError(null);
-    const error = await restoreTransaction(lastDeleted);
-    setUndoing(false);
-
-    if (error) {
-      setUndoError(error);
-      return;
+    try {
+      const error = await restoreTransaction(lastDeleted);
+      if (error) setUndoError(error);
+      else setLastDeleted(null);
+    } catch {
+      setUndoError("거래를 복구하지 못했습니다. 다시 시도해 주세요.");
+    } finally {
+      setUndoing(false);
     }
-
-    setLastDeleted(null);
   };
-
+  const exportHoldings = () => {
+    const rows = [
+      [isDemo ? "샘플 데이터" : "내 보유 자산", "표시 통화", displayCurrency],
+      ["종목", "이름", "수량", "평가액", "평가손익", "수익률(%)"],
+      ...(summary?.holdings ?? []).map((h) => [
+        h.symbol,
+        h.name,
+        h.quantity,
+        h.quote ? h.displayMarketValue : "시세 미확인",
+        h.quote ? h.displayGainLoss : "시세 미확인",
+        h.quote ? h.displayGainLossPercent : "시세 미확인",
+      ]),
+    ];
+    const csv = rows
+      .map((row) =>
+        row
+          .map((cell) => {
+            const value = String(cell);
+            const safe =
+              typeof cell === "string" && /^[=+@-]/.test(value)
+                ? `'${value}`
+                : value;
+            return `"${safe.replaceAll('"', '""')}"`;
+          })
+          .join(","),
+      )
+      .join("\r\n");
+    const url = URL.createObjectURL(
+      new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `stockfolio-${isDemo ? "sample" : "holdings"}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+  };
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300">Portfolio</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">포트폴리오</h1>
-          <p className="mt-1 text-slate-400">보유 종목과 거래 내역을 관리하세요.</p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <Link
-            href="/search"
-            className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+    <>
+      <PageHeading
+        eyebrow="MY PORTFOLIO"
+        title="내 포트폴리오"
+        description="모든 투자 기록을 한곳에. 나의 자산을 더 가까이."
+      >
+        <AddTransactionLink />
+      </PageHeading>
+      <PortfolioMode />
+      {!isDemo && marketDataError && (
+        <p
+          role="status"
+          className="mb-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800"
+        >
+          {marketDataError}
+        </p>
+      )}
+      <PortfolioMetrics />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="section-tabs" role="group" aria-label="포트폴리오 보기">
+          <button
+            aria-pressed={tab === "holdings"}
+            onClick={() => setTab("holdings")}
+            className={tab === "holdings" ? "selected" : ""}
           >
-            + 거래 추가
-          </Link>
-          <MarketDataStatus
-            lastUpdatedAt={lastMarketUpdateAt}
-            error={marketDataError}
-            loading={loading}
-          />
+            보유 자산<span>{summary?.holdings.length ?? 0}</span>
+          </button>
+          <button
+            aria-pressed={tab === "transactions"}
+            onClick={() => setTab("transactions")}
+            className={tab === "transactions" ? "selected" : ""}
+          >
+            거래 내역
+            <span>
+              {isDemo ? DEMO_TRANSACTIONS.length : transactions.length}
+            </span>
+          </button>
         </div>
+        {(summary?.holdings.length ?? 0) > 0 && (
+          <button className="button-secondary" onClick={exportHoldings}>
+            <Download size={13} />
+            보유 자산 CSV
+          </button>
+        )}
       </div>
-
-      <PortfolioSummaryCards summary={summary} loading={loading} />
-
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-white">보유 종목</h2>
+      {tab === "holdings" ? (
         <HoldingsTable
           holdings={summary?.holdings ?? []}
           displayCurrency={displayCurrency}
-          loading={loading}
+          loading={!isDemo && loading}
         />
-      </div>
-
-      <div>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white">거래 내역</h2>
-        </div>
-        <div className="mb-4">
-          <TransactionBackupPanel />
-        </div>
+      ) : isDemo ? (
+        <section className="surface">
+          <div className="surface-header">
+            <h2>샘플 거래 기록</h2>
+            <p>실제 거래 기록과 분리된 예시입니다.</p>
+          </div>
+          <div className="sample-transactions">
+            {DEMO_TRANSACTIONS.map((tx) => (
+              <div className="sample-transaction" key={tx.id}>
+                <AssetAvatar symbol={tx.symbol} />
+                <div>
+                  <strong>
+                    {tx.name} <span className="buy-chip">매수</span>
+                  </strong>
+                  <small>
+                    {tx.date} · {tx.quantity}주
+                  </small>
+                </div>
+                <div>
+                  <strong>
+                    {formatCurrency(tx.price * tx.quantity, tx.currency)}
+                  </strong>
+                  <small>주당 {formatCurrency(tx.price, tx.currency)}</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
         <TransactionList
           transactions={transactions}
           onUpdate={updateTransaction}
           onRemove={removeTransaction}
-          onDeleted={handleDeleted}
+          onDeleted={(transaction) => {
+            setUndoError(null);
+            setLastDeleted(transaction);
+          }}
         />
-      </div>
-
+      )}
       {lastDeleted && (
-        <div className="fixed bottom-6 left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 shadow-2xl">
+        <div
+          role="status"
+          className="fixed bottom-24 left-1/2 z-40 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 rounded-xl border border-[#dce7dc] bg-white px-4 py-3 shadow-xl md:bottom-6"
+        >
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium">
                 {lastDeleted.symbol} 거래를 삭제했습니다.
               </p>
-              {undoError ? (
-                <p className="mt-1 text-xs text-red-300">{undoError}</p>
-              ) : (
-                <p className="mt-1 text-xs text-slate-500">
-                  8초 안에 되돌릴 수 있습니다.
-                </p>
-              )}
+              <p className="mt-1 text-xs text-[#85947d]">
+                {undoError ?? "8초 안에 되돌릴 수 있습니다."}
+              </p>
             </div>
             <button
-              type="button"
               onClick={handleUndo}
               disabled={undoing}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
+              className="button-secondary"
             >
               {undoing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 size={14} className="animate-spin" />
               ) : (
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw size={14} />
               )}
               되돌리기
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLastDeleted(null);
-                setUndoError(null);
-              }}
-              disabled={undoing}
-              className="shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-800 hover:text-white disabled:opacity-50"
-              aria-label="알림 닫기"
-            >
-              <X className="h-4 w-4" />
+            <button onClick={() => setLastDeleted(null)} aria-label="알림 닫기">
+              <X size={16} />
             </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

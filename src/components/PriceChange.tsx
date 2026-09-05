@@ -19,7 +19,11 @@ export function PriceChange({
   className,
 }: PriceChangeProps) {
   const isPositive = value >= 0;
-  const sizeClass = { sm: "text-sm", md: "text-base", lg: "text-lg font-semibold" }[size];
+  const sizeClass = {
+    sm: "text-sm",
+    md: "text-base",
+    lg: "text-lg font-semibold",
+  }[size];
   const amount = currency
     ? formatCurrency(Math.abs(value), currency)
     : Math.abs(value).toFixed(2);
@@ -28,14 +32,18 @@ export function PriceChange({
     <span
       className={cn(
         sizeClass,
-        isPositive ? "text-emerald-400" : "text-red-400",
-        className
+        value === 0
+          ? "text-[#617365]"
+          : isPositive
+            ? "text-[#26764f]"
+            : "text-[#ab4e42]",
+        className,
       )}
     >
-      {isPositive ? "+" : "-"}
+      {value === 0 ? "" : isPositive ? "+" : "-"}
       {amount}
       {showPercent && percent !== undefined && (
-        <span className="ml-1 opacity-80">({formatPercent(percent)})</span>
+        <span className="ml-1 opacity-100">({formatPercent(percent)})</span>
       )}
     </span>
   );

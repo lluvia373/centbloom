@@ -1,16 +1,29 @@
 import { TransactionForm } from "@/components/TransactionForm";
 
-export default function SearchPage() {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ symbol?: string | string[] }>;
+}) {
+  const { symbol: requestedSymbol } = await searchParams;
+  const symbol = Array.isArray(requestedSymbol)
+    ? requestedSymbol[0]
+    : requestedSymbol;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300">Activity</p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">거래 기록</h1>
-        <p className="mt-1 text-slate-400">
-          매수·매도 거래를 기록하세요. 과거 날짜도 선택할 수 있습니다.
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#617365]">
+          YOUR NEXT CHAPTER
+        </p>
+        <h1 className="mt-2 text-[28px] font-semibold tracking-tight text-[#1b2c26]">
+          작은 기록이 쌓이는 곳
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-[#617365]">
+          관심 있는 기업을 찾고, 나의 매수와 매도를 차곡차곡 기록하세요.
         </p>
       </div>
-      <TransactionForm />
+      <TransactionForm key={symbol ?? "new"} initialSymbol={symbol} />
     </div>
   );
 }
