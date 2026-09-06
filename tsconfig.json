@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", ".open-next", ".wrangler", "work", "작업브랜치"]
+  "exclude": ["node_modules", ".open-next", ".wrangler", "work"]
 }
