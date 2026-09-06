@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import { runInNewContext } from 'node:vm';
@@ -15,10 +15,10 @@ export function loadTypescript(path, overrides={}, cache=new Map()) {
     if(name in overrides)return overrides[name];
     if(!name.startsWith('.')&&!name.startsWith('@/'))return require(name);
     const base=name.startsWith('@/')?resolve('src',name.slice(2)):resolve(dirname(absolute),name);
-    const file=['', '.ts','.tsx','/index.ts'].map(s=>base+s).find(existsSync);
+    const file=['', '.ts','.tsx','/index.ts'].map(s=>base+s).find(path=>existsSync(path)&&statSync(path).isFile());
     if(!file)throw new Error(`Cannot resolve ${name} from ${absolute}`);
     return loadTypescript(file,overrides,cache);
   };
-  runInNewContext(outputText,{exports,require:localRequire,console,Date,Intl,Map,Set,Promise,JSON,Number,Object,Array,Math,Error,TypeError,DOMException,AbortController,AbortSignal,URLSearchParams,structuredClone,crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval,fetch:(...args)=>globalThis.fetch(...args)}, {filename:absolute});
+  runInNewContext(outputText,{exports,require:localRequire,console,Date,Intl,Map,Set,Promise,JSON,Number,Object,Array,Math,Error,TypeError,DOMException,AbortController,AbortSignal,URL,URLSearchParams,structuredClone,crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval,fetch:(...args)=>globalThis.fetch(...args)}, {filename:absolute});
   return exports;
 }

@@ -1,0 +1,39 @@
+.header:global(.topbar) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  height: 60px;
+  z-index: 48;
+  padding-inline: 24px;
+}
+.header :global(.topbar-actions) { gap: 8px; }
+.header :global(.topbar-search) {
+  display: inline-flex;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+.header :global(.topbar-search span) { display: none; }
+.header :global(.button-secondary) {
+  white-space: nowrap;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .header:global(.topbar) {
+    height: auto;
+    grid-template-rows: 52px auto;
+    gap: 0 12px;
+    padding-inline: 20px;
+  }
+  .header > section { grid-column: 1 / -1; grid-row: 2; }
+  .header :global(.mobile-brand) { grid-column: 1; grid-row: 1; font-size: 21px; }
+  .header :global(.mobile-brand .brand-mark) { width: 30px; height: 30px; }
+  .header :global(.topbar-actions) { grid-column: 2; grid-row: 1; gap: 4px; }
+  .header :global(.mobile-settings) { display: none; }
+  .header :global(.icon-button) { width: 36px; height: 36px; }
+}
+@media (max-width: 360px) {
+  .header:global(.topbar) { padding-inline: 12px; }
+}

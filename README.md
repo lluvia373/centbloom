@@ -1,6 +1,6 @@
 # Centifolio
 
-주식 이야기를 나누는 커뮤니티와 관심종목·수동 포트폴리오를 연결하는 앱. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
+공개 시장 정보와 투자 읽을거리에서 관심종목·개인 포트폴리오로 이어지는 앱. 첫 공개 버전에는 회원 토론을 포함하지 않는다. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
 
 [GitHub 저장소](https://github.com/lluvia373/centifolio) · [공개 웹](https://centifolio.stock-web-demo.workers.dev/)
 
@@ -10,14 +10,20 @@
 | --- | --- |
 | 작업·문서 작성 규칙 | [AGENTS.md](./AGENTS.md) |
 | 코드 지도·파일 역할·기능 추가 방법 | [DEVELOPMENT.md](./DEVELOPMENT.md) |
+| 현재 제품 결정·범위·변경 이력 | [DECISIONS.md](./DECISIONS.md) |
 | 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
 | 구현·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
 | Cloudflare 배포·로그인 설정 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
 | 승인 로고·자산·재생성 | [BRAND.md](./BRAND.md) |
+| 공개 홈 경쟁 서비스 조사·회원 전환 제안 | [PUBLIC_HOME_RESEARCH.md](./PUBLIC_HOME_RESEARCH.md) |
 
 사업 계획은 로컬 전용 BUSINESS_MODEL.md에서 관리하며 공개 저장소에 포함하지 않는다. 파일이 없는 환경은 위 공개 문서를 따른다.
 
 코드를 수정할 때는 PROJECT_STATUS의 현재 상태/제약을 확인하고 [작업별 시작점](./DEVELOPMENT.md#작업별-시작점)에서 담당 파일과 테스트를 선택한다. [확장 절차](./DEVELOPMENT.md#코드-추가수정-절차)·[파일 역할](./DEVELOPMENT.md#파일-역할)을 필요할 때 읽고, 전체 소스나 과거 기록을 반복해서 읽지 않는다.
+
+## 이 작업 브랜치 실행
+
+`C:\Users\Siyun\Desktop\works\centifolio\작업브랜치`는 `codex/market-index-strip`의 독립 Git worktree다. 이 폴더에서 `npm run dev -- --hostname localhost --port 2000`을 실행하면 http://localhost:2000 에서 공개 시장 홈과 종목 탐색을 확인할 수 있다. 운영 환경 변수는 복사하지 않았으며 로컬 저장 모드로 실행한다.
 
 ## 로컬 실행
 

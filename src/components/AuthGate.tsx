@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { isPublicRoute } from "@/features/auth/public-routes";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,11 +39,12 @@ function PortfolioPreview() {
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, configured, signInWithGoogle } = useAuth();
+  const pathname=usePathname();
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Google/Supabase 환경변수가 준비되기 전에는 기존 공개 앱을 유지합니다.
-  if (!configured) return children;
+  if (isPublicRoute(pathname) || !configured) return children;
 
   if (loading) {
     return (
@@ -70,7 +74,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="cf-auth-page">
       <header className="cf-auth-header">
-        <div aria-label="Centifolio" className="cf-auth-wordmark"><BrandMark size={36} /><span>centifolio</span></div>
+        <Link href="/" aria-label="Centifolio 시장 홈" className="cf-auth-wordmark"><BrandMark size={36} /><span>centifolio</span></Link><Link href="/" className="text-sm text-[#727680]">시장 먼저 둘러보기 ↗</Link>
       </header>
       <main id="main-content" className="cf-auth-main">
         <div className="cf-auth-stage">

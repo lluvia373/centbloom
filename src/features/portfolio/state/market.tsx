@@ -24,7 +24,7 @@ export function PortfolioMarketProvider({
   const { transactions } = useTransactions();
   const { displayCurrency } = usePreferences();
   const pathname = usePathname();
-  const enabled = ["/", "/portfolio", "/insights"].includes(pathname);
+  const enabled = ["/portfolio", "/insights"].includes(pathname);
   const holdings = useMemo(() => deriveHoldings(transactions), [transactions]);
   const symbols = holdings.map((h) => h.symbol);
   const knownCurrencies = [

@@ -57,7 +57,7 @@ export default function RootLayout({
                       <span>
                         centifolio <span>나의 투자를, 나답게.</span>
                       </span>
-                      <span>Centifolio</span>
+                      <a href="https://elbstream.com" target="_blank" rel="noreferrer" className="company-logo-credit">로고 · Elbstream</a>
                     </footer>
                   </main>
                 </div>

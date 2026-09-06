@@ -7,6 +7,8 @@ PortfolioMode,
 } from "@/components/Header";
 import { HoldingsTable } from "@/components/HoldingsTable";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
+import { WealthChart } from "@/components/WealthChart";
+import { AllocationChart } from "@/components/AllocationChart";
 import { TransactionList } from "@/components/TransactionList";
 import { usePortfolioMarket,usePreferences,useTransactionCommands,useTransactions } from "@/hooks/usePortfolio";
 import { useWorkspaceSummary } from "@/hooks/useWorkspace";
@@ -104,6 +106,7 @@ export default function PortfolioPage() {
         </p>
       )}
       <PortfolioMetrics />
+      <details className="mb-6" open><summary className="mb-4 cursor-pointer text-sm font-semibold text-[#727680]">자산 흐름과 배분</summary><div className="dashboard-main-grid"><WealthChart/><AllocationChart holdings={summary?.holdings ?? []} displayCurrency={displayCurrency}/></div></details>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="section-tabs" role="group" aria-label="포트폴리오 보기">
           <button

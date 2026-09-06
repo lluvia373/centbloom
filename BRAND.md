@@ -24,7 +24,9 @@
 
 ## 종목 마크
 
-기업 식별용 마크는 Centifolio 장미와 별도다. 기업 공식 사이트·Yahoo Finance에서 받은 원본 15개를 [public/companies](./public/companies)에 보관한다. URL·수집일·원본 해시는 [sources.json](./public/companies/sources.json), 종목 연결과 허용 공급원은 [company-logos.ts](./src/lib/company-logos.ts)가 기준이다. 제공되지 않는 종목은 티커로 표시한다.
+기업 식별용 마크는 Centifolio 장미와 별도다. 기업 공식 사이트·Yahoo Finance에서 받은 원본 15개를 [public/companies](./public/companies)에 보관한다. URL·수집일·원본 해시는 [sources.json](./public/companies/sources.json), 종목 연결과 허용 공급원은 [company-logos.ts](./src/lib/company-logos.ts)가 기준이다. 등록 원본 → 허용된 Yahoo 이미지 → Elbstream의 전체 종목 코드 조회 순으로 사용하며, 각 이미지 로딩 실패 시 다음 공급원으로 넘어간다. 거래소 접미사와 주식 클래스는 유지한다. 모든 공급원에서 누락되면 공통 기업 아이콘을 표시한다. 로고·대체 아이콘 모두 흰 프레임과 동일 크기를 사용한다.
+
+[Elbstream Logo API](https://elbstream.com/logos)는 로고가 표시되는 페이지에 12pt 이상 출처 링크를 요구하므로 공통 레이아웃 하단에 16px 링크를 둔다. 이미지는 공급자에서 직접 지연 로딩하며 별도 시세 요청·서버 프록시·이미지 자체 보관을 추가하지 않는다. 로컬 15개 원본은 기존 출처를 유지한다. 전체 종목 지원이나 식별 정확도를 보장하지 않으며, 오표시 확인 시 검증된 원본 매핑을 우선 추가한다. [API 계약](https://api.elbstream.com/openapi.json).
 
 ## 보존·재생성 기준
 

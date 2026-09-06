@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { ArrowUpRight } from "lucide-react";
-import { companyLogo } from "@/lib/company-logos";
+import { ArrowUpRight, Building2 } from "lucide-react";
+import { companyLogoSources } from "@/lib/company-logos";
 
 export function AssetAvatar({
   symbol,
@@ -14,17 +14,22 @@ export function AssetAvatar({
   small?: boolean;
   logoUrl?: string;
 }) {
-  const source = companyLogo(symbol, logoUrl);
-  const [failedSource, setFailedSource] = useState<string | null>(null);
-  const showLogo = source !== null && source !== failedSource;
+  const sources = companyLogoSources(symbol, logoUrl);
+  // Reset failures when a reused row changes security or receives a new provider URL.
+  return <CompanyMark key={JSON.stringify([symbol, sources])} sources={sources} small={small} />;
+}
+
+function CompanyMark({ sources, small }: { sources: string[]; small: boolean }) {
+  const [failed, setFailed] = useState<string[]>([]);
+  const source = sources.find(candidate => !failed.includes(candidate));
   return (
-    <span
-      className={`asset-avatar ${showLogo ? "asset-company-logo" : ""} ${small ? "asset-avatar-small" : ""}`}
-      aria-hidden="true"
-    >
-      {showLogo ? <Image src={source} alt="" width={32} height={32} unoptimized
-        className="h-full w-full object-contain" onError={() => setFailedSource(source)} />
-        : <span className="text-xs">{symbol.slice(0, 2)}</span>}
+    <span className={`asset-avatar ${small ? "asset-avatar-small" : ""}`} aria-hidden="true">
+      {source ? (
+        <Image key={source} src={source} alt="" width={32} height={32} unoptimized
+          loading="lazy" referrerPolicy="no-referrer"
+          className="h-full w-full object-contain"
+          onError={() => setFailed(previous => previous.includes(source) ? previous : [...previous, source])} />
+      ) : <Building2 size={small ? 16 : 19} strokeWidth={1.6} />}
     </span>
   );
 }

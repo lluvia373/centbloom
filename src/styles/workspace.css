@@ -225,13 +225,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-weight: 700;
-  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  padding: 5px;
+  color: #929aa5;
+  background: #fff;
+  border: 1px solid #eceef0;
+  border-radius: 10px;
+  overflow: hidden;
 }
-.asset-avatar-small {
+.asset-avatar.asset-avatar-small {
   width: 30px;
   height: 30px;
-  font-size: 14px;
+  padding: 4px;
+  border-radius: 8px;
 }
 .samsung-mark {
   font-style: italic;
@@ -725,20 +732,6 @@
   color: #727680;
   font-size: 12px;
 }
-.asset-avatar {
-  background: #f1f3f5;
-  color: #747d88;
-  border: 0;
-  border-radius: 10px;
-  width: 36px;
-  height: 36px;
-}
-.asset-avatar.asset-company-logo {
-  padding: 5px;
-  background: #fff;
-  border: 1px solid #eceef0;
-  overflow: hidden;
-}
 .asset-nvidia {
   background: #edf3e9;
   color: #68834b;
@@ -832,10 +825,22 @@
 }
 .app-footer {
   margin-top: 38px;
-  padding: 25px 0;
+  padding: 16px 0;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   border-top: 1px solid #e7eaee;
   color: #727680;
   font-size: 11px;
+}
+/* Elbstream free logo attribution: minimum 12pt (16px), on every app page. */
+.app-footer .company-logo-credit {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.25;
+  white-space: nowrap;
+  color: #626d7b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .app-footer > span:first-child {
   color: #727680;
