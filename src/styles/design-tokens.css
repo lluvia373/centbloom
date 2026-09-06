@@ -1,5 +1,13 @@
 /* UI values live here. Keep DESIGN_SYSTEM.md in sync. */
 :root {
+  --cf-color-allocation-1: #3b8879;
+  --cf-color-allocation-2: #6d91aa;
+  --cf-color-allocation-3: #a1b7bf;
+  --cf-color-allocation-4: #91ad9c;
+  --cf-color-allocation-5: #b9a46e;
+  --cf-color-allocation-6: #b5b9c4;
+  --cf-color-allocation-7: #687b85;
+  --cf-color-allocation-8: #d0d8d5;
   --cf-color-market-up: #d74353;
   --cf-color-market-down: #356ed5;
   --cf-font-ui: var(--font-geist-sans), Arial, "Malgun Gothic", sans-serif;

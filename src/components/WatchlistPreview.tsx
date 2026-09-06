@@ -5,37 +5,11 @@ import { formatWatchPrice,useWatchlist } from "@/hooks/useWatchlist";
 import { ChevronRight,Plus,Star } from "lucide-react";
 import Link from "next/link";
 
-const samples = [
-  {
-    symbol: "MSFT",
-    name: "Microsoft",
-    price: 441.85,
-    currency: "USD",
-    change: -0.42,
-  },
-  {
-    symbol: "AMZN",
-    name: "Amazon",
-    price: 186.49,
-    currency: "USD",
-    change: 1.24,
-  },
-  {
-    symbol: "005930.KS",
-    name: "삼성전자",
-    price: 72400,
-    currency: "KRW",
-    change: 0.84,
-  },
-];
-
-export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
+export function WatchlistPreview() {
   const { items, quotes, ready, quotesLoading, error, failedSymbols } = useWatchlist({
-    loadQuotes: !isDemo, quoteLimit: 3,
+    quoteLimit: 3,
   });
-  const rows = isDemo
-    ? samples
-    : items
+  const rows = items
         .slice(0, 3)
         .map((item) => ({
           symbol: item.symbol,
@@ -51,11 +25,6 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           <h2 className="text-[15px] font-semibold tracking-tight text-[#202329]">
             관심종목
           </h2>
-          {isDemo ? (
-            <span className="rounded bg-[#f2f4f5] px-1.5 py-0.5 text-[11px] text-[#727680]">
-              샘플
-            </span>
-          ) : null}
         </div>
         <Link
           href="/watchlist"
@@ -65,7 +34,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           <ChevronRight size={17} />
         </Link>
       </div>
-      {!isDemo && !ready ? (
+      {!ready ? (
         <p className="py-10 text-center text-xs text-[#727680]">
           관심종목을 불러오고 있어요.
         </p>
@@ -123,34 +92,23 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
           </p>
         </div>
       )}
-      {!isDemo && error ? (
+      {error ? (
         <p role="alert" className="mt-3 text-[11px] leading-5 text-[#946a24]">
           {error}
         </p>
       ) : null}
-      {!isDemo && failedSymbols.length > 0 ? (
+      {failedSymbols.length > 0 ? (
         <p role="status" className="mt-3 text-[11px] text-[#b46926]">일부 종목 갱신 실패 · 마지막 확인 가격을 표시합니다</p>
       ) : null}
-      {!isDemo && items.length > 0 ? <p className="mt-3 text-[11px] text-[#727680]">30초 자동 갱신 · 지연 시세 포함</p> : null}
+      {items.length > 0 ? <p className="mt-3 text-[11px] text-[#727680]">30초 자동 갱신 · 지연 시세 포함</p> : null}
       <Link
         href="/watchlist"
         className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e9eaed] py-2.5 text-[11px] font-medium text-[#727680] transition hover:bg-[#f6f7f8]"
       >
-        {isDemo ? (
-          <>
-             나의 관심종목 만들기
-          </>
-        ) : (
-          <>
+                  <>
             <Plus size={13} /> 관심종목 추가
           </>
-        )}
       </Link>
-      {isDemo ? (
-        <p className="mt-3 text-center text-[11px] text-[#727680]">
-          예시 가격이며 실제 시세가 아닙니다
-        </p>
-      ) : null}
     </section>
   );
 }

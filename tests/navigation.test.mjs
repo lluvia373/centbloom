@@ -50,28 +50,21 @@ test("new transaction history route retains the existing private auth boundary",
   assert.doesNotMatch(renderToStaticMarkup(createElement(AuthGate, null, "PRIVATE_HISTORY")), /PRIVATE_HISTORY/);
 });
 
-test("moved transaction history preserves personal command wiring and keeps sample records read-only", () => {
+test("transaction history preserves actual records and edit/delete commands, including an empty ledger", () => {
   const commands = { updateTransaction: async () => null, removeTransaction: async () => null, restoreTransaction: async () => null };
-  const records = [{ id: "isolated", symbol: "TEST", name: "Test", type: "buy", quantity: 1, price: 10, date: "2026-09-06", currency: "USD", fee: 0 }];
-  for (const isDemo of [false, true]) {
+  const record = { id: "isolated", symbol: "TEST", name: "Test", type: "buy", quantity: 1, price: 10, date: "2026-09-06", currency: "USD", fee: 0 };
+  for (const records of [[], [record]]) {
     let received;
     const { TransactionHistory } = loadTypescript("src/features/portfolio/ui/TransactionHistory.tsx", {
       "@/hooks/useAuth": { useAuth: () => ({ user: { id: "isolated-user" } }) },
-      "@/hooks/useWorkspace": { useWorkspace: () => ({ isDemo }) },
       "@/hooks/usePortfolio": { useTransactions: () => ({ transactions: records }), useTransactionCommands: () => commands },
-      "@/components/AssetAvatar": { AssetAvatar: () => null },
       "@/components/TransactionList": { TransactionList: (props) => { received = props; return createElement("div", null, "personal-history"); } },
     });
     const html = renderToStaticMarkup(createElement(TransactionHistory));
-    if (isDemo) {
-      assert.equal(received, undefined);
-      assert.match(html, /샘플 거래 기록/);
-      assert.doesNotMatch(html, /personal-history/);
-    } else {
-      assert.equal(received.transactions, records);
-      assert.equal(received.onRemove, commands.removeTransaction);
-      assert.equal(received.onUpdate, commands.updateTransaction);
-      assert.equal(typeof received.onDeleted, "function");
-    }
+    assert.doesNotMatch(html, /샘플/);
+    assert.equal(received.transactions, records);
+    assert.equal(received.onRemove, commands.removeTransaction);
+    assert.equal(received.onUpdate, commands.updateTransaction);
+    assert.equal(typeof received.onDeleted, "function");
   }
 });

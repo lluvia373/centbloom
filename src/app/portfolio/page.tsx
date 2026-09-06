@@ -4,26 +4,23 @@ import {
 AddTransactionLink,
 CurrencySwitch,
 PageHeading,
-PortfolioMode,
 } from "@/components/Header";
 import { HoldingsTable } from "@/components/HoldingsTable";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { WealthChart } from "@/components/WealthChart";
 import { AllocationChart } from "@/components/AllocationChart";
 import { usePortfolioMarket,usePreferences,useTransactions } from "@/hooks/usePortfolio";
-import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { Download } from "lucide-react";
 export default function PortfolioPage() {
-  const { summary, isDemo } = useWorkspaceSummary();
   const { transactions } = useTransactions();
 
 
   const { displayCurrency } = usePreferences();
-  const { loading, marketDataError } = usePortfolioMarket();
+  const { summary, loading, marketDataError } = usePortfolioMarket();
 
   const exportHoldings = () => {
     const rows = [
-      [isDemo ? "샘플 데이터" : "내 보유 자산", "표시 통화", displayCurrency],
+      ["내 보유 자산", "표시 통화", displayCurrency],
       ["종목", "이름", "수량", "평가액", "평가손익", "수익률(%)"],
       ...(summary?.holdings ?? []).map((h) => [
         h.symbol,
@@ -53,7 +50,7 @@ export default function PortfolioPage() {
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `centifolio-${isDemo ? "sample" : "holdings"}.csv`;
+    anchor.download = "centifolio-holdings.csv";
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -65,8 +62,8 @@ export default function PortfolioPage() {
         <CurrencySwitch />
         <AddTransactionLink />
       </PageHeading>
-      <PortfolioMode />
-      {!isDemo && marketDataError && (
+
+      {marketDataError && (
         <p
           role="status"
           className="mb-4 rounded-cf-control bg-cf-warning-soft p-3 text-cf-caption text-cf-muted"
@@ -88,11 +85,11 @@ export default function PortfolioPage() {
         <HoldingsTable
           holdings={summary?.holdings ?? []}
           displayCurrency={displayCurrency}
-          loading={!isDemo && loading}
-          editable={!isDemo}
+          loading={loading}
+          editable
         />
 
-      <PortfolioAd hasContent={!isDemo && transactions.length > 0} />
+      <PortfolioAd hasContent={transactions.length > 0} />
     </>
   );
 }

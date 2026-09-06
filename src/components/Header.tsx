@@ -8,12 +8,10 @@ import { isPublicRoute } from "@/features/auth/public-routes";
 
 import { useAuth } from "@/hooks/useAuth";
 import { usePreferences } from "@/hooks/usePortfolio";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import {
 Bell,
 ChevronRight,
 CircleHelp,
-Layers3,
 LayoutDashboard,
 LogOut,
 Plus,
@@ -34,12 +32,10 @@ export function Header() {
   const { user, configured, signOut } = useAuth();
   const showActions = !marketHome || (configured && !user);
 
-  const { isDemo, setDemo } = useWorkspace();
   const [panel, setPanel] = useState<"notifications" | "help" | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const area = navigationArea(pathname);
   const pageName = navigationPageName(pathname);
-  const samplePage = ["/portfolio", "/insights", "/transactions"].includes(pathname);
   useEffect(() => {
     if (!panel) return;
     const close = (event: MouseEvent) => {
@@ -117,12 +113,11 @@ export function Header() {
             href="/discover"
             aria-label="종목 검색"
             className="topbar-search"
-            onClick={() => setDemo(false)}
           >
             <Search size={16} />
             <span>종목 검색</span>
           </Link>}
-          {!publicPage && <CurrencySwitch />}
+          {!publicPage && pathname !== "/settings" && <CurrencySwitch />}
 
           {!marketHome && <button
             className="icon-button"
@@ -144,7 +139,7 @@ export function Header() {
             <CircleHelp size={18} />
           </button>}
           {!marketHome && panel === "notifications" && (
-            <MarketNotification isDemo={isDemo} samplePage={samplePage} setPanel={setPanel} />
+            <MarketNotification setPanel={setPanel} />
           )}
           {!marketHome && panel === "help" && (
             <div className="topbar-popover">
@@ -207,28 +202,10 @@ export function PageHeading({
     </div>
   );
 }
-export function PortfolioMode() {
-  const { isDemo, setDemo } = useWorkspace();
-  return (
-    <div className={`portfolio-mode ${isDemo ? "sample" : "personal"}`}>
-      <div>
-        <span className="mode-icon">
-          {isDemo ? <Layers3 size={15} /> : <Wallet size={15} />}
-        </span>
-        <strong>{isDemo ? "샘플 포트폴리오" : "내 포트폴리오"}</strong>
-      </div>
-      <button onClick={() => setDemo(!isDemo)}>
-        {isDemo ? "내 포트폴리오 시작하기" : "샘플 둘러보기"}
-      </button>
-    </div>
-  );
-}
 export function AddTransactionLink() {
-  const { setDemo } = useWorkspace();
   return (
     <Link
       href="/search"
-      onClick={() => setDemo(false)}
       className="button-primary"
     >
       <Plus size={16} />

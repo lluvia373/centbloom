@@ -1,9 +1,7 @@
 "use client";
 import { CalculationHelp } from "@/components/CalculationHelp";
 import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
-import { usePreferences } from "@/hooks/usePortfolio";
-import { useWorkspace,useWorkspaceSummary } from "@/hooks/useWorkspace";
-import { DEMO_FX,demoHistory } from "@/lib/demo";
+import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
 import { formatCurrency } from "@/lib/format";
 import { addCalendarDays } from "@/lib/performance";
 import { ChartNoAxesCombined,Loader2 } from "lucide-react";
@@ -25,7 +23,6 @@ interface WealthPoint {
   cost: number;
   return: number;
 }
-const sampleHistory = demoHistory();
 const ranges = [
   { key: "1w", label: "1주", days: 7 },
   { key: "1m", label: "1개월", days: 30 },
@@ -35,14 +32,6 @@ const ranges = [
 ];
 
 export function WealthChart({ expanded = false }: { expanded?: boolean }) {
-  const { isDemo } = useWorkspace();
-  return isDemo ? (
-    <ChartView points={sampleHistory} demo expanded={expanded} />
-  ) : (
-    <RealChart expanded={expanded} />
-  );
-}
-function RealChart({ expanded }: { expanded: boolean }) {
   const { points, loading, error } = usePerformanceHistory();
   const data = useMemo(
     () =>
@@ -65,25 +54,21 @@ function RealChart({ expanded }: { expanded: boolean }) {
 }
 function ChartView({
   points,
-  demo = false,
   loading = false,
   error,
   expanded = false,
 }: {
   points: WealthPoint[];
-  demo?: boolean;
   loading?: boolean;
   error?: string | null;
   expanded?: boolean;
 }) {
   const { displayCurrency } = usePreferences();
-  const { summary } = useWorkspaceSummary();
+  const { summary } = usePortfolioMarket();
   const [range, setRange] = useState("6m");
   const [mode, setMode] = useState("assets");
   const gradientId = useId().replace(/:/g, "");
-  const fx = demo
-    ? DEMO_FX
-    : summary?.holdings.find((h) => h.currency === "USD")?.currentFxRateToKRW;
+  const fx = summary?.holdings.find((h) => h.currency === "USD")?.currentFxRateToKRW;
   const showUSD = displayCurrency === "USD" && Boolean(fx);
   const currency = showUSD ? "USD" : "KRW";
   const lastDate = points.at(-1)?.date;
@@ -198,7 +183,6 @@ function ChartView({
                     <div className="chart-tooltip">
                       <p>
                         {String(label).replaceAll("-", ". ")}
-                        {demo ? " · 샘플" : ""}
                       </p>
                       <strong>
                         {mode === "assets"
@@ -267,8 +251,7 @@ function ChartView({
         </div>
       )}
       <p className="chart-footnote">
-        {demo ? (mode === "return" ? "샘플 데이터 · 원화 기준" : showUSD ? "샘플 데이터 · 예시 환율 환산 · 현금 미포함" : "샘플 데이터 · 원화 기준 · 현금 미포함")
-          : mode === "return" ? "원화 기준"
+        {mode === "return" ? "원화 기준"
           : showUSD ? "일별 원화 기록 · 현재 환율 환산 · 현금 미포함"
           : "일별 투자자산 · KST 기준 · 현금 미포함"}
       </p>

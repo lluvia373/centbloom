@@ -18,7 +18,9 @@
 
 뉴스 제목 번역: server/title-translation.ts는 응답/숫자/날짜 검증·공유 요청·캐시·실패 대기, translation-provider.ts는 Cloudflare NEWS_AI 호출만 담당한다. api/news는 원문 뉴스 정렬/중복 제거 후 번역을 조합한다. 원문 title은 불변, 선택적 titleKo만 추가하며 MarketNews가 기본 한국어/원문 전환을 표시한다. 검증은 title-translation.test.mjs. worker-configuration.d.ts는 Wrangler 생성물이므로 읽거나 직접 편집하지 말고 설정 변경 후 npm exec wrangler -- types worker-configuration.d.ts --env-interface WorkerBindings로 재생성한다.
 
-메뉴: features/navigation/model.ts가 주요 3구역·내 투자 5개 경로·선택/제목 매핑의 단일 기준이다. Header는 데스크톱/모바일 주요 링크, InvestmentNavigation은 main 본문 상단의 가로 링크만 렌더링한다. 기존 경로를 유지하고 거래내역은 app/transactions에서 조립한다. portfolio/ui/TransactionHistory는 기존 목록·샘플·삭제 복구 상태를 옮긴 단일 구현이며 계정/샘플 전환 때 상태를 초기화한다. /portfolio는 보유자산 표시와 CSV만 담당한다. 거래내역 화면은 보유자산 시세 구독을 시작하지 않는다. 확장 시 모델·navigation.test.mjs·PRODUCT_SPEC의 주요 메뉴와 내 투자를 함께 갱신한다.
+메뉴: features/navigation/model.ts가 주요 3구역·내 투자 5개 경로·선택/제목 매핑의 단일 기준이다. Header는 데스크톱/모바일 주요 링크, InvestmentNavigation은 main 본문 상단의 가로 링크만 렌더링한다. 기존 경로를 유지하고 거래내역은 app/transactions에서 조립한다. portfolio/ui/TransactionHistory는 기존 목록·삭제 복구 상태를 옮긴 단일 구현이며 계정 전환 때 상태를 초기화한다. /portfolio는 보유자산 표시와 CSV만 담당한다. 거래내역 화면은 보유자산 시세 구독을 시작하지 않는다. 확장 시 모델·navigation.test.mjs·PRODUCT_SPEC의 주요 메뉴와 내 투자를 함께 갱신한다.
+
+배분 차트 색상은 design-tokens.css의 allocation-1~8에 둔다. 샘플 자료 모듈에 의존하지 않는다.
 
 ## 작업별 시작점
 
@@ -43,13 +45,13 @@
 ## 실행 흐름과 외부 사용 창구
 
 ```text
-app/layout.tsx → AuthProvider → AuthGate → PortfolioProvider → WorkspaceProvider → 페이지
+app/layout.tsx → AuthProvider → AuthGate → PortfolioProvider → 페이지
 거래 UI → useTransactionCommands → ledger-store → commands/enrichment → local 또는 server 저장소
 시장 UI → useLiveQuotes / useStockSearch → stock-api → app/api → market/server → Yahoo
 성과 UI → usePerformanceHistory → service → repository + request-plan + calculate → performance
 ```
 
-UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx)의 `useTransactions`, `useTransactionCommands`, `usePreferences`, `usePortfolioMarket`다. 필요한 구독만 선택한다. `useWorkspace`는 샘플 모드 선택, `useWorkspaceSummary`는 샘플/실제 자산 요약이다. 실시간 시세는 `useLiveQuotes`, 종목 검색은 `features/market/use-stock-search.ts`의 `useStockSearch`, 성과는 `usePerformanceHistory`를 사용한다.
+UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx)의 `useTransactions`, `useTransactionCommands`, `usePreferences`, `usePortfolioMarket`다. 필요한 구독만 선택한다. 자산 요약은 `usePortfolioMarket`의 실제 기록만 사용하며 샘플 Provider는 없다. 실시간 시세는 `useLiveQuotes`, 종목 검색은 `features/market/use-stock-search.ts`의 `useStockSearch`, 성과는 `usePerformanceHistory`를 사용한다.
 
 새 UI에서 repository·컨텍스트 내부를 직접 가져오거나 별도 거래 배열을 저장하지 않는다. 여러 기능이 쓰는 순수 타입·계산·API는 현재 `lib`의 명시적 export를 사용한다. 같은 기능 내부의 상대 import와 페이지의 기능 UI import는 허용한다. 서버 공급자 모듈을 클라이언트 UI에 import하지 않는다. 이 경계는 현재 작성 규칙이며 ESLint가 전부 강제하는 것은 아니다.
 
@@ -61,11 +63,11 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | --- | --- |
 | [app/layout.tsx](./src/app/layout.tsx) | 글꼴·메타데이터·Provider 순서·공통 프레임 |
 | [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
-| [features/settings/ui](./src/features/settings/ui) | AccountSettings: 계정 정보·로그인/로그아웃. CurrencySettings: 표시 통화 선택·저장 오류. settings/page.tsx는 이 UI와 기존 거래 백업 패널을 조립 |
+| [features/settings/ui](./src/features/settings/ui) | AccountSettings: 실제 계정 정보·로그인/로그아웃과 CurrencySettings 조립. CurrencySettings: 작은 통화 선택·저장 오류/재시도. settings/page.tsx는 계정과 접힌 거래 백업 패널만 조립 |
 | [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
 | [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
 | [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | 로그인 세션과 Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
-| [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx), [hooks/useWorkspace.tsx](./src/hooks/useWorkspace.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 샘플/개인 모드와 표시 요약 |
+| [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 실제 기록의 표시 요약 |
 | [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`: 증시 캘린더 기능의 주간 선택 연결. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
 | [features/ads](./src/features/ads) | PortfolioAd는 포트폴리오 하단 광고·미연결 예약 영역·지연 스크립트 로딩, adsense는 설정 검증·DOM별 1회 요청을 담당. 전용 CSS 모듈은 광고 라벨·여백·미송출 숨김을 소유 |
 | [features/auth/public-routes.ts](./src/features/auth/public-routes.ts) | AuthGate의 공개 읽기 경로 허용 목록. 새 공개 경로는 여기와 접근 경계 테스트를 함께 수정 |
@@ -89,10 +91,10 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [components](./src/components)의 거래 UI | `TransactionForm`: 새 거래 입력. `TransactionList`: 목록/필터·편집 연결. `HoldingManagement`: 종목별 거래 수정/개별 삭제·되돌리기·별도 전체 삭제. `TransactionBackupPanel`: 파일 읽기/검증·내보내기·복구 명령 연결 |
 | [components](./src/components)의 자산 UI | `HoldingsTable`, `PortfolioMetrics`: 보유 목록/지표. `WealthChart`, `AllocationChart`, `PerformanceAnalytics`: 자산 흐름·배분·상세 분석 조립 |
 | [components](./src/components)의 시장 UI | `StockDetail`, `StockChart`: 독립 시세/차트 상태. `LiveMarkets`: 세계 주식. `WatchlistPreview`: 관심 3개. `MarketPicker`, `QuoteStatus`, `PriceChange`: 선택·시세 상태/변동 표시 |
-| [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 상단바 또는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
+| [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 상단바 또는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 샘플 미리보기 없는 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
 | [lib/portfolio.ts](./src/lib/portfolio.ts), [lib/performance.ts](./src/lib/performance.ts) | 순수 보유 상태·원가·거래 이력 검증; KST 날짜·일별 성과·수익률 계산 |
 | [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 이전 브랜드 키 읽기 호환. 이름에 stock이 남은 저장 키를 임의 변경하지 않음 |
-| [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `demo.ts`: 샘플. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
+| [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
 | [shared/async](./src/shared/async), [shared/react/use-operation-scope.ts](./src/shared/react/use-operation-scope.ts) | `pool.ts`: 동시 실행 제한. `request-cache.ts`: 공유 요청·취소/TTL/timeout. `shared-resource.ts`: 공유 결과·수명/폴링. operation scope: 화면/계정 해제 후 UI 반영 차단 |
 | [supabase/migrations](./supabase/migrations), [supabase/rollback](./supabase/rollback) | 기존 DB의 거래 CAS·원자적 교체/성과 저장 증분 SQL과 복구 SQL. 새 DB의 전체 초기 스키마는 아님 |
 

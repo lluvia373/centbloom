@@ -339,39 +339,6 @@
 .page-section {
   margin-top: 23px;
 }
-.sample-transactions {
-  padding: 10px 22px;
-}
-.sample-transaction {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 17px 0;
-  border-bottom: 1px solid var(--line);
-}
-.sample-transaction:last-child {
-  border: 0;
-}
-.sample-transaction > div:last-child {
-  margin-left: auto;
-  text-align: right;
-}
-.sample-transaction strong {
-  font-size: 12px;
-  font-weight: 550;
-  display: block;
-}
-.sample-transaction small {
-  display: block;
-  font-size: 12px;
-  color: #727680;
-  margin-top: 4px;
-}
-.sample-transaction .buy-chip {
-  font-size: 11px;
-  padding: 3px 6px;
-  border-radius: 4px;
-}
 .analytics-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
@@ -564,9 +531,6 @@
 .button-secondary:hover {
   background: #f6f7f8;
 }
-.mode-icon {
-  color: #727680;
-}
 .dashboard-main-grid {
   grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
   gap: 24px;
@@ -666,11 +630,6 @@
 }
 .empty-portfolio h3 {
   font-size: 17px;
-}
-
-.sample-transaction .buy-chip {
-  color: #16856b;
-  background: #edf6f1;
 }
 .app-footer {
   margin-top: var(--cf-space-8);

@@ -5,7 +5,6 @@ import { useOperationScope } from "@/shared/react/use-operation-scope";
 
 import { useTradeMarket } from "@/features/market/use-trade-market";
 import { useTransactionCommands, useTransactions } from "@/hooks/usePortfolio";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { formatCurrency, todayISO } from "@/lib/format";
 import { discoveryStocks } from "@/lib/markets";
 import { getAvailableQuantity } from "@/lib/portfolio";
@@ -37,7 +36,6 @@ function TransactionFormSession({
   const { user } = useAuth();
   const captureScope = useOperationScope(user?.id ?? "guest");
   const { addTransaction } = useTransactionCommands();
-  const { setDemo } = useWorkspace();
   const [selected, setSelected] = useState<StockSearchResult | null>(
     () =>
       discoveryStocks("all").find((stock) => stock.symbol === initialSymbol) ??
@@ -120,7 +118,6 @@ function TransactionFormSession({
       setError(transactionError);
       return;
     }
-    setDemo(false);
     setError(null);
     setSuccess(true);
     setQuantity("");
