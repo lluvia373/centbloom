@@ -100,13 +100,13 @@ export function WatchlistRow({
                     ? "✓ 목표가 도달"
                     : aboveTarget !== null
                       ? `목표까지 ${aboveTarget.toFixed(1)}% 하락 필요`
-                      : quote
+                      : quote && !failed
                         ? "통화가 달라 목표가 확인 필요"
-                        : "시세 확인 후 비교할 수 있어요"}
+                        : "시세 확인 필요"}
                 </p>
               </>
             ) : (
-              <p className="text-xs text-[#727680]">아직 설정하지 않았어요</p>
+              <p className="text-xs text-[#727680]">미설정</p>
             )}
           </div>
         </div>

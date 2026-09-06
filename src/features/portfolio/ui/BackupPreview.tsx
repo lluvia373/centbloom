@@ -47,7 +47,7 @@ export function BackupPreview({
               id="backup-preview-title"
               className="mt-1 text-lg font-semibold text-[#202329]"
             >
-              이 백업을 어떻게 적용할까요?
+              백업 복원
             </h3>
             <p className="mt-1 break-all text-xs text-[#727680]">{fileName}</p>
           </div>

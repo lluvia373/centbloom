@@ -75,7 +75,7 @@ export function TargetEditor({
         </p>
       ) : (
         <p className="mt-2 text-xs leading-5 text-[#727680]">
-          이 가격 이하일 때 도달로 표시합니다. 별도 알림은 발송되지 않아요.
+          설정가 이하 도달 표시 · 알림 발송 없음
         </p>
       )}
     </form>

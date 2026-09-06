@@ -5,7 +5,6 @@ import { WatchlistSearch } from "@/features/watchlist/WatchlistSearch";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import {
   Check,
-  ChevronRight,
   CircleAlert,
   Crosshair,
   ListPlus,
@@ -56,12 +55,10 @@ export default function WatchlistPage() {
     <div className="mx-auto max-w-[1400px] space-y-7 text-[#202329]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold tracking-[-0.04em] sm:text-[32px]">
-            기다림에도, 나만의 기준을.
+          <h1 className="text-cf-title font-semibold">
+            관심종목
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[#727680]">
-            관심 있는 기업을 모으고, 사고 싶은 가격을 기록해 보세요.
-          </p>
+
         </div>
         <button
           type="button"
@@ -196,25 +193,13 @@ export default function WatchlistPage() {
             ))}
           </>
         ) : (
-          <div className="flex flex-col items-center px-5 py-16 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#f3f4f6] text-[#727680]">
-              <ListPlus size={27} strokeWidth={1.5} />
-            </span>
-            <h3 className="mt-5 text-base font-semibold">
-              좋은 투자는 관심에서 시작하니까.
+          <div className="flex flex-col items-center px-4 py-8 text-center">
+            <ListPlus size={24} className="text-cf-muted" aria-hidden="true" />
+            <h3 className="mt-4 text-cf-body font-semibold">
+              관심종목 없음
             </h3>
-            <p className="mt-2 max-w-xs text-[13px] leading-6 text-[#727680]">
-              눈여겨보던 기업을 검색해 추가해 보세요.
-              <br />
-              목표가와 현재가를 한곳에서 비교할 수 있어요.
-            </p>
-            <button
-              type="button"
-              onClick={() => searchInput.current?.focus()}
-              className="mt-5 flex items-center gap-1 text-xs font-semibold text-[#727680]"
-            >
-              첫 관심종목 추가하기 <ChevronRight size={14} />
-            </button>
+
+
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e8eb] bg-[#ffffff] px-5 py-3.5 text-xs leading-5 text-[#727680] sm:px-6">

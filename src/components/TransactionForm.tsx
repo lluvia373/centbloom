@@ -143,7 +143,7 @@ function TransactionFormSession({
             02
           </span>
           <h2 className="text-base font-semibold text-[#202329]">
-            거래를 기록해 볼까요
+            거래 입력
           </h2>
         </div>
         {selected ? (
@@ -216,9 +216,7 @@ function TransactionFormSession({
                   placeholder="실제 거래한 1주 가격"
                   className={inputClass}
                 />
-                <p className="mt-2 text-xs text-[#727680]">
-                  거래한 가격을 직접 입력해 주세요.
-                </p>
+
               </div>
               {marketLoading && (
                 <div className="flex items-center text-xs text-[#727680]">
@@ -328,8 +326,7 @@ function TransactionFormSession({
                   </div>
                 )}
                 <p className="mt-2 text-xs leading-5 text-[#727680]">
-                  날짜를 입력하지 않으면 오늘 기준으로 저장돼요. 나중에 거래
-                  내역에서 수정할 수 있어요.
+                  날짜 미입력 시 오늘(한국시간)
                 </p>
               </div>
               {totalAmount > 0 && validMarket && (
@@ -380,25 +377,16 @@ function TransactionFormSession({
                 <Plus className="h-4 w-4" />
                 {txType === "buy" ? "매수 기록 저장" : "매도 기록 저장"}
               </button>
-              <p className="text-center text-xs text-[#727680]">
-                입력한 거래는 내 포트폴리오에 저장됩니다.
-              </p>
+
             </fieldset>
           </form>
         ) : (
-          <div className="flex min-h-[415px] flex-col items-center justify-center text-center">
-            <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[24px] bg-[#f3f4f6]">
-              <Plus className="h-8 w-8 text-[#727680]" />
-              <span className="absolute -right-2 -top-2 h-5 w-5 rounded-full border-4 border-[#dde0e4] bg-[#f3f4f6]" />
-            </div>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+
             <h3 className="text-base font-semibold text-[#202329]">
-              나의 투자를 한 줄씩
+              종목을 선택하세요
             </h3>
-            <p className="mt-3 max-w-56 text-sm leading-6 text-[#727680]">
-              먼저 종목을 선택해 주세요.
-              <br />
-              가격과 수량을 입력하고, 날짜는 필요할 때만 기록하세요.
-            </p>
+
           </div>
         )}
       </section>

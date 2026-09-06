@@ -33,7 +33,7 @@ export function JournalEditor({
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="mt-1.5 text-lg font-semibold">
-            {editingId ? "노트 수정" : "오늘의 생각을 기록하세요"}
+            {editingId ? "노트 수정" : "노트 작성"}
           </h2>
         </div>
         <button
@@ -61,7 +61,7 @@ export function JournalEditor({
             }
             required
             maxLength={120}
-            placeholder="어떤 생각이 들었나요?"
+
             className={FIELD_CLASS}
           />
         </div>
@@ -123,7 +123,7 @@ export function JournalEditor({
             maxLength={12000}
             rows={7}
             placeholder={
-              "이 종목에 관심을 갖게 된 이유는 무엇인가요?\n내 생각이 틀렸다는 신호는 무엇일까요?\n다음에 확인할 것은 무엇인가요?"
+              "예: 다음 실적에서 영업이익률 확인"
             }
             className={`${FIELD_CLASS} resize-y leading-7`}
           />

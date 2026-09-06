@@ -1,11 +1,11 @@
 "use client";
+import { CalculationHelp } from "@/components/CalculationHelp";
 import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
 import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { formatCurrency,formatPercent } from "@/lib/format";
 import {
 ArrowUpRight,
 CircleDollarSign,
-Info,
 TrendingUp,
 Wallet,
 } from "lucide-react";
@@ -38,10 +38,10 @@ export function PortfolioMetrics() {
   return (
     <div className="metric-grid">
       <section className="metric-card primary" aria-label="총 투자자산">
-        <p className="metric-label">
+        <div className="metric-label">
           총 투자자산{" "}
-          <Info size={12} aria-label="현재 주식과 ETF 평가액의 합계" />
-        </p>
+          <CalculationHelp label="총 투자자산">현재 주식과 ETF 평가액의 합계. 현금 잔액은 포함하지 않습니다.</CalculationHelp>
+        </div>
         <span className="metric-icon">
           <Wallet size={17} />
         </span>
@@ -57,16 +57,16 @@ export function PortfolioMetrics() {
               : loading
                 ? "시세 확인 중"
                 : hasData
-                  ? "주식 · ETF 평가액"
-                  : "첫 거래를 기록해 보세요"}
+                  ? "현금 미포함"
+                  : holdings.length ? "시세 확인 필요" : "보유종목 없음"}
           </span>
         </p>
       </section>
       <section className="metric-card" aria-label="누적 평가손익">
-        <p className="metric-label">
+        <div className="metric-label">
           누적 평가손익{" "}
-          <Info size={12} aria-label="보유 자산의 평가액과 매입원가 차이" />
-        </p>
+          <CalculationHelp label="누적 평가손익">보유 자산의 평가액과 매입원가 차이. 입출금의 영향을 제외하는 운용수익률과 구분합니다.</CalculationHelp>
+        </div>
         <span className="metric-icon">
           <TrendingUp size={16} />
         </span>
@@ -81,13 +81,10 @@ export function PortfolioMetrics() {
         </p>
       </section>
       <section className="metric-card" aria-label="주가의 하루 변동">
-        <p className="metric-label">
+        <div className="metric-label">
           오늘의 주가 변동{" "}
-          <Info
-            size={12}
-            aria-label="보유 수량과 최근 거래일 종가 대비 주가 변동. 당일 환율 변동은 제외."
-          />
-        </p>
+          <CalculationHelp label="오늘의 주가 변동">보유 수량과 최근 거래일 종가 대비 주가 변동. 당일 환율 변동은 제외합니다.</CalculationHelp>
+        </div>
         <span className="metric-icon">
           <CircleDollarSign size={16} />
         </span>

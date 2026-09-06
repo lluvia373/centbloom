@@ -4,6 +4,8 @@ import { AssetAvatar } from "@/components/AssetAvatar";
 import { PriceChange } from "@/components/PriceChange";
 import { QuoteStatus } from "@/components/QuoteStatus";
 import { StockChart } from "@/components/StockChart";
+import { MarketNews } from "@/features/home/MarketNews";
+import { WatchStockButton } from "@/features/watchlist/WatchStockButton";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
 import { formatCompactNumber,formatCurrency } from "@/lib/format";
 import {
@@ -18,7 +20,7 @@ import Link from "next/link";
 
 export function StockDetail({ symbol }: { symbol: string }) {
   const live=useLiveQuotes([symbol]);const quote=live.quotes[symbol];
-  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}</div>;
+  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}<MarketNews key={symbol} symbol={symbol}/></div>;
 }
 function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof useLiveQuotes> }) {
   const { quotes, loading, refreshing, failedSymbols, refresh } = live;
@@ -55,7 +57,7 @@ function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof us
             다시 시도
           </button>
           <Link
-            href="/search"
+            href="/discover"
             className="rounded-xl border border-[#e6e8eb] px-4 py-2.5 text-sm text-[#727680]"
           >
             종목 검색
@@ -68,11 +70,11 @@ function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof us
   return (
     <div className="space-y-6">
       <Link
-        href="/portfolio"
+        href="/discover"
         className="inline-flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680]"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        포트폴리오로 돌아가기
+        종목 탐색으로 돌아가기
       </Link>
       <div className="flex flex-col justify-between gap-6 rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-6 sm:flex-row sm:items-center sm:p-8">
         <div>
@@ -105,12 +107,12 @@ function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof us
             30초 자동 갱신 · 새로고침
           </button>
         </div>
-        <Link
+        <div className="flex flex-col items-start gap-3"><WatchStockButton key={quote.symbol} symbol={quote.symbol} name={quote.name}/><Link
           href={`/search?symbol=${encodeURIComponent(quote.symbol)}`}
           className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#25282e] px-5 py-3 text-sm font-medium text-[#ffffff] transition-colors hover:bg-[#25282e]"
         >
           <Plus className="h-4 w-4" />이 종목 거래 기록
-        </Link>
+        </Link></div>
       </div>
 
     </div>
@@ -195,11 +197,9 @@ return <>
       >
         <div>
           <p className="text-sm font-semibold">
-            이 기업에 투자하는 이유가 있나요?
+            투자 노트
           </p>
-          <p className="mt-1 text-xs text-[#727680]">
-            투자 노트에 생각을 남기고, 다음 선택의 기준으로 삼아보세요.
-          </p>
+
         </div>
         <ArrowUpRight className="h-5 w-5 shrink-0" />
       </Link>

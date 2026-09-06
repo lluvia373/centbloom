@@ -75,16 +75,13 @@ export function StockChart({
     <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-4 sm:p-7">
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-base font-semibold text-[#202329]">주가 추이</h2>
-          <p className="mt-1.5 text-xs text-[#727680]">
-            기간 내 종가 추이{" "}
-            {periodChange != null && !loading && (
+          <h2 className="text-base font-semibold text-[#202329]">주가 추이 · 종가 기준</h2>
+          {periodChange != null && !loading && <p className="mt-1.5 text-xs text-[#727680]">
               <span className="ml-2 font-medium" style={{ color }}>
                 {periodChange >= 0 ? "+" : ""}
                 {periodChange.toFixed(2)}%
               </span>
-            )}
-          </p>
+          </p>}
         </div>
         <div className="flex max-w-full gap-1 overflow-x-auto rounded-lg bg-[#f6f7f8] p-1">
           {RANGES.map((item) => (

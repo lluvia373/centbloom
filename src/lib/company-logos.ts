@@ -7,14 +7,24 @@ const COMPANY_LOGOS: Record<string, string> = {
   "600519.SS": "600519-ss.ico", "300750.SZ": "300750-sz.svg",
 };
 
-export function companyLogo(symbol: string, providerUrl?: string): string | null {
-  const local = COMPANY_LOGOS[symbol.toUpperCase()];
-  if (local) return `/companies/${local}`;
+// Direct CDN delivery: free use requires the visible attribution in RootLayout.
+// Keep exchange suffixes intact: stripping .KS/.T/.HK can identify another company.
+export function companyLogoSources(symbol: string, providerUrl?: string): string[] {
+  const sources: string[] = [];
+  const normalized = symbol.trim().toUpperCase();
+  if (Object.hasOwn(COMPANY_LOGOS, normalized)) {
+    sources.push(`/companies/${COMPANY_LOGOS[normalized]}`);
+  }
   if (providerUrl) {
     try {
       const url = new URL(providerUrl);
-      if (url.protocol === "https:" && url.hostname === "s.yimg.com") return url.href;
-    } catch { /* A missing or malformed logo leaves the ticker visible. */ }
+      if (url.protocol === "https:" && url.hostname === "s.yimg.com" &&
+          !url.username && !url.password && !url.port) sources.push(url.href);
+    } catch { /* Invalid provider URLs do not prevent the next source. */ }
   }
-  return null;
+  // Stock/ETF identifiers only. FX, indices and futures must not become company logos.
+  if (/^[A-Z0-9][A-Z0-9.-]{0,39}$/.test(normalized)) {
+    sources.push(`https://api.elbstream.com/logos/symbol/${encodeURIComponent(normalized)}?format=png&size=64`);
+  }
+  return sources;
 }

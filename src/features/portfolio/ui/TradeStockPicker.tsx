@@ -49,7 +49,7 @@ export function TradeStockPicker({
             01
           </span>
           <h2 className="text-base font-semibold text-[#202329]">
-            어떤 종목을 거래했나요?
+            종목 검색
           </h2>
         </div>
         <div className="relative">
@@ -79,7 +79,7 @@ export function TradeStockPicker({
         </div>
         <p className="mt-3 text-xs text-[#727680]">
           {searchMarket === "all"
-            ? "한국·미국·일본·홍콩·중국과 글로벌 주식·ETF"
+            ? "종목 코드 예: AAPL"
             : `종목 코드 예: ${MARKETS.find((entry) => entry.id === searchMarket)?.example}`}
         </p>
         <div className="mt-4">

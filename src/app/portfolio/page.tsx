@@ -7,6 +7,8 @@ PortfolioMode,
 } from "@/components/Header";
 import { HoldingsTable } from "@/components/HoldingsTable";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
+import { WealthChart } from "@/components/WealthChart";
+import { AllocationChart } from "@/components/AllocationChart";
 import { TransactionList } from "@/components/TransactionList";
 import { usePortfolioMarket,usePreferences,useTransactionCommands,useTransactions } from "@/hooks/usePortfolio";
 import { useWorkspaceSummary } from "@/hooks/useWorkspace";
@@ -87,23 +89,20 @@ export default function PortfolioPage() {
   };
   return (
     <>
-      <PageHeading
-        eyebrow="MY PORTFOLIO"
-        title="내 포트폴리오"
-        description="보유종목과 거래 내역을 한눈에 확인하세요."
-      >
+      <PageHeading title="내 포트폴리오">
         <AddTransactionLink />
       </PageHeading>
       <PortfolioMode />
       {!isDemo && marketDataError && (
         <p
           role="status"
-          className="mb-4 rounded-lg bg-[#fff9ed] p-3 text-xs text-[#727680]"
+          className="mb-4 rounded-cf-control bg-cf-warning-soft p-3 text-cf-caption text-cf-muted"
         >
           {marketDataError}
         </p>
       )}
       <PortfolioMetrics />
+      <details className="mb-6" open><summary className="mb-4 cursor-pointer text-cf-label font-semibold text-cf-muted">자산 흐름과 배분</summary><div className="dashboard-main-grid"><WealthChart/><AllocationChart holdings={summary?.holdings ?? []} displayCurrency={displayCurrency}/></div></details>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="section-tabs" role="group" aria-label="포트폴리오 보기">
           <button
@@ -187,7 +186,7 @@ export default function PortfolioPage() {
               <p className="text-sm font-medium">
                 {lastDeleted.symbol} 거래를 삭제했습니다.
               </p>
-              <p className="mt-1 text-xs text-[#727680]">
+              <p className="mt-1 text-cf-caption text-cf-muted">
                 {undoError ?? "8초 안에 되돌릴 수 있습니다."}
               </p>
             </div>

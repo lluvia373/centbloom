@@ -119,7 +119,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
             strokeWidth={1.5}
           />
           <p className="mt-3 text-xs text-[#727680]">
-            관심 있는 기업을 모아보세요.
+            관심종목 없음.
           </p>
         </div>
       )}

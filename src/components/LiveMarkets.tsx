@@ -11,7 +11,7 @@ import { QuoteStatus } from "./QuoteStatus";
 import { AssetAvatar } from "./AssetAvatar";
 
 export function LiveMarkets() {
-  const [market, setMarket] = useState<MarketFilter>("kr");
+  const [market, setMarket] = useState<MarketFilter>("us");
   const stocks = discoveryStocks(market);
   const { quotes, failedSymbols, refreshing, loading, refresh } = useLiveQuotes(stocks.map((stock) => stock.symbol));
   return (
@@ -19,7 +19,7 @@ export function LiveMarkets() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-[15px] font-semibold text-[#202329]">세계 주식</h2>
-          <p className="mt-1 text-xs text-[#727680]">실제 시장 데이터 · 30초마다 자동 갱신</p>
+          <p className="mt-1 text-xs text-[#727680]">실제 시세 · 30초 갱신</p>
         </div>
         <button type="button" onClick={refresh} disabled={refreshing} aria-label="세계 주식 시세 새로고침"
           className="rounded-lg p-2 text-[#727680] hover:bg-[#f3f4f6] disabled:opacity-40">

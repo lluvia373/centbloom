@@ -109,8 +109,7 @@ export function TransactionEditor({
               className={inputClass}
             />
             <p className="mt-1 text-xs text-[#727680]">
-              비워두면 오늘 기준으로 저장돼요. 날짜를 바꾸면 환율도 다시
-              계산합니다.
+              날짜 미입력 시 오늘(한국시간) · 날짜 변경 시 환율 재계산
             </p>
           </div>
 
@@ -183,8 +182,7 @@ export function TransactionEditor({
           </div>
 
           <p className="text-xs text-[#727680]">
-            종목 자체를 잘못 선택한 경우에는 이 거래를 삭제하고 새 거래를
-            추가하는 편이 안전합니다.
+            종목 변경은 거래 삭제 후 다시 추가
           </p>
 
           {error && (

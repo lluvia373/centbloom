@@ -28,7 +28,6 @@ export function MarketNotification({
               ? `마지막 시세 확인: ${new Date(lastMarketUpdateAt).toLocaleTimeString("ko-KR")}`
               : "거래를 기록하면 보유종목 시세를 확인합니다."))}
       </p>
-      <small>관심종목 목표가는 관심종목 화면에서 확인할 수 있습니다.</small>
     </div>
   );
 }

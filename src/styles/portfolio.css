@@ -11,10 +11,6 @@
   gap: 9px;
   color: #727680;
 }
-.portfolio-mode > div > span:last-child {
-  padding-left: 11px;
-  border-left: 1px solid #e6e8eb;
-}
 .portfolio-mode > button {
   display: flex;
   align-items: center;
@@ -34,12 +30,9 @@
   overflow: hidden;
 }
 .metric-label {
-  display: flex;
+  display: block;
   align-items: center;
   gap: 7px;
-}
-.metric-label > svg {
-  color: #727680;
 }
 .metric-icon {
   position: absolute;
@@ -183,9 +176,6 @@
   .metric-spark {
     display: none;
   }
-  .portfolio-mode > div > span:last-child {
-    display: none;
-  }
 }
 .table-subvalue.positive {
   color: var(--positive);
@@ -215,10 +205,6 @@
 }
 .portfolio-mode > button:hover {
   color: #202329;
-}
-.portfolio-mode > div > span:last-child {
-  color: #727680;
-  border-color: #dfe2e6;
 }
 .metric-grid {
   grid-template-columns: 1.38fr 1fr 1fr;
@@ -446,9 +432,6 @@
   }
   .portfolio-mode > div {
     gap: 6px;
-  }
-  .portfolio-mode > div > span:last-child {
-    display: none;
   }
   .metric-grid {
     grid-template-columns: 1fr 1fr;
