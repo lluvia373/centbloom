@@ -1,6 +1,8 @@
 "use client";
+import { PortfolioAd } from "@/features/ads/PortfolioAd";
 import {
 AddTransactionLink,
+CurrencySwitch,
 PageHeading,
 PortfolioMode,
 } from "@/components/Header";
@@ -8,11 +10,12 @@ import { HoldingsTable } from "@/components/HoldingsTable";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { WealthChart } from "@/components/WealthChart";
 import { AllocationChart } from "@/components/AllocationChart";
-import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
+import { usePortfolioMarket,usePreferences,useTransactions } from "@/hooks/usePortfolio";
 import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { Download } from "lucide-react";
 export default function PortfolioPage() {
   const { summary, isDemo } = useWorkspaceSummary();
+  const { transactions } = useTransactions();
 
 
   const { displayCurrency } = usePreferences();
@@ -59,6 +62,7 @@ export default function PortfolioPage() {
   return (
     <>
       <PageHeading title="보유자산">
+        <CurrencySwitch />
         <AddTransactionLink />
       </PageHeading>
       <PortfolioMode />
@@ -88,6 +92,7 @@ export default function PortfolioPage() {
           editable={!isDemo}
         />
 
+      <PortfolioAd hasContent={!isDemo && transactions.length > 0} />
     </>
   );
 }

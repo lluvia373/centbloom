@@ -1,0 +1,30 @@
+.ad {
+  margin-top: var(--cf-space-8);
+  padding-top: var(--cf-space-4);
+  border-top: 1px solid var(--cf-color-line);
+}
+
+.ad[hidden],
+.ad:has(.slot[data-ad-status="unfilled"]) {
+  display: none;
+}
+
+.label {
+  margin: 0 0 var(--cf-space-2);
+  font-size: var(--cf-text-caption);
+  font-weight: var(--cf-weight-regular);
+  line-height: var(--cf-leading-label);
+  color: var(--cf-color-muted);
+}
+
+.slot {
+  display: block;
+  width: 100%;
+  min-height: calc(var(--cf-space-12) * 2);
+}
+
+.placeholder {
+  border: 1px solid var(--cf-color-line);
+  border-radius: var(--cf-radius-control);
+  background: var(--cf-color-soft);
+}

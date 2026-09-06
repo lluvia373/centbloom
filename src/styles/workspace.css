@@ -1013,3 +1013,6 @@
 
 .page-heading h1 { font-size: var(--cf-text-title); font-weight: var(--cf-weight-semibold); letter-spacing: var(--cf-tracking-title); line-height: var(--cf-leading-title); }
 .calculation-help[open] { display: block; margin-left: 0; }
+
+.page-heading-actions:has(.currency-switch) { flex-wrap: wrap; gap: var(--cf-space-3); }
+.page-heading-actions .currency-switch button { min-height: calc(var(--cf-space-12) - var(--cf-space-1)); padding-inline: var(--cf-space-3); font-size: var(--cf-text-label); }

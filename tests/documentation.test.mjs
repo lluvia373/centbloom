@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,14 +22,21 @@ function fixture(t) {
   writeFileSync(join(root, "AGENTS.md"), [
     "## 문서 관리 기준", "", "| 내용 | 기준 파일 |", "| --- | --- |",
     "| 규칙 | 이 AGENTS.md |", "| 안내 | [README.md](./README.md) |",
+    "| 결정 | [DECISIONS.md](./DECISIONS.md) |",
     "| 비공개 | 로컬 전용 BUSINESS_MODEL.md |", "",
   ].join("\n"));
   writeFileSync(join(root, "README.md"), [
     "## 문서 안내", "", "| 내용 | 파일 |", "| --- | --- |",
-    "| 규칙 | [AGENTS.md](./AGENTS.md) |", "", "## 검증 — 기준", "",
+    "| 규칙 | [AGENTS.md](./AGENTS.md) |", "| 결정 | [DECISIONS.md](./DECISIONS.md) |", "", "## 검증 — 기준", "",
     "[확인](#검증--기준)", "", "~~~md", "[예시](./not-a-real-file.md)", "~~~", "",
   ].join("\n"));
+  writeFileSync(join(root, "DECISIONS.md"), "# Decisions\n\nD005: no member discussions in the first release.\n");
   return root;
+}
+function reviewPlan(root) {
+  const decision = readFileSync(join(root, "DECISIONS.md"), "utf8").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
+  const hash = createHash("sha256").update(decision).digest("hex");
+  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n<!-- business-model-decisions-sha256: " + hash + " -->\n");
 }
 function run(root) {
   const result = spawnSync(process.execPath, [checker, root], { encoding: "utf8" });
@@ -78,10 +86,33 @@ test("broken paths and renamed headings fail", (t) => {
 
 test("private plan may exist locally but must not be tracked", (t) => {
   const root = fixture(t);
-  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n");
+  reviewPlan(root);
   assert.equal(run(root).code, 0);
   execFileSync("git", ["add", "-f", "BUSINESS_MODEL.md"], { cwd: root });
   const result = run(root);
   assert.equal(result.code, 1);
   assert.match(result.output, /private document is tracked by Git/);
+});
+
+test("a product decision change blocks a previously reviewed private plan", (t) => {
+  const root = fixture(t);
+  reviewPlan(root);
+  assert.equal(run(root).code, 0);
+  const decision = join(root, "DECISIONS.md");
+  writeFileSync(decision, readFileSync(decision, "utf8").replace("no member discussions", "member discussions"));
+  const result = run(root);
+  assert.equal(result.code, 1);
+  assert.match(result.output, /missing or stale decision review/);
+  reviewPlan(root);
+  assert.equal(run(root).code, 0);
+});
+
+test("missing review fails while a Windows line-ending change preserves review", (t) => {
+  const root = fixture(t);
+  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n");
+  assert.match(run(root).output, /missing or stale decision review/);
+  reviewPlan(root);
+  const decision = join(root, "DECISIONS.md");
+  writeFileSync(decision, "\uFEFF" + readFileSync(decision, "utf8").replace(/\n/g, "\r\n"));
+  assert.equal(run(root).code, 0);
 });

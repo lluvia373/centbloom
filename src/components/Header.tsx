@@ -33,7 +33,6 @@ export function Header() {
   const marketHome = pathname === "/";
   const { user, configured, signOut } = useAuth();
   const showActions = !marketHome || (configured && !user);
-  const { displayCurrency, setDisplayCurrency } = usePreferences();
 
   const { isDemo, setDemo } = useWorkspace();
   const [panel, setPanel] = useState<"notifications" | "help" | null>(null);
@@ -103,7 +102,7 @@ export function Header() {
           </Link>
         </div>
       </aside>
-      <header className={`topbar ${marketHome ? marketHeader.header + (showActions ? "" : " " + marketHeader.quotesOnly) : ""}`}>
+      {pathname !== "/portfolio" && <header className={`topbar ${marketHome ? marketHeader.header + (showActions ? "" : " " + marketHeader.quotesOnly) : ""}`}>
         {marketHome ? <MarketTicker /> : <div className="breadcrumbs">
           <span>{area === "investment" ? "내 투자" : "centifolio"}</span>
           <ChevronRight size={13} />
@@ -123,18 +122,7 @@ export function Header() {
             <Search size={16} />
             <span>종목 검색</span>
           </Link>}
-          {!publicPage && <div className="currency-switch" role="group" aria-label="표시 통화">
-            {(["KRW", "USD"] as const).map((currency) => (
-              <button
-                key={currency}
-                onClick={() => setDisplayCurrency(currency)}
-                aria-pressed={displayCurrency === currency}
-                className={displayCurrency === currency ? "selected" : ""}
-              >
-                {currency}
-              </button>
-            ))}
-          </div>}
+          {!publicPage && <CurrencySwitch />}
 
           {!marketHome && <button
             className="icon-button"
@@ -171,7 +159,7 @@ export function Header() {
                 목표가를, 투자 노트에는 선택의 이유를 남길 수 있습니다.
               </p>
               <Link href="/settings" onClick={() => setPanel(null)}>
-                데이터 백업 및 설정 
+                데이터 백업 및 설정
               </Link>
             </div>
           )}
@@ -186,7 +174,7 @@ export function Header() {
             </button>
           )}
         </div>}
-      </header>
+      </header>}
       <nav className="mobile-nav" aria-label="모바일 메뉴">
         {links.map(({ href, label, area: linkArea, icon: Icon }) => (
           <Link
@@ -246,5 +234,23 @@ export function AddTransactionLink() {
       <Plus size={16} />
       거래 기록하기
     </Link>
+  );
+}
+
+export function CurrencySwitch() {
+  const { displayCurrency, setDisplayCurrency } = usePreferences();
+  return (
+<div className="currency-switch" role="group" aria-label="표시 통화">
+            {(["KRW", "USD"] as const).map((currency) => (
+              <button
+                key={currency}
+                onClick={() => setDisplayCurrency(currency)}
+                aria-pressed={displayCurrency === currency}
+                className={displayCurrency === currency ? "selected" : ""}
+              >
+                {currency}
+              </button>
+            ))}
+          </div>
   );
 }
