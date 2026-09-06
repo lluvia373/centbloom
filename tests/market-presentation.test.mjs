@@ -24,6 +24,6 @@ test("short and failed lists retain honest states and no unnecessary expand cont
  const empty=renderTable({data:null,failed:true});assert.match(empty,/종목을 가져오지 못/);assert.doesNotMatch(empty,/더 보기/);
 });
 test("market ranking presents volume first and removes redundant heading copy",()=>{
- const {MarketMovers}=loadTypescript("src/features/home/MarketMovers.tsx",{"./home.module.css":styles,"./MoverTable":{MoverTable:({kind})=>React.createElement("p",null,kind)}});
- const html=renderToStaticMarkup(React.createElement(MarketMovers));assert.ok(html.indexOf(">active<")<html.indexOf(">gainers<"));assert.match(html,/인기 종목/);assert.doesNotMatch(html,/지금 움직이는|한국 · 해외|미국 주식|순위 기준/);
+ const {MarketMovers}=loadTypescript("src/features/home/MarketMovers.tsx",{"./home.module.css":styles,"./DiscoveryShortcuts":{DiscoveryShortcuts:()=>null},"./MoverTable":{MoverTable:({kind})=>React.createElement("p",null,kind)}});
+ const html=renderToStaticMarkup(React.createElement(MarketMovers));assert.ok(html.indexOf(">active<")<html.indexOf(">gainers<"));assert.match(html,/종목 순위/);assert.doesNotMatch(html,/지금 움직이는|한국 · 해외|미국 주식|순위 기준/);
 });

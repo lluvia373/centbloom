@@ -8,24 +8,26 @@ export interface MarketSession {
   nextAt?: number;
   nextAction?: "개장" | "재개" | "마감" | "마감 경매" | "점심 휴장";
   skippedHoliday?: string;
+  skippedHolidayDate?: string;
 }
 function known(calendar: ExchangeCalendar, date: string) {
   return date >= calendar.validFrom && date <= calendar.validThrough;
 }
 function nextOpening(calendar: ExchangeCalendar, date: string) {
   let skippedHoliday: string | undefined;
+  let skippedHolidayDate: string | undefined;
   for (let offset = 1; offset <= 40; offset++) {
     const day = addDays(date, offset);
     if (!known(calendar, day)) break;
     const holiday = calendar.holidays[day];
-    if (holiday) { skippedHoliday ??= holiday; continue; }
+    if (holiday) { if (!skippedHoliday) { skippedHoliday = holiday; skippedHolidayDate = day; } continue; }
     if (isWeekend(day)) continue;
     const override = calendar.overrides[day];
     if (override && !override.windows) break; // Unknown special day blocks a guessed opening.
     const window = (override?.windows ?? calendar.windows)[0];
-    return {nextAt:localInstant(day,window.start,calendar.timeZone),nextAction:"개장" as const,skippedHoliday};
+    return {nextAt:localInstant(day,window.start,calendar.timeZone),nextAction:"개장" as const,skippedHoliday,skippedHolidayDate};
   }
-  return { skippedHoliday };
+  return { skippedHoliday, skippedHolidayDate };
 }
 /** Published cash-equity schedule, not a real-time exchange halt feed. */
 export function getMarketSession(calendar: ExchangeCalendar, now: number): MarketSession {

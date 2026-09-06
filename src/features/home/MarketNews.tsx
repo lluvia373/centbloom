@@ -1,29 +1,40 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useMarketNews } from "@/features/market/use-market-news";
 import styles from "./home.module.css";
 export function MarketNews({ symbol }: { symbol?: string }) {
-  const { stories, loading, error, retry } = useMarketNews(symbol);
+  const { stories, loading, error, partial, retry } = useMarketNews(symbol);
   const [visible, setVisible] = useState(8);
+  const [original, setOriginal] = useState(false);
+  const hasTranslation = stories.some((story) => story.titleKo);
   return (
     <section
       className={styles.panel}
-      aria-label={symbol ? "종목 관련 뉴스" : "시장 뉴스"}
+      aria-label="종목 뉴스"
     >
       <div className={styles.sectionHead}>
-        <div>
-          <span className={styles.eyebrow}>{symbol ? "기업 소식" : "미국 시장 · 기업 이슈"}</span>
-          <h2>{symbol ? "이 종목의 소식" : "주요 소식과 시장 이슈"}</h2>
-        </div>
-        <span className={styles.note}>Yahoo Finance · 영문 원문</span>
+        <h2>종목 뉴스</h2>
+        {hasTranslation && <div className={styles.newsLanguage}>
+          {!original && <span>자동 번역</span>}
+          <button type="button" onClick={() => setOriginal((value) => !value)}
+            aria-label={original ? "뉴스 제목 한국어로 보기" : "뉴스 제목 원문으로 보기"}>
+            {original ? "한국어" : "원문"}
+          </button>
+        </div>}
       </div>
+      {(partial || (error && stories.length > 0)) && (
+        <p className={styles.note} role="status">
+          {error ? "갱신 실패 · 이전 뉴스 표시 중" : "일부 종목의 뉴스를 가져오지 못했어요."}
+          <button onClick={retry}>다시 시도</button>
+        </p>
+      )}
       {loading ? (
         <div className={styles.newsLoading} role="status">
-          시장 소식을 불러오고 있어요.
+          뉴스를 불러오는 중…
         </div>
-      ) : error ? (
+      ) : error && !stories.length ? (
         <div className={styles.empty} role="status">
           <p>소식을 잠시 가져오지 못했어요.</p>
           <button onClick={retry}>
@@ -31,14 +42,11 @@ export function MarketNews({ symbol }: { symbol?: string }) {
           </button>
         </div>
       ) : !stories.length ? (
-        <p className={styles.empty}>최근 7일 내 제공된 소식이 없어요.</p>
+        <p className={styles.empty}>{symbol ? "최근 7일 내 관련 뉴스가 없어요." : "최근 72시간 내 관련 뉴스가 없어요."}</p>
       ) : (
         <ol className={styles.newsList}>
-          {stories.slice(0, symbol ? 4 : visible).map((story, index) => (
+          {stories.slice(0, symbol ? 4 : visible).map((story) => (
             <li key={story.id}>
-              <span className={styles.newsNumber}>
-                {String(index + 1).padStart(2, "0")}
-              </span>
               <div>
                 <a
                   className={styles.newsTitle}
@@ -46,11 +54,11 @@ export function MarketNews({ symbol }: { symbol?: string }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {story.title}
-                  <ArrowUpRight size={15} />
+                  {!original && story.titleKo ? story.titleKo : story.title}
                 </a>
                 <div className={styles.newsMeta}>
                   <span>{story.publisher}</span>
+                  {!original && hasTranslation && !story.titleKo && !/[가-힣]/.test(story.title) && <span>원문</span>}
                   <time dateTime={story.publishedAt}>
                     {new Intl.DateTimeFormat("ko-KR", {
                       month: "numeric",
@@ -82,7 +90,7 @@ export function MarketNews({ symbol }: { symbol?: string }) {
           className={styles.moreNews}
           onClick={() => setVisible((n) => n + 8)}
         >
-          소식 더 보기 · {stories.length - visible}개
+          뉴스 더 보기 · {stories.length - visible}개
         </button>
       )}
     </section>

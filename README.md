@@ -26,16 +26,14 @@
 
 ## 로컬 실행
 
-프로젝트 루트에서 `npm run dev -- --hostname localhost --port 2000`으로 실행한다. 별도의 내부 작업 폴더는 사용하지 않는다.
-
-## 로컬 실행
+항상 main에서 별도 로컬 브랜치·Git worktree를 만든다. 작업 폴더는 프로젝트 루트 밖에 두고 그 안에서 실행한다. 푸시·병합은 사용자 지시 후 진행하며, 병합 확인 뒤 로컬 main 동기화·해당 브랜치와 폴더 삭제까지 마친다.
 
 ```sh
 npm ci
-npm run dev -- --hostname 127.0.0.1 --port 3000
+npm run dev -- --hostname localhost --port 3000
 ```
 
-http://127.0.0.1:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
+http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
 
 계정 연결 없이 로컬 저장 모드로 시작할 수 있다. Google 로그인은 [.env.example](./.env.example)과 [연결 절차](./CLOUDFLARE.md#supabase-연결)를 따른다.
 

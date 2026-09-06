@@ -1,3 +1,5 @@
+import { PageFrame } from "@/components/PageFrame";
+import { InvestmentNavigation } from "@/features/navigation";
 import { AuthGate } from "@/components/AuthGate";
 import { Header } from "@/components/Header";
 import { StorageNotice } from "@/components/StorageNotice";
@@ -50,14 +52,14 @@ export default function RootLayout({
               <WorkspaceProvider>
                 <div className="app-shell">
                   <Header />
-                  <main id="main-content" className="main-content">
+                  <PageFrame>
+                    <InvestmentNavigation />
                     <StorageNotice />
                     {children}
                     <footer className="app-footer">
-                      <span>Centifolio</span>
                       <a href="https://elbstream.com" target="_blank" rel="noreferrer" className="company-logo-credit">로고 · Elbstream</a>
                     </footer>
-                  </main>
+                  </PageFrame>
                 </div>
               </WorkspaceProvider>
             </PortfolioProvider>

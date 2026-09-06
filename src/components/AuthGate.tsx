@@ -74,7 +74,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="cf-auth-page">
       <header className="cf-auth-header">
-        <Link href="/" aria-label="Centifolio 시장 홈" className="cf-auth-wordmark"><BrandMark size={36} /><span>centifolio</span></Link><Link href="/" className="text-cf-label text-cf-muted">시장 먼저 둘러보기 ↗</Link>
+        <Link href="/" aria-label="Centifolio 시장 홈" className="cf-auth-wordmark"><BrandMark size={36} /><span>centifolio</span></Link><Link href="/" className="text-cf-label text-cf-muted">시장 먼저 둘러보기</Link>
       </header>
       <main id="main-content" className="cf-auth-main">
         <div className="cf-auth-stage">

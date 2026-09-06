@@ -1,45 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { marketRequests } from "@/lib/stock-api";
-import type { MarketStory } from "./news-model";
+import { createPollingStore } from "@/shared/async/polling-store";
+import type { NewsFeed } from "./trending-news";
+
+const store = createPollingStore<string, NewsFeed>((key, signal) =>
+  marketRequests.request("news-feed:" + key, async (signal) => {
+    const response = await fetch("/api/news" + (key === "trending" ? "" : "?symbol=" + encodeURIComponent(key)),
+      { signal, cache: "no-store" });
+    if (!response.ok) throw new Error("News unavailable");
+    return response.json() as Promise<NewsFeed>;
+  }, { signal, ttlMs: 0, timeoutMs: 60_000 }),
+);
+let consumers = 0;
+const visibility = () => store.setVisible(document.visibilityState === "visible");
 export function useMarketNews(symbol?: string) {
-  const [retry, setRetry] = useState(0);
-  const key = symbol ?? "market";
-  const [state, setState] = useState<{
-    key: string;
-    stories: MarketStory[];
-    error: boolean;
-  }>();
-  useEffect(() => {
-    const controller = new AbortController();
-    marketRequests
-      .request(
-        "news:" + key,
-        async (signal) => {
-          const response = await fetch(
-            "/api/news" +
-              (symbol ? "?symbol=" + encodeURIComponent(symbol) : ""),
-            { signal },
-          );
-          if (!response.ok) throw new Error("News unavailable");
-          return response.json() as Promise<MarketStory[]>;
-        },
-        { signal: controller.signal, ttlMs: 120_000 },
-      )
-      .then((stories) => {
-        if (!controller.signal.aborted)
-          setState({ key, stories, error: false });
-      })
-      .catch(() => {
-        if (!controller.signal.aborted)
-          setState({ key, stories: [], error: true });
-      });
-    return () => controller.abort();
-  }, [key, symbol, retry]);
+  const key = symbol?.trim().toUpperCase() || "trending";
+  const subscribe = useCallback((listener: () => void) => {
+    if (consumers++ === 0) {
+      document.addEventListener("visibilitychange", visibility);
+      visibility();
+    }
+    const stop = store.subscribe(key, listener);
+    return () => {
+      stop();
+      if (--consumers === 0) document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [key]);
+  const snapshot = useCallback(() => store.snapshot(key), [key]);
+  const view = useSyncExternalStore(subscribe, snapshot, () => store.empty);
   return {
-    stories: state?.key === key ? state.stories : [],
-    loading: state?.key !== key,
-    error: state?.key === key && state.error,
-    retry: () => setRetry((value) => value + 1),
+    stories: view.data?.stories ?? [],
+    loading: view.loading && !view.data,
+    error: view.failed,
+    partial: view.data?.partial ?? false,
+    retry: () => { void store.refresh(key); },
   };
 }

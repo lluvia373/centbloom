@@ -1,6 +1,7 @@
 "use client";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { moverKinds, type MoverKind } from "@/features/market/movers-model";
+import { DiscoveryShortcuts } from "./DiscoveryShortcuts";
 import { MoverTable } from "./MoverTable";
 import styles from "./home.module.css";
 const mobileQuery = "(max-width: 760px)";
@@ -21,9 +22,10 @@ export function MarketMovers({ children }: { children?: ReactNode }) {
   return (
     <section className={styles.rankingSection} aria-label="미국 시장 종목 순위">
       <div className={styles.sectionHead}>
-        <h2>인기 종목</h2>
+        <h2>종목 순위</h2>
         {children}
       </div>
+      {children && <DiscoveryShortcuts />}
       <div className={styles.mobileRankTabs} aria-label="순위 목록 선택">
         {moverKinds.map((kind) => (
           <button

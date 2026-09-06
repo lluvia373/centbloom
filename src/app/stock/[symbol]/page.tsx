@@ -1,3 +1,4 @@
+import { AdSlot } from "@/features/ads";
 import { StockDetail } from "@/components/StockDetail";
 
 export default async function StockPage({
@@ -7,5 +8,8 @@ export default async function StockPage({
 }) {
   const { symbol } = await params;
 
-  return <StockDetail symbol={symbol.toUpperCase()} />;
+  return <>
+    <StockDetail symbol={symbol.toUpperCase()} />
+    <AdSlot placement="stock-bottom" />
+  </>;
 }

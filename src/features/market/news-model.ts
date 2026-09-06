@@ -1,6 +1,7 @@
 export interface MarketStory {
   id: string;
   title: string;
+  titleKo?: string;
   publisher: string;
   url: string;
   publishedAt: string;

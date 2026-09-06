@@ -2,6 +2,24 @@
 
 최종 확인: 2026-09-06 · main + codex/market-index-strip의 로컬 공개 홈 개편 기준. 파일 역할·확장 위치는 이 문서, 제품 의미는 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md), 실제 검증·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)가 기준이다. 설치 버전과 실행 명령은 package.json·lockfile을 확인한다.
 
+상단 시세: `MarketTicker.tsx`는 공유 시세와 표시를 연결하고, `ticker-instruments.ts`는 목록/금리 단위, `use-ticker-motion.ts`는 프레임·가시성·포커스·움직임 줄이기 수명을 소유한다. 항목 추가는 목록과 market-ticker 검증을 함께 갱신하며 복제 목록에 새 구독을 붙이지 않는다.
+
+장 일정: `schedule/priority.ts`가 시간별 우선순위, `presentation.ts`가 다중 알림 묶음을 계산한다. `MarketSessions.tsx`는 시계/지역/펼치기, `MarketSessionCard.tsx`는 일반 시장 행만 담당한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에 추가하고 index 공개 창구로 소비한다.
+
+종목 탐색: `StockDiscovery.tsx`는 입력/검색 결과/선택, `DiscoveryShortcuts.tsx`는 로그인한 계정의 최근 검색만 표시하며 순위 데이터를 구독하지 않는다. `market/recent-searches.ts`는 React 없는 검증·계정별 저장, `use-recent-searches.ts`는 저장소 구독·계정 전환을 소유한다. 기록 범위를 늘릴 때 같은 훅을 사용하고 별도 저장 키/시세 조회를 추가하지 않는다. 검증은 `tests/recent-searches.test.mjs`.
+
+종목 뉴스: `server/trending-news.ts`는 기존 순위/뉴스 서버 조회를 조합하고, `trending-news.ts`는 대상 선택·최신성/관련성 정렬·중복 제거를 담당한다. `server/news.ts`는 단일 종목 공급자 변환, `use-market-news.ts`는 구독/가시성 연결, `MarketNews.tsx`는 목록 표시만 소유한다. 순위와 뉴스는 `shared/async/polling-store.ts`의 동일한 폴링/해제/실패 규칙을 사용한다(`movers-store.ts`는 기존 공개 인터페이스 어댑터). API 응답은 `{stories, partial}`, 검증은 `trending-news.test.mjs`와 `market-workspace.test.mjs`. 조합 요청은 하위 조회와 같은 공급자 풀 슬롯을 점유하지 않는다.
+
+증시 캘린더: features/calendar의 model.ts·month-grid.ts는 날짜 그룹/달력 칸, navigation.ts는 주간·필터·안전한 복귀 URL, release.ts는 경제지표/실적 수치·상태·추이 계산을 담당한다. WeekCalendar.tsx는 홈 7일 선택, CalendarBrowser.tsx는 월간/종류 필터를 조립하고 EventList.tsx는 공통 일정 링크다. use-calendar-selection.ts는 URL과 선택 상태를 연결해 브라우저 뒤로 가기 복원을 유지한다. ReleasePage.tsx는 단건 조회, ReleaseDetails.tsx는 발표 수치, ReleaseHistory.tsx는 공유 이력 조회/표, ReleaseTrend.tsx는 단위별 차트를 담당한다. app/calendar/[id]/page.tsx는 공개 상세 진입점이며 팝업 구현은 제거했다. use-calendar-feed.ts는 공유 폴링/가시성, server/query.ts는 월·주·단건·이력 입력 검증, provider.ts는 경제지표 공급 변환, repository.ts는 저장소 접근을 소유한다. 실적 모델/UI는 준비 상태이며 실적 공급자/저장 실행은 미연결이다. 신규 공급자 연결은 수치 단위·기간·컨센서스·부분 수신 의미를 유지하고 earningsConnected를 실제 공급 상태와 함께 제공해야 한다. data.ts는 미연결 상태의 검증된 경제 일정만 제공한다. 기존 SQL/수집 스크립트와 활성화 절차는 CLOUDFLARE 문서, 검증은 calendar-releases·economic-calendar·sql-economic-calendar 테스트를 따른다.
+
+공통 본문: components/PageFrame.tsx·PageFrame.module.css가 사이드바 제외 영역의 중앙 본문과 좌우 여백을 소유한다. root layout에서 모든 일반 페이지를 감싸며 본문 상단 내 투자 탐색과 저장 알림도 같은 폭을 사용한다. 새 페이지는 바깥 margin/max-width를 따로 만들지 않는다. 폭·레일 규격은 design-tokens.css와 DESIGN_SYSTEM의 공통 본문 기준을 함께 수정한다.
+
+광고: features/ads/AdSlot은 본문 배너의 개발 미리보기, SideRailPreview는 경로에 따라 공개 화면만 렌더링하는 Google 사이드 레일 배치 미리보기다. PageFrame이 가용 폭/포인터/높이에 따라 레일을 표시한다. 둘 다 preview-mode로 운영 더미 송출을 막는다. placements.ts의 home-rail은 삭제했고 홈 ReadingShelf 호출도 제거했다(별도 읽을거리 페이지 참조는 유지). 실제 광고 코드/ID는 미연결. SideRailPreview의 두 sticky 박스에 수동 AdSense 광고를 삽입하지 않고 공식 Auto ads 사이드 레일 설정으로 연결한다. 상세 활성화 절차는 CLOUDFLARE를 따른다.
+
+뉴스 제목 번역: server/title-translation.ts는 응답/숫자/날짜 검증·공유 요청·캐시·실패 대기, translation-provider.ts는 Cloudflare NEWS_AI 호출만 담당한다. api/news는 원문 뉴스 정렬/중복 제거 후 번역을 조합한다. 원문 title은 불변, 선택적 titleKo만 추가하며 MarketNews가 기본 한국어/원문 전환을 표시한다. 검증은 title-translation.test.mjs. worker-configuration.d.ts는 Wrangler 생성물이므로 읽거나 직접 편집하지 말고 설정 변경 후 npm exec wrangler -- types worker-configuration.d.ts --env-interface WorkerBindings로 재생성한다.
+
+메뉴: features/navigation/model.ts가 주요 3구역·내 투자 5개 경로·선택/제목 매핑의 단일 기준이다. Header는 데스크톱/모바일 주요 링크, InvestmentNavigation은 main 본문 상단의 가로 링크만 렌더링한다. 기존 경로를 유지하고 거래내역은 app/transactions에서 조립한다. portfolio/ui/TransactionHistory는 기존 목록·샘플·삭제 복구 상태를 옮긴 단일 구현이며 계정/샘플 전환 때 상태를 초기화한다. /portfolio는 보유자산 표시와 CSV만 담당한다. 거래내역 화면은 보유자산 시세 구독을 시작하지 않는다. 확장 시 모델·navigation.test.mjs·PRODUCT_SPEC의 주요 메뉴와 내 투자를 함께 갱신한다.
+
 ## 작업별 시작점
 
 해당 행의 파일과 테스트부터 읽고 실제 호출 관계를 따라 범위를 넓힌다. 모든 소스·과거 검증 기록을 매번 읽을 필요는 없다.
@@ -46,7 +64,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
 | [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | 로그인 세션과 Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
 | [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx), [hooks/useWorkspace.tsx](./src/hooks/useWorkspace.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 샘플/개인 모드와 표시 요약 |
-| [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`/`calendar`: 공식 일정과 만료 필터. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
+| [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`: 증시 캘린더 기능의 주간 선택 연결. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
 | [features/auth/public-routes.ts](./src/features/auth/public-routes.ts) | AuthGate의 공개 읽기 경로 허용 목록. 새 공개 경로는 여기와 접근 경계 테스트를 함께 수정 |
 | [features/market/schedule](./src/features/market/schedule), [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) | calendars는 출처가 있는 연도별 휴일·특별시간, time은 시간대/DST, session은 상태·다음 개장 계산, index는 공개 창구. MarketSessions는 타이머·표시만 담당하며 전용 CSS 모듈 사용. 일반 공휴일과 거래소 휴일을 혼동하지 않음 |
 | [features/market/MarketHeader.module.css](./src/features/market/MarketHeader.module.css), [MarketTicker.tsx](./src/features/market/MarketTicker.tsx) | 메인 전용 상단 배치(데스크톱 60px/모바일 두 행), 7개 지수 공유 구독·기준 시각 안내. Header는 메인에서만 기존 경로·알림/도움말 대신 이 지수 영역을 조립한다. 다른 페이지 상단은 유지 |

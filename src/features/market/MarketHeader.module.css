@@ -7,14 +7,6 @@
   padding-inline: var(--cf-space-6);
 }
 .header :global(.topbar-actions) { gap: var(--cf-space-2); }
-.header :global(.topbar-search) {
-  display: inline-flex;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin: 0;
-}
-.header :global(.topbar-search span) { display: none; }
 .header :global(.button-secondary) {
   white-space: nowrap;
   padding: var(--cf-space-2) var(--cf-space-3);
@@ -31,9 +23,9 @@
   .header :global(.mobile-brand) { grid-column: 1; grid-row: 1; font-size: var(--cf-text-section); }
   .header :global(.mobile-brand .brand-mark) { width: 30px; height: 30px; }
   .header :global(.topbar-actions) { grid-column: 2; grid-row: 1; gap: var(--cf-space-1); }
-  .header :global(.mobile-settings) { display: none; }
-  .header :global(.icon-button) { width: 36px; height: 36px; }
 }
 @media (max-width: 360px) {
   .header:global(.topbar) { padding-inline: var(--cf-space-3); }
 }
+
+.quotesOnly:global(.topbar) { grid-template-columns: minmax(0, 1fr); }

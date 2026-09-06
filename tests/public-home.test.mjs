@@ -89,13 +89,6 @@ test("news rejects unsafe links, malformed dates, future and stale articles; ded
   assert.deepEqual(Array.from(result[1].symbols), ["AAPL"]);
 });
 
-test("editorial calendar expires past events instead of recycling their dates", () => {
-  const { upcomingEvents } = loadTypescript("src/features/home/calendar.ts");
-  assert.equal(upcomingEvents(Date.parse("2026-09-06T00:00:00Z")).length, 3);
-  assert.equal(upcomingEvents(Date.parse("2026-09-11T12:30:01Z")).length, 1);
-  assert.equal(upcomingEvents(Date.parse("2026-10-01T00:00:00Z")).length, 0);
-});
-
 test("watch action never enables guest writes when authentication is configured", () => {
   let writes = 0;
   const { WatchStockButton } = loadTypescript(

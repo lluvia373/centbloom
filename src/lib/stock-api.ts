@@ -15,7 +15,8 @@ async function json<T>(url: string, signal: AbortSignal): Promise<T> {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(
-      body.error ?? `시장 데이터 조회에 실패했습니다. (HTTP ${res.status})`,
+      body && typeof body === "object" && "error" in body && typeof body.error === "string"
+        ? body.error : `시장 데이터 조회에 실패했습니다. (HTTP ${res.status})`,
       { cause: res.status },
     );
   }

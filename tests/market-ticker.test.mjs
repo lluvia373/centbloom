@@ -15,7 +15,7 @@ function render(quotes={},failedSymbols=[]) {
 
 test('index strip requests the exact indices and never invents prices during loading or failure',()=>{
  const {html,symbols}=render({},['^KS11']);
- assert.deepEqual(symbols,['^GSPC','^IXIC','^DJI','^VIX','^KS11','^KQ11','KRW=X']);
+ assert.deepEqual(symbols,['^GSPC','^IXIC','^NDX','^DJI','^RUT','^SOX','^VIX','^KS11','^KQ11','^N225','^HSI','000001.SS','^STOXX50E','^GDAXI','^FTSE','^TNX','DX-Y.NYB','KRW=X']);
  assert.match(html,/조회 불가/);
  assert.match(html,/시세 불러오는 중/);
  assert.doesNotMatch(html,/<strong/);
@@ -33,4 +33,14 @@ test('index strip distinguishes gains, losses, flat prices and failed refreshes 
  assert.match(html,/장 마감 · 20분 지연 · 9\. 4\. 15:30 KST 기준/);
  assert.match(html,/>이전</);
  assert.match(html,/USD\/KRW/);
+});
+
+test("Treasury yield uses percent and basis points; scrolling duplicate is inert",()=>{
+ const {formatTickerQuote}=loadTypescript("src/features/market/ticker-instruments.ts");
+ const value=formatTickerQuote("^TNX",{price:4.784,change:0.022,changePercent:0.46});
+ assert.equal(value.price,"4.784%");assert.equal(value.change,"+2.20bp");
+ assert.equal(formatTickerQuote("^TNX",{price:4.76,change:-0.01,changePercent:-0.21}).change,"-1.00bp");
+ const {html,symbols}=render();assert.equal(new Set(symbols).size,18);
+ assert.match(html,/<ul[^>]*aria-hidden="true"[^>]*inert=""/);
+ assert.doesNotMatch(html,/시세 흐름 일시정지|시세 흐름 재생|<button/);
 });

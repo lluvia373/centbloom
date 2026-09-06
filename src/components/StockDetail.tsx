@@ -10,7 +10,6 @@ import { useLiveQuotes } from "@/hooks/useLiveQuotes";
 import { formatCompactNumber,formatCurrency } from "@/lib/format";
 import {
 ArrowLeft,
-ArrowUpRight,
 ChartNoAxesCombined,
 Loader2,
 Plus,
@@ -201,7 +200,6 @@ return <>
           </p>
 
         </div>
-        <ArrowUpRight className="h-5 w-5 shrink-0" />
       </Link>
 
 </>;

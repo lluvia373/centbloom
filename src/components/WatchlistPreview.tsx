@@ -2,7 +2,7 @@
 
 import { AssetAvatar } from "@/components/AssetAvatar";
 import { formatWatchPrice,useWatchlist } from "@/hooks/useWatchlist";
-import { ArrowUpRight,ChevronRight,Plus,Star } from "lucide-react";
+import { ChevronRight,Plus,Star } from "lucide-react";
 import Link from "next/link";
 
 const samples = [
@@ -138,7 +138,7 @@ export function WatchlistPreview({ isDemo = false }: { isDemo?: boolean }) {
       >
         {isDemo ? (
           <>
-            <ArrowUpRight size={13} /> 나의 관심종목 만들기
+             나의 관심종목 만들기
           </>
         ) : (
           <>

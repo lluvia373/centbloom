@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     ".open-next/**",
     ".wrangler/**",
     "next-env.d.ts",
+    "worker-configuration.d.ts", // Wrangler-generated runtime and binding types.
   ]),
 ]);
 

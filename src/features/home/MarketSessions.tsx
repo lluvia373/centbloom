@@ -1,19 +1,21 @@
 "use client";
 import { useEffect, useState } from "react";
-import { calendars, formatKst, getMarketSession } from "@/features/market/schedule";
+import { calendars, rankMarketSessions, groupSessionAlerts, visibleMarketSessions, sessionTransition, formatKst, kstTimelineDay, timelineHours } from "@/features/market/schedule";
+import { MarketSessionCard } from "./MarketSessionCard";
 import styles from "./MarketSessions.module.css";
 
 export function MarketSessions({ initialNow }: { initialNow: number }) {
+  const [region, setRegion] = useState("전체");
+  const [expanded, setExpanded] = useState(false);
   const [now, setNow] = useState(initialNow);
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
-    const tick = () => setNow(Date.now());
     const resume = () => {
       if (timer) clearInterval(timer);
       timer = undefined;
       if (document.visibilityState !== "hidden") {
-        tick();
-        timer = setInterval(tick, 30_000);
+        setNow(Date.now());
+        timer = setInterval(() => setNow(Date.now()), 30_000);
       }
     };
     resume();
@@ -23,31 +25,57 @@ export function MarketSessions({ initialNow }: { initialNow: number }) {
       document.removeEventListener("visibilitychange", resume);
     };
   }, []);
+  const ranked = rankMarketSessions(calendars, now);
+  const alerts = groupSessionAlerts(ranked);
+  const { rows, total } = visibleMarketSessions(ranked, region, expanded);
+  const day = kstTimelineDay(now);
+  const dateLabel = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" }).format(now);
+  const timeLabel = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(now);
   return (
-    <section className={styles.sessions} aria-label="국가별 정규장 일정, 시각은 한국시간">
-      {calendars.map(calendar => {
-        const state = getMarketSession(calendar, now);
-        return (
-          <details key={calendar.id} className={styles.market}
-            onKeyDown={event => { if (event.key === "Escape") event.currentTarget.open = false; }}>
-            <summary className={styles.summary} aria-label={`${calendar.name} ${state.label}, 상세 일정과 출처`}>
-              <span className={styles.country}>{calendar.name}<span className={styles.zone}>KST</span></span>
-              <span className={styles.status} data-status={state.status}><i />{state.label}</span>
-              <span className={styles.next}>
-                {state.skippedHoliday && <span className={styles.holiday}>{state.skippedHoliday} 후 · </span>}
-                {state.nextAt ? `${formatKst(state.nextAt)} ${state.nextAction}` : "다음 일정 확인 중"}
-              </span>
-            </summary>
-            <div className={styles.detail}>
-              <strong>{calendar.exchange}</strong>
-              <p>{state.reason}. 날짜 판정은 거래소 현지 시간, 표시 시각은 한국시간(KST)입니다.</p>
-              <p>공표된 정규장 일정 기준입니다. 시간외·대체거래소·개별 종목 거래정지·긴급 휴장 실시간 감시는 포함하지 않습니다.</p>
-              <p>2026년 일정 확인: 9월 6일. 이후 연도와 미확정 특별 거래시간은 추정하지 않습니다.</p>
-              {calendar.sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a>)}
-            </div>
-          </details>
-        );
-      })}
+    <section className={styles.sessions} aria-label="세계 정규장 일정 · KST">
+      <div className={styles.toolbar}>
+        <div className={styles.filters} role="group" aria-label="시장 지역">
+          {["전체", "미주", "아시아", "유럽", "오세아니아"].map(value => (
+            <button key={value} type="button" aria-pressed={region === value}
+              onClick={() => { setRegion(value); setExpanded(false); }}>{value}</button>
+          ))}
+        </div>
+        <span className={styles.zone}>정규장 · KST</span>
+      </div>
+      {alerts.length > 0 && <ul className={styles.alerts} aria-label="특별 휴장·거래 일정">
+        {alerts.map(group => {
+          const first = group[0];
+          const date = first.alert?.date;
+          return <li key={group.map(item => item.calendar.id).join("-")} className={styles.alert}
+            data-alert-markets={group.map(item => item.calendar.id).join(",")}>
+            <strong className={styles.countries}>{group.map(item => <span key={item.calendar.id}>{item.calendar.name}</span>)}</strong>
+            <span className={styles.headline}>{date && <time dateTime={date}>{Number(date.slice(5, 7))}.{Number(date.slice(8))} </time>}{first.alert?.label}</span>
+            <span className={styles.alertNext}>{first.state.nextAt
+              ? first.state.status === "auction" ? sessionTransition(first, now).primary :
+                `${formatKst(first.state.nextAt)} ${first.state.nextAction}`
+              : "거래시간 확인 중"}</span>
+          </li>;
+        })}
+      </ul>}
+      <div className={styles.chart}>
+        <div className={styles.axis}>
+          <time className={styles.date} dateTime={day.date}>{dateLabel}</time>
+          <div className={styles.scale} aria-hidden="true">
+            {timelineHours.map(hour => <span key={hour} className={styles.tick} data-hour={hour}
+              style={{ left: `${hour / 24 * 100}%` }}>{String(hour).padStart(2, "0")}</span>)}
+            <span className={styles.nowLabel} data-align={day.progress < 10 ? "start" : day.progress > 90 ? "end" : "middle"}
+              style={{ left: `${day.progress}%` }}>현재 {timeLabel}</span>
+          </div>
+          <span className={styles.nextHeading}>다음 일정</span>
+        </div>
+        <ul id="market-session-list" className={styles.list} aria-label={region + " 시장"}>
+          {rows.map(item => <MarketSessionCard key={item.calendar.id} item={item} now={now} day={day} />)}
+        </ul>
+      </div>
+      {total > 6 && <button className={styles.more} type="button"
+        aria-expanded={expanded} aria-controls="market-session-list" onClick={() => setExpanded(!expanded)}>
+        {expanded ? "접기" : `전체 시장 · ${total}`}
+      </button>}
     </section>
   );
 }
