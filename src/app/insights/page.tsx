@@ -4,18 +4,16 @@ import { AllocationChart } from "@/components/AllocationChart";
 import {
 AddTransactionLink,
 PageHeading,
-PortfolioMode,
 } from "@/components/Header";
 import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { WealthChart } from "@/components/WealthChart";
-import { usePreferences } from "@/hooks/usePortfolio";
-import { useWorkspaceSummary } from "@/hooks/useWorkspace";
+import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
 import { formatCurrency } from "@/lib/format";
 import { ChevronDown,Leaf,Scale } from "lucide-react";
 import { useState } from "react";
 export default function InsightsPage() {
-  const { summary, isDemo } = useWorkspaceSummary();
+  const { summary } = usePortfolioMarket();
   const { displayCurrency } = usePreferences();
   const [details, setDetails] = useState(false);
   const holdings = summary?.holdings ?? [];
@@ -26,7 +24,6 @@ export default function InsightsPage() {
       <PageHeading title="성과 분석">
         <AddTransactionLink />
       </PageHeading>
-      <PortfolioMode />
       <PortfolioMetrics />
       <WealthChart expanded />
       <div className="analytics-grid">
@@ -112,7 +109,6 @@ export default function InsightsPage() {
         </section>
 
       </div>
-      {!isDemo && (
         <section className="page-section">
           <button
             className="button-secondary"
@@ -127,7 +123,6 @@ export default function InsightsPage() {
             </div>
           )}
         </section>
-      )}
     </>
   );
 }

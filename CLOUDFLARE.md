@@ -30,7 +30,7 @@ npm run deploy:cloudflare
 
 ## AdSense 연결 준비
 
-현재 코드에는 **광고 위치와 개발 전용 미리보기만** 있다. publisher/slot ID·Google 스크립트·ads.txt·실제 송출은 미연결이다. 개발 서버는 광고 요청을 생성하지 않으며 운영 빌드에서 빈 광고 미리보기를 숨긴다.
+공개 화면은 광고 위치와 개발 전용 미리보기 상태이며 운영 빌드에서는 숨긴다. `/portfolio`의 예약 영역·조건부 송출 코드는 [AdSense 연결](#adsense-연결)을 따른다. 실제 publisher/slot ID·ads.txt·송출은 미연결이다.
 
 1. AdSense 계정에서 사용할 공개 도메인의 사이트 승인 상태를 확인하고, PRODUCT_SPEC의 현재 본문 배치 5개 이름으로 디스플레이 광고 단위를 구분한다. 삭제된 home-rail을 다시 만들지 않는다.
 2. 발급받은 publisher ID와 각 단위 ID로 features/ads의 같은 AdSlot 경계에 송출을 연결한다. 계정이 제공하는 정확한 ads.txt 항목을 public/ads.txt에 등록한다. 현재는 값을 추정해 파일/환경변수를 만들지 않았다.
@@ -52,6 +52,21 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 - 브라우저 공개 값이므로 publishable 키만 사용한다. `service_role`·비밀 키 금지. 값 변경 후 재빌드·재배포한다. 미설정 시 로컬 저장 모드다.
 - Google 로그인: Supabase Google 제공자를 활성화한다. Auth Site URL은 `https://centifolio.stock-web-demo.workers.dev`, Redirect URLs는 이 공개 주소와 `http://localhost:3000`, `http://127.0.0.1:3000`을 사용한다. 폐기한 배포 주소는 허용하지 않는다.
 - Google OAuth 리디렉션 URI는 앱 주소가 아니라 Supabase 대시보드의 `/auth/v1/callback` 주소다.
+
+## AdSense 연결
+
+`/portfolio`는 기본적으로 광고 예약 영역을 표시하며 실제 광고 요청은 비활성이다. 연결하려면 아래 공개 변수를 **빌드 시점**에 설정한다.
+
+```dotenv
+NEXT_PUBLIC_ADSENSE_CLIENT_ID=
+NEXT_PUBLIC_ADSENSE_PORTFOLIO_SLOT=
+NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
+```
+
+1. AdSense에서 사이트 승인과 디스플레이 광고 단위 발급을 완료한 뒤 `ca-pub-…` 게시자 ID와 `data-ad-slot` 값을 넣는다. ads.txt 항목은 계정에서 제시한 값으로 설정/검증한다.
+2. [로그인 보호 페이지 광고 안내](https://support.google.com/adsense/answer/161351?hl=ko)에 따라 광고 크롤러 접근을 준비한다. 현재 Google 로그인만으로 이 조건이 해결됐다고 간주하지 않는다. 실제 개인 계정의 로그인 정보/투자 기록을 제공하거나 인증을 우회하지 않고 별도 접근 설계를 검토한다.
+3. 개인정보/쿠키 고지와 적용 지역의 동의 설정을 확인한 후 `NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=true`로 바꾸고 재빌드·배포한다. 개발 모드는 `data-adtest=on`을 사용한다.
+4. 공개 사이트에서 실제 송출·모바일 배치·크롤러 오류를 확인한다. 모의 광고 검사는 실제 승인/송출 검증이 아니다. 중단은 활성화 변수를 false로 변경 후 재빌드·배포한다.
 
 ## 거래 저장 원자성 업데이트
 

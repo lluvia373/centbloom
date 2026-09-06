@@ -1,21 +1,16 @@
 "use client";
-import { AssetAvatar } from "@/components/AssetAvatar";
 import { TransactionList } from "@/components/TransactionList";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactionCommands, useTransactions } from "@/hooks/usePortfolio";
-import { useWorkspace } from "@/hooks/useWorkspace";
-import { DEMO_TRANSACTIONS } from "@/lib/demo";
-import { formatCurrency } from "@/lib/format";
 import type { Transaction } from "@/lib/types";
 import { Loader2, RotateCcw, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function TransactionHistory() {
   const { user } = useAuth();
-  const { isDemo } = useWorkspace();
-  return <History key={(user?.id ?? "local") + ":" + isDemo} isDemo={isDemo} />;
+  return <History key={user?.id ?? "local"} />;
 }
-function History({ isDemo }: { isDemo: boolean }) {
+function History() {
   const { transactions } = useTransactions();
   const { updateTransaction, removeTransaction, restoreTransaction } = useTransactionCommands();
   const [lastDeleted, setLastDeleted] = useState<Transaction | null>(null);
@@ -44,35 +39,6 @@ function History({ isDemo }: { isDemo: boolean }) {
     }
   };
   return <>
-      {isDemo ? (
-        <section className="surface">
-          <div className="surface-header">
-            <h2>샘플 거래 기록</h2>
-            <p>실제 거래 기록과 분리된 예시입니다.</p>
-          </div>
-          <div className="sample-transactions">
-            {DEMO_TRANSACTIONS.map((tx) => (
-              <div className="sample-transaction" key={tx.id}>
-                <AssetAvatar symbol={tx.symbol} />
-                <div>
-                  <strong>
-                    {tx.name} <span className="buy-chip">매수</span>
-                  </strong>
-                  <small>
-                    {tx.date} · {tx.quantity}주
-                  </small>
-                </div>
-                <div>
-                  <strong>
-                    {formatCurrency(tx.price * tx.quantity, tx.currency)}
-                  </strong>
-                  <small>주당 {formatCurrency(tx.price, tx.currency)}</small>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : (
         <TransactionList
           transactions={transactions}
           onUpdate={updateTransaction}
@@ -82,7 +48,7 @@ function History({ isDemo }: { isDemo: boolean }) {
             setLastDeleted(transaction);
           }}
         />
-      )}
+
       {lastDeleted && (
         <div
           role="status"

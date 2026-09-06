@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { StorageNotice } from "@/components/StorageNotice";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PortfolioProvider } from "@/hooks/usePortfolio";
-import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import "@/styles/charts.css";
 import "@/styles/portfolio.css";
 import "@/styles/workspace.css";
@@ -49,7 +48,6 @@ export default function RootLayout({
         <AuthProvider>
           <AuthGate>
             <PortfolioProvider>
-              <WorkspaceProvider>
                 <div className="app-shell">
                   <Header />
                   <PageFrame>
@@ -61,7 +59,6 @@ export default function RootLayout({
                     </footer>
                   </PageFrame>
                 </div>
-              </WorkspaceProvider>
             </PortfolioProvider>
           </AuthGate>
         </AuthProvider>

@@ -1,7 +1,6 @@
 "use client";
 import { CalculationHelp } from "@/components/CalculationHelp";
 import { usePortfolioMarket,usePreferences } from "@/hooks/usePortfolio";
-import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { formatCurrency,formatPercent } from "@/lib/format";
 import {
 ArrowUpRight,
@@ -11,9 +10,8 @@ Wallet,
 } from "lucide-react";
 
 export function PortfolioMetrics() {
-  const { summary, isDemo } = useWorkspaceSummary();
   const { displayCurrency } = usePreferences();
-  const { loading } = usePortfolioMarket();
+  const { summary, loading } = usePortfolioMarket();
   const holdings = summary?.holdings ?? [];
   const hasData =
     holdings.length > 0 &&
@@ -52,9 +50,7 @@ export function PortfolioMetrics() {
             {holdings.length}개 종목
           </span>
           <span>
-            {isDemo
-              ? "샘플 자산 · 현금 미포함"
-              : loading
+            {loading
                 ? "시세 확인 중"
                 : hasData
                   ? "현금 미포함"

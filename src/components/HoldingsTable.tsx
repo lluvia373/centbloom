@@ -56,7 +56,7 @@ export function HoldingsTable({
         </h2>
         {compact ? (
           <Link href="/portfolio" className="subtle-link">
-            전체 보기 
+            전체 보기
           </Link>
         ) : (
           <div className="portfolio-controls">

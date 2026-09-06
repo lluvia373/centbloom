@@ -27,6 +27,6 @@ export function navigationPageName(path: string) {
       : path === "/community" ? "리서치 가이드"
       : path === "/discover" ? "종목 탐색"
       : path.startsWith("/read/") ? "읽을거리"
-      : path === "/settings" ? "설정"
+      : path === "/settings" ? "계정 설정"
       : path === "/" ? "시장" : "종목 살펴보기");
 }

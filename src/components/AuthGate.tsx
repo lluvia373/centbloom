@@ -4,38 +4,10 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { isPublicRoute } from "@/features/auth/public-routes";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { useAuth } from "@/hooks/useAuth";
 import "@/app/auth.css";
-
-function PortfolioPreview() {
-  return (
-    <section className="cf-auth-preview" aria-labelledby="preview-title">
-      <div className="cf-auth-preview-heading">
-        <h2 id="preview-title">내 포트폴리오</h2>
-        <span>샘플 데이터</span>
-      </div>
-      <p className="cf-auth-preview-label">총 투자자산</p>
-      <p className="cf-auth-preview-value">24,860,000<span>원</span></p>
-      <p className="cf-auth-preview-return"><ArrowUpRight size={15} aria-hidden="true" />2,860,000원 <span>(13.0%)</span></p>
-      <div className="cf-auth-preview-chart" aria-hidden="true">
-        <svg viewBox="0 0 460 115" preserveAspectRatio="none">
-          <path className="cf-auth-chart-grid" d="M0 18H460M0 58H460M0 98H460" />
-          <path className="cf-auth-chart-area" d="M0 102L22 100L42 88L65 94L86 80L111 84L134 68L156 77L180 60L202 65L225 53L245 58L269 41L291 48L314 31L337 37L360 23L384 29L407 17L434 20L460 6V115H0Z" />
-          <path className="cf-auth-chart-line" d="M0 102L22 100L42 88L65 94L86 80L111 84L134 68L156 77L180 60L202 65L225 53L245 58L269 41L291 48L314 31L337 37L360 23L384 29L407 17L434 20L460 6" />
-        </svg>
-        <div><span>5월</span><span>6월</span><span>7월</span><span>8월</span></div>
-      </div>
-      <div className="cf-auth-preview-allocation">
-        <div><span className="cf-auth-allocation-dot domestic" /><span>국내 주식</span><strong>33%</strong></div>
-        <div><span className="cf-auth-allocation-dot overseas" /><span>해외 주식</span><strong>35%</strong></div>
-        <div><span className="cf-auth-allocation-dot etf" /><span>ETF</span><strong>32%</strong></div>
-      </div>
-
-    </section>
-  );
-}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, configured, signInWithGoogle } = useAuth();
@@ -78,13 +50,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       </header>
       <main id="main-content" className="cf-auth-main">
         <div className="cf-auth-stage">
-          <section className="cf-auth-story" aria-labelledby="auth-story-title">
-            <h1 id="auth-story-title">내 투자 관리</h1>
-
-          </section>
           <section aria-labelledby="login-title" className="cf-auth-login">
             <div className="cf-auth-login-content">
-              <h2 id="login-title">센티폴리오 시작하기</h2>
+              <h1 id="login-title">로그인</h1>
               <p className="cf-auth-login-description">처음 로그인하면 계정이 생성됩니다.</p>
               <button type="button" onClick={handleGoogleLogin} disabled={signingIn} aria-busy={signingIn} className="cf-auth-google">
                 {signingIn ? <Loader2 size={20} className="animate-spin" aria-hidden="true" /> : (
@@ -100,13 +68,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 <span>{signingIn ? "Google로 이동 중..." : "Google로 계속하기"}</span>
               </button>
               {error && <p role="alert" className="cf-auth-error">{error}</p>}
-              <div className="cf-auth-storage-note">
-                <p>거래: 계정에 저장</p>
-                <p>관심종목·노트: 이 브라우저에 저장</p>
-              </div>
             </div>
           </section>
-          <PortfolioPreview />
         </div>
       </main>
       <footer className="cf-auth-footer"><span>© Centifolio</span></footer>

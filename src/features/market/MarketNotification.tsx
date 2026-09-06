@@ -3,12 +3,8 @@ import { usePortfolioMarket } from "@/hooks/usePortfolio";
 import { X } from "lucide-react";
 
 export function MarketNotification({
-  isDemo,
-  samplePage,
   setPanel,
 }: {
-  isDemo: boolean;
-  samplePage: boolean;
   setPanel: (panel: null) => void;
 }) {
   const { lastMarketUpdateAt, marketDataError } = usePortfolioMarket();
@@ -21,12 +17,10 @@ export function MarketNotification({
         </button>
       </h3>
       <p>
-        {isDemo && samplePage
-          ? "포트폴리오 자산은 체험용 샘플입니다. 대시보드의 세계 주식은 실제 시장 시세입니다."
-          : (marketDataError ??
+        {marketDataError ??
             (lastMarketUpdateAt
               ? `마지막 시세 확인: ${new Date(lastMarketUpdateAt).toLocaleTimeString("ko-KR")}`
-              : "거래를 기록하면 보유종목 시세를 확인합니다."))}
+              : "보유종목 없음")}
       </p>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { CircleDot } from "lucide-react";
-import { ASSET_COLORS } from "@/lib/demo";
+const ASSET_COLORS = Array.from({ length: 8 }, (_, index) => `var(--cf-color-allocation-${index + 1})`);
 import { formatCurrency } from "@/lib/format";
 import type { DisplayCurrency, HoldingWithQuote } from "@/lib/types";
 import { marketLabel } from "@/lib/markets";
