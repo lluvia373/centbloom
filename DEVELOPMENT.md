@@ -1,6 +1,6 @@
 # 코드 지도와 변경 방법
 
-최종 확인: 2026-09-06 · main의 PR #10 구현 기준. 파일 역할·확장 위치는 이 문서, 제품 의미는 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md), 실제 검증·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)가 기준이다. 설치 버전과 실행 명령은 package.json·lockfile을 확인한다.
+최종 확인: 2026-09-06 · main + codex/market-index-strip의 로컬 공개 홈 개편 기준. 파일 역할·확장 위치는 이 문서, 제품 의미는 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md), 실제 검증·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)가 기준이다. 설치 버전과 실행 명령은 package.json·lockfile을 확인한다.
 
 ## 작업별 시작점
 
@@ -8,6 +8,7 @@
 
 | 변경할 내용 | 먼저 볼 구현 | 확인할 테스트 |
 | --- | --- | --- |
+| 공개 시장 홈·뉴스·일정 | [home UI/자료](./src/features/home), [뉴스](./src/features/market/server/news.ts), [공개 경로](./src/features/auth/public-routes.ts) | public-home, market-ticker, market-workspace, requests |
 | 거래 추가·수정·삭제·복구 | [명령](./src/features/portfolio/model/commands.ts) → [저장 큐](./src/features/portfolio/data/ledger-store.ts) → [거래 상태 연결](./src/features/portfolio/state/ledger.tsx) | ledger-store, backup-commands, sql-ledger |
 | 거래 입력 항목·날짜 | [TransactionForm](./src/components/TransactionForm.tsx), [TransactionEditor](./src/features/portfolio/ui/TransactionEditor.tsx), [거래 시장 조회](./src/features/market/use-trade-market.ts) | transaction-date, enrichment, backup-commands |
 | 보유량·원가·수익률 | [portfolio](./src/lib/portfolio.ts), [performance](./src/lib/performance.ts), [요약](./src/features/portfolio/model/summary.ts) | performance, market-data |
@@ -40,16 +41,23 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | 위치 | 역할 |
 | --- | --- |
 | [app/layout.tsx](./src/app/layout.tsx) | 글꼴·메타데이터·Provider 순서·공통 프레임 |
-| [app](./src/app)의 page.tsx | `/` 대시보드, `/portfolio` 보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 검색, `/stock/[symbol]` 상세 진입점 |
-| [app/community/page.tsx](./src/app/community/page.tsx) | 현재 `/journal` 리디렉션. 승인된 커뮤니티 명세가 구현된 상태는 아님 |
-| [app/api](./src/app/api)의 route.ts | quote/chart/historical/search 입력 검증·서비스 호출·HTTP 응답 |
+| [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
+| [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
+| [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
 | [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | 로그인 세션과 Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
 | [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx), [hooks/useWorkspace.tsx](./src/hooks/useWorkspace.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 샘플/개인 모드와 표시 요약 |
+| [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`/`calendar`: 공식 일정과 만료 필터. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
+| [features/auth/public-routes.ts](./src/features/auth/public-routes.ts) | AuthGate의 공개 읽기 경로 허용 목록. 새 공개 경로는 여기와 접근 경계 테스트를 함께 수정 |
+| [features/market/schedule](./src/features/market/schedule), [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) | calendars는 출처가 있는 연도별 휴일·특별시간, time은 시간대/DST, session은 상태·다음 개장 계산, index는 공개 창구. MarketSessions는 타이머·표시만 담당하며 전용 CSS 모듈 사용. 일반 공휴일과 거래소 휴일을 혼동하지 않음 |
+| [features/market/MarketHeader.module.css](./src/features/market/MarketHeader.module.css), [MarketTicker.tsx](./src/features/market/MarketTicker.tsx) | 메인 전용 상단 배치(데스크톱 60px/모바일 두 행), 7개 지수 공유 구독·기준 시각 안내. Header는 메인에서만 기존 경로·알림/도움말 대신 이 지수 영역을 조립한다. 다른 페이지 상단은 유지 |
+| [features/market/movers-model.ts](./src/features/market/movers-model.ts), [movers-store.ts](./src/features/market/movers-store.ts), [use-market-movers.ts](./src/features/market/use-market-movers.ts) | 순위 검증/변환, 공유 상태·구독·폴링 해제, React 연결. server/movers는 Yahoo screener 호출. `/api/movers`는 종류 검증·서비스 호출·응답만 담당. schedule 공개 인터페이스는 거래소 일정 기반 장 상태·휴장 사유·다음 개장을 제공 |
+| [features/market/news-model.ts](./src/features/market/news-model.ts), [use-market-news.ts](./src/features/market/use-market-news.ts) | 뉴스 타입·링크/시각 검증과 React 요청 수명. server/news는 기존 Yahoo 클라이언트/요청 풀 사용 |
+| [WatchStockButton](./src/features/watchlist/WatchStockButton.tsx) | 종목 상세의 기존 관심종목 저장 명령 연결과 로그인 안내. 별도 저장소를 만들지 않음 |
 | [features/portfolio/model](./src/features/portfolio/model) | `types.ts`: 명령·입력·저장소 계약. `commands.ts`: 최신 거래에 명령 적용·검증/병합. `enrichment.ts`: 거래 통화/환율 보완. `summary.ts`: 현재 보유 자산 요약 |
 | [features/portfolio/data](./src/features/portfolio/data) | `ledger-store.ts`: 초기화·직렬 명령·재시도·상태 발행·폐기. `local.ts`: 로컬 revision·복구/outbox 사본. `server.ts`: RPC read/commit. `rows.ts`: DB 행↔Transaction. `preferences.ts`: 표시 설정 저장 |
 | [features/portfolio/state](./src/features/portfolio/state) | `ledger.tsx`: 계정별 저장소 수명·Web Locks·명령 훅. `preferences.tsx`: 설정 구독. `market.tsx`: 필요한 경로의 보유 시세/환율 구독과 요약 |
 | [features/portfolio/ui](./src/features/portfolio/ui) | `TradeStockPicker.tsx`: 입력 종목 선택. `TransactionEditor.tsx`: 기존 거래 편집. `BackupPreview.tsx`: 검증한 백업 미리보기 |
-| [features/market](./src/features/market) | `quote-hub.ts`: 종목별 공유 폴링·구독 해제. `use-stock-search.ts`: 취소/debounce 검색. `use-trade-market.ts`: 거래일 환율/시장 조회. `MarketNotification.tsx`: Header 시장 알림 |
+| [features/market](./src/features/market) | `quote-hub.ts`: 종목별 공유 폴링·구독 해제. `use-stock-search.ts`: 취소/debounce 검색. `use-trade-market.ts`: 거래일 환율/시장 조회. `MarketNotification.tsx`: Header 시장 알림. `MarketTicker.tsx`/`MarketTicker.module.css`: 대시보드 상단 지수·환율과 전용 반응형 스타일. 기존 useLiveQuotes를 소비 |
 | [features/market/server](./src/features/market/server) | `provider.ts`: Yahoo 클라이언트·제한 큐·공급자 오류. `quote.ts`, `chart.ts`, `historical.ts`, `search.ts`: 종류별 조회/변환. `http.ts`: HTTP 오류 변환 |
 | [hooks/useLiveQuotes.ts](./src/hooks/useLiveQuotes.ts), [lib/stock-api.ts](./src/lib/stock-api.ts) | React 종목 구독; API URL·요청 키·캐시 수명·환율 조회·응답 검증 |
 | [features/performance](./src/features/performance) | `service.ts`: 저장 이력 재사용·필요 기간 조회·계산/저장 흐름. `request-plan.ts`: 기간별 필요한 종목/환율. `repository.ts`: 로컬/서버 성과 저장. `calculate.ts`: 직접/Worker 실행 선택. `performance.worker.ts`: Worker 메시지 진입점 |
@@ -63,13 +71,13 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [components](./src/components)의 공통 UI | `Header`: 탐색/검색/통화. `AuthGate`: 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
 | [lib/portfolio.ts](./src/lib/portfolio.ts), [lib/performance.ts](./src/lib/performance.ts) | 순수 보유 상태·원가·거래 이력 검증; KST 날짜·일별 성과·수익률 계산 |
 | [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 이전 브랜드 키 읽기 호환. 이름에 stock이 남은 저장 키를 임의 변경하지 않음 |
-| [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `demo.ts`: 샘플. `company-logos.ts`: 종목 로고 매핑 |
+| [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `demo.ts`: 샘플. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
 | [shared/async](./src/shared/async), [shared/react/use-operation-scope.ts](./src/shared/react/use-operation-scope.ts) | `pool.ts`: 동시 실행 제한. `request-cache.ts`: 공유 요청·취소/TTL/timeout. `shared-resource.ts`: 공유 결과·수명/폴링. operation scope: 화면/계정 해제 후 UI 반영 차단 |
 | [supabase/migrations](./supabase/migrations), [supabase/rollback](./supabase/rollback) | 기존 DB의 거래 CAS·원자적 교체/성과 저장 증분 SQL과 복구 SQL. 새 DB의 전체 초기 스키마는 아님 |
 
 ### 스타일·자산·도구
 
-화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 루트 타입 검사는 별도 Git worktree인 `작업브랜치`를 제외한다.
+화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 별도 Git worktree를 만들 때는 프로젝트 루트 밖에 두어 타입 검사·도구 탐색에 중복 포함되지 않게 한다.
 
 | 위치 | 소유 범위 |
 | --- | --- |

@@ -11,7 +11,7 @@ import { QuoteStatus } from "./QuoteStatus";
 import { AssetAvatar } from "./AssetAvatar";
 
 export function LiveMarkets() {
-  const [market, setMarket] = useState<MarketFilter>("kr");
+  const [market, setMarket] = useState<MarketFilter>("us");
   const stocks = discoveryStocks(market);
   const { quotes, failedSymbols, refreshing, loading, refresh } = useLiveQuotes(stocks.map((stock) => stock.symbol));
   return (

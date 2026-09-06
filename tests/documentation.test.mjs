@@ -85,4 +85,3 @@ test("private plan may exist locally but must not be tracked", (t) => {
   assert.equal(result.code, 1);
   assert.match(result.output, /private document is tracked by Git/);
 });
-

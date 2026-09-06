@@ -55,6 +55,7 @@ export default function RootLayout({
                     {children}
                     <footer className="app-footer">
                       <span>Centifolio</span>
+                      <a href="https://elbstream.com" target="_blank" rel="noreferrer" className="company-logo-credit">로고 · Elbstream</a>
                     </footer>
                   </main>
                 </div>

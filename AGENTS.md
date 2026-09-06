@@ -24,6 +24,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 | 내용 | 기준 파일 |
 | --- | --- |
 | 사업 목표·수익모델·실행 기한·실적 | 로컬 전용 BUSINESS_MODEL.md |
+| 현재 제품 결정·변경 이력 | [DECISIONS.md](./DECISIONS.md) |
+| 거래소 일정 근거·지원 범위 | [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) |
+| 공개 홈 경쟁 서비스 조사 | [PUBLIC_HOME_RESEARCH.md](./PUBLIC_HOME_RESEARCH.md) |
 | 기능·저장·계산 의미 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
 | 구현·검증·배포 상태·남은 문제 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
 | 검색 유입 전략·조사 근거·우선순위 | [SEO_PLAN.md](./SEO_PLAN.md) |

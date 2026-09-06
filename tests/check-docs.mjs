@@ -109,4 +109,3 @@ if (errors.length) {
 } else {
   console.log("Documentation check passed: " + documents.size + " documents, registries and inline local links/anchors.");
 }
-

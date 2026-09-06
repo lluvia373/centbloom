@@ -73,6 +73,8 @@
 
 | 공통값 | 값 | 용도 |
 | --- | --- | --- |
+| `--cf-color-market-up` | `#d74353` | 공개 시장의 상승 표시; + 기호 병기 |
+| `--cf-color-market-down` | `#356ed5` | 공개 시장의 하락 표시; − 기호 병기 |
 | `--cf-color-canvas` | `#f6f7f8` | 페이지 배경 |
 | `--cf-color-surface` | `#ffffff` | 카드·입력 배경 / 진한 버튼의 글자 |
 | `--cf-color-ink` | `#202329` | 제목·본문 |

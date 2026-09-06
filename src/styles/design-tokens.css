@@ -1,5 +1,7 @@
 /* UI values live here. Keep DESIGN_SYSTEM.md in sync. */
 :root {
+  --cf-color-market-up: #d74353;
+  --cf-color-market-down: #356ed5;
   --cf-font-ui: var(--font-geist-sans), Arial, "Malgun Gothic", sans-serif;
   --cf-font-code: var(--font-geist-mono), monospace;
   --cf-color-canvas: #f6f7f8;

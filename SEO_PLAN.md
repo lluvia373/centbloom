@@ -100,4 +100,3 @@
 검색에서 **보임/클릭됨**은 [Search Console](https://support.google.com/webmasters/answer/7576553?hl=en), 사이트에서 **읽음/작성/재방문**은 [이슈 #11](https://github.com/lluvia373/centifolio/issues/11)로 측정한다. 검색어별 방문자를 개인 단위로 식별할 수 있다고 가정하지 않는다. 실제 자료가 없으면 미측정으로 남긴다.
 
 이 문서는 SEO 전략·조사 근거·우선순위의 기준이며, 관리·수정은 [AGENTS.md의 문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다. 개별 실행은 기준 문서를 링크한 GitHub 이슈로 관리하고, 구현·검증 결과는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)에 기록한다.
-
