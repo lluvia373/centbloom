@@ -51,11 +51,11 @@ test("week API boundaries use KST, reject multiple query types and expose single
 });
 test("home renders seven dates, all selected-day events and same-tab detail links without modal",()=>{
  const params=new URLSearchParams("calendarDay=2026-09-16");
- const {WeekCalendar}=loadTypescript("src/features/calendar/WeekCalendar.tsx",{
+ const {MarketCalendar}=loadTypescript("src/features/home/MarketCalendar.tsx",{
   "./use-calendar-selection":{useCalendarSelection:()=>({params,update:()=>{}})},
-  "./use-calendar-feed":{useCalendarFeed:()=>({})},"./calendar.module.css":styles
+  "./use-calendar-feed":{useCalendarFeed:()=>({})},"./calendar.module.css":styles,"./home.module.css":styles
  });
- const html=renderToStaticMarkup(React.createElement(WeekCalendar,{now:Date.parse("2026-09-16T00:00:00Z")}));
+ const html=renderToStaticMarkup(React.createElement(MarketCalendar,{now:Date.parse("2026-09-16T00:00:00Z")}));
  assert.match(html,/이번 주 일정/);assert.match(html,/KST/);
  assert.equal((html.match(/aria-pressed=/g)||[]).length,7);
  assert.equal((html.match(/<li>/g)||[]).length,3);

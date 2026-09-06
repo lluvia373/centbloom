@@ -1,5 +1,6 @@
 import { AdSlot } from "@/features/ads";
 import { connection } from "next/server";
+import { DiscoveryShortcuts } from "@/features/home/DiscoveryShortcuts";
 import { StockDiscovery } from "@/features/home/StockDiscovery";
 import { MarketNews } from "@/features/home/MarketNews";
 import { MarketMovers } from "@/features/home/MarketMovers";
@@ -14,17 +15,23 @@ export default async function HomePage() {
   const now = Date.now();
   return (
     <div className={styles.home}>
-      <MarketSessions initialNow={now} />
       <h1 className="sr-only">시장</h1>
+      <div className={styles.homeSearch}>
+        <StockDiscovery />
+        <DiscoveryShortcuts />
+      </div>
+      <MarketMovers />
       <AdSlot placement="home-top" />
-      <MarketMovers><StockDiscovery /></MarketMovers>
       <div className={styles.workspaceGrid}>
         <div className={styles.eventColumn}>
           <MarketNews />
           <AdSlot placement="home-news" />
         </div>
         <aside className={styles.researchRail}>
-          <MarketCalendar now={now} />
+          <div className={styles.scheduleColumn}>
+            <MarketCalendar now={now} />
+            <MarketSessions initialNow={now} />
+          </div>
           <ResearchDesk />
         </aside>
       </div>

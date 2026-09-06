@@ -3,7 +3,7 @@
  * Sizes are placement budgets, not a claim that an ad is currently served.
  */
 export const adPlacements = {
-  "home-top": { label: "홈 상단", format: "banner" },
+  "home-top": { label: "홈 순위 아래", format: "banner" },
   "home-news": { label: "홈 뉴스 아래", format: "content" },
   "stock-bottom": { label: "종목 상세 아래", format: "content" },
   "calendar-bottom": { label: "캘린더 아래", format: "banner" },

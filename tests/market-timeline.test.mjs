@@ -44,23 +44,19 @@ test("day rollover resets the current marker and all known intervals stay inside
     }
   }
 });
-test("six primary markets remain stable, with every regional market available after expanding", () => {
+test("only the six primary markets remain visible in stable order", () => {
   for (const date of ["2026-09-07T08:30:00+09:00", "2026-09-08T14:00:00Z"]) {
     const ranked = rankMarketSessions(calendars, Date.parse(date));
-    assert.deepEqual(Array.from(visibleMarketSessions(ranked, "전체", false).rows, i => i.calendar.id), ["US", "KR", "JP", "HK", "GB", "DE"]);
-    assert.equal(visibleMarketSessions(ranked, "전체", true).rows.length, 24);
-    const europe = visibleMarketSessions(ranked, "유럽", true);
-    assert.equal(europe.rows.length, 14);
-    assert.ok(europe.rows.every(i => i.calendar.region === "유럽"));
+    assert.deepEqual(Array.from(visibleMarketSessions(ranked), i => i.calendar.id), ["US", "KR", "JP", "CN", "HK", "DE"]);
   }
 });
-test("relative transition uses KST, never promises an exact HK auction end, handles missing time", () => {
+test("dated transition uses KST, never promises an exact HK auction end, handles missing time", () => {
   const next = (id, date) => {
     const now = Date.parse(date);
     return sessionTransition(rankMarketSessions(calendars, now).find(i => i.calendar.id === id), now);
   };
-  assert.equal(next("KR", "2026-09-07T08:30:00+09:00").primary, "30분 후 개장");
-  assert.equal(next("JP", "2026-09-08T12:00:00+09:00").primary, "30분 후 재개");
+  assert.equal(next("KR", "2026-09-07T08:30:00+09:00").primary, "9/7 09:00 개장");
+  assert.equal(next("JP", "2026-09-08T12:00:00+09:00").primary, "9/8 12:30 재개");
   assert.match(next("HK", "2026-09-08T17:09:00+09:00").primary, /17:10까지 마감/);
   assert.equal(next("KR", "2027-01-04T00:00:00Z").primary, "다음 일정 확인 중");
 });

@@ -22,7 +22,6 @@ export function MarketSessionCard({ item, now, day }: { item: RankedMarketSessio
           style={{ left: `${segment.left}%`, width: `${segment.width}%` }} aria-hidden="true" />)}
         {timeline.segments.length === 0 && <span className={styles.noSession} aria-hidden="true">{timeline.emptyLabel}</span>}
         {timeline.segments.length > 0 && timeline.uncertain && <span className={styles.uncertain}>일부 시간 미확인</span>}
-        <span className={styles.currentLine} style={{ left: `${day.progress}%` }} aria-hidden="true" />
       </div>
       <div className={styles.next} data-imminent={next.imminent}>
         <strong>{next.primary}</strong>

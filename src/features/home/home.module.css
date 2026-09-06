@@ -74,9 +74,6 @@
 .suggestions a:hover {
   text-decoration: underline;
 }
-.rankingSection > .sectionHead {
-  margin-bottom: var(--cf-space-3);
-}
 .searchResults {
   position: absolute;
   top: calc(100% + var(--cf-space-1));
@@ -476,13 +473,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--cf-space-4);
 }
-.moverPanel {
-  min-width: 0;
-  background: var(--cf-color-surface);
-  border: 1px solid var(--cf-color-line);
-  border-radius: var(--cf-radius-card);
-  padding: var(--cf-space-4) var(--cf-space-4) var(--cf-space-2);
-}
+
 .moverHeading {
   display: flex;
   justify-content: space-between;
@@ -519,12 +510,6 @@
   display: grid;
   gap: var(--cf-space-4);
   min-width: 0;
-}
-.desk {
-  border: 1px solid var(--cf-color-line);
-  background: var(--cf-color-canvas);
-  border-radius: var(--cf-radius-card);
-  padding: var(--cf-space-6);
 }
 
 .deskAction {
@@ -564,9 +549,6 @@
   .rankingGrid {
     gap: var(--cf-space-3);
   }
-  .moverPanel {
-    padding: var(--cf-space-4) var(--cf-space-3) var(--cf-space-2);
-  }
   .workspaceGrid {
     grid-template-columns: minmax(0, 1fr) 310px;
     gap: var(--cf-space-4);
@@ -600,9 +582,6 @@
   .rankingGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--cf-space-4);
-  }
-  .moverPanel {
-    padding: var(--cf-space-4);
   }
   .moverPanel:last-child {
     grid-column: auto;
@@ -663,3 +642,26 @@
   outline: 2px solid var(--cf-color-focus);
   outline-offset: 2px;
 }
+
+.homeSearch { display: grid; gap: var(--cf-space-3); margin-bottom: var(--cf-space-6); }
+.homeSearch .discovery { width: 100%; }
+.homeSearch .suggestions { margin: 0; }
+.homeSection { min-width: 0; }
+.homeSectionHead {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--cf-space-2) var(--cf-space-3);
+  min-height: 44px; margin-bottom: var(--cf-space-3);
+}
+.homeSectionHead h2 {
+  margin: 0; color: var(--cf-color-ink); font-size: var(--cf-text-section);
+  font-weight: var(--cf-weight-semibold); line-height: var(--cf-leading-title);
+  letter-spacing: var(--cf-tracking-title);
+}
+.sectionMeta { color: var(--cf-color-muted); font-size: var(--cf-text-caption); }
+.sectionCard, .moverPanel {
+  min-width: 0; padding: var(--cf-space-4); border: 1px solid var(--cf-color-line);
+  border-radius: var(--cf-radius-card); background: var(--cf-color-surface);
+}
+.sectionCard > .deskAction:first-child { border-top: 0; padding-top: 0; }
+
+.scheduleColumn { display: grid; gap: var(--cf-space-4); min-width: 0; align-content: start; }

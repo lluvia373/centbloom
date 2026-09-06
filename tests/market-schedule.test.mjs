@@ -71,19 +71,22 @@ test("unverified years and special hours cannot silently produce a normal sessio
   assert.equal(iso(getMarketSession(c,Date.parse("2026-12-31T23:59:00-05:00"))),null);
  }
 });
-test("SSR renders simultaneous closures and region navigation without explanatory popovers",()=>{
+test("SSR starts collapsed with the US next opening and only six markets",()=>{
  const {MarketSessions}=loadTypescript("src/features/home/MarketSessions.tsx",{
   "./MarketSessions.module.css":{default:{}},
  });
- const html=renderToStaticMarkup(createElement(MarketSessions,{initialNow:Date.parse("2026-09-06T07:00:00Z")}));
+ const html=renderToStaticMarkup(createElement(MarketSessions,{initialNow:Date.parse("2026-09-07T01:47:00+09:00")}));
  assert.doesNotMatch(html, /<summary|<details|상세 일정과 출처|한국시간/);
- assert.match(html,/data-alert-markets="US,CA"/);
- assert.match(html,/유럽/);
- assert.match(html,/정규장 · KST/);
- assert.match(html,/노동절 휴장 예정/);
- assert.match(html,/9\. 8\. 22:30 개장/);
- assert.doesNotMatch(html,/시장 현황|대표 지수 기준/);
- assert.match(html,/주말 휴장/);
+ assert.doesNotMatch(html, /data-alert-markets|시장 지역|특별 휴장·거래 일정/);
+ assert.match(html, /주요국 장 시간표 · KST/);
+ assert.match(html, /노동절 휴장/);
+ assert.match(html, /9\/8 22:30 개장/);
+ assert.doesNotMatch(html, /전체 시장 · 24|data-market="CA"|data-market="GB"|오늘|내일/);
+ assert.match(html, /aria-expanded="false"/);
+ assert.match(html, /hidden=""/);
+ assert.match(html, /펼치기/);
+ assert.equal((html.match(/data-market="/g)||[]).length,6);
+ assert.doesNotMatch(html, /시장 현황|대표 지수 기준/);
 });
 
 test("session priority changes with time rather than a fixed country order",()=>{

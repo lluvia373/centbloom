@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
-import { calendars, rankMarketSessions, groupSessionAlerts, visibleMarketSessions, sessionTransition, formatKst, kstTimelineDay, timelineHours } from "@/features/market/schedule";
+import { useEffect, useId, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { calendars, rankMarketSessions, visibleMarketSessions, sessionTransition, kstTimelineDay, timelineHours } from "@/features/market/schedule";
 import { MarketSessionCard } from "./MarketSessionCard";
 import styles from "./MarketSessions.module.css";
 
 export function MarketSessions({ initialNow }: { initialNow: number }) {
-  const [region, setRegion] = useState("전체");
+  const chartId = useId();
   const [expanded, setExpanded] = useState(false);
   const [now, setNow] = useState(initialNow);
   useEffect(() => {
@@ -26,40 +27,27 @@ export function MarketSessions({ initialNow }: { initialNow: number }) {
     };
   }, []);
   const ranked = rankMarketSessions(calendars, now);
-  const alerts = groupSessionAlerts(ranked);
-  const { rows, total } = visibleMarketSessions(ranked, region, expanded);
+  const rows = visibleMarketSessions(ranked);
+  const us = rows.find(item => item.calendar.id === "US")!;
+  const next = sessionTransition(us, now);
+  const nextLabel = next.clock ? next.clock + " " + us.state.nextAction : next.primary;
   const day = kstTimelineDay(now);
   const dateLabel = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" }).format(now);
   const timeLabel = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(now);
   return (
-    <section className={styles.sessions} aria-label="세계 정규장 일정 · KST">
-      <div className={styles.toolbar}>
-        <div className={styles.filters} role="group" aria-label="시장 지역">
-          {["전체", "미주", "아시아", "유럽", "오세아니아"].map(value => (
-            <button key={value} type="button" aria-pressed={region === value}
-              onClick={() => { setRegion(value); setExpanded(false); }}>{value}</button>
-          ))}
-        </div>
-        <span className={styles.zone}>정규장 · KST</span>
-      </div>
-      {alerts.length > 0 && <ul className={styles.alerts} aria-label="특별 휴장·거래 일정">
-        {alerts.map(group => {
-          const first = group[0];
-          const date = first.alert?.date;
-          return <li key={group.map(item => item.calendar.id).join("-")} className={styles.alert}
-            data-alert-markets={group.map(item => item.calendar.id).join(",")}>
-            <strong className={styles.countries}>{group.map(item => <span key={item.calendar.id}>{item.calendar.name}</span>)}</strong>
-            <span className={styles.headline}>{date && <time dateTime={date}>{Number(date.slice(5, 7))}.{Number(date.slice(8))} </time>}{first.alert?.label}</span>
-            <span className={styles.alertNext}>{first.state.nextAt
-              ? first.state.status === "auction" ? sessionTransition(first, now).primary :
-                `${formatKst(first.state.nextAt)} ${first.state.nextAction}`
-              : "거래시간 확인 중"}</span>
-          </li>;
-        })}
-      </ul>}
-      <div className={styles.chart}>
+    <section className={styles.sessions} aria-label="주요국 장 시간표 · KST">
+      <button className={styles.toggle} type="button"
+        aria-expanded={expanded} aria-controls={chartId} onClick={() => setExpanded(value => !value)}>
+        <span className={styles.toggleTitle}>장 시간표</span>
+        <span className={styles.summary}>
+          <span className={styles.status} data-status={us.state.status}>미국 · {us.state.status === "open" ? "거래 중" : us.state.label}</span>
+          <span>{nextLabel} · KST</span>
+        </span>
+        <span className={styles.toggleAction}>{expanded ? "접기" : "펼치기"}<ChevronDown size={16} aria-hidden="true" /></span>
+      </button>
+      <div id={chartId} className={styles.chart} hidden={!expanded}>
         <div className={styles.axis}>
-          <time className={styles.date} dateTime={day.date}>{dateLabel}</time>
+          <time className={styles.date} dateTime={day.date}>{dateLabel} · KST</time>
           <div className={styles.scale} aria-hidden="true">
             {timelineHours.map(hour => <span key={hour} className={styles.tick} data-hour={hour}
               style={{ left: `${hour / 24 * 100}%` }}>{String(hour).padStart(2, "0")}</span>)}
@@ -68,14 +56,10 @@ export function MarketSessions({ initialNow }: { initialNow: number }) {
           </div>
           <span className={styles.nextHeading}>다음 일정</span>
         </div>
-        <ul id="market-session-list" className={styles.list} aria-label={region + " 시장"}>
+        <ul className={styles.list} aria-label="주요 6개국 시장">
           {rows.map(item => <MarketSessionCard key={item.calendar.id} item={item} now={now} day={day} />)}
         </ul>
       </div>
-      {total > 6 && <button className={styles.more} type="button"
-        aria-expanded={expanded} aria-controls="market-session-list" onClick={() => setExpanded(!expanded)}>
-        {expanded ? "접기" : `전체 시장 · ${total}`}
-      </button>}
     </section>
   );
 }

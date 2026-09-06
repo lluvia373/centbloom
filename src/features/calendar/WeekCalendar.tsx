@@ -18,7 +18,6 @@ export function WeekCalendar({now}: {now:number}) {
   const records = feed.data?.events ?? marketEvents.map(scheduleRelease);
   const from = "/?" + new URLSearchParams({...Object.fromEntries(params),calendarDay:selected});
   return <>
-    <div className={styles.heading}><h2>이번 주 일정</h2><span>KST</span></div>
     <div className={styles.weekToolbar}>
       <button aria-label="이전 주" onClick={() => update({calendarDay:shiftDay(selected,-7)})}>‹</button>
       <span>{days[0].slice(5).replace("-",".")} – {days[6].slice(5).replace("-",".")}</span>

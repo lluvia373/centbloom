@@ -26,7 +26,7 @@
 
 ## 로컬 실행
 
-항상 main에서 별도 로컬 브랜치·Git worktree를 만든다. 작업 폴더는 프로젝트 루트 밖에 두고 그 안에서 실행한다. 푸시·병합은 사용자 지시 후 진행하며, 병합 확인 뒤 로컬 main 동기화·해당 브랜치와 폴더 삭제까지 마친다.
+모든 구현·수정은 `C:\Users\Siyun\Desktop\works\centifolio`의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
 
 ```sh
 npm ci
@@ -53,7 +53,7 @@ npm run build:cloudflare
 
 계산 전후 재현: `node tests/performance.test.mjs --benchmark` (실측 출력은 work/performance-benchmark.json). 고정 입력·기준 구현은 tests/reference, 이번 측정값은 [benchmark fixture](./tests/fixtures/performance-benchmark.json)에 있다.
 
-브라우저 격리 검증은 `node tests/prepare-browser-qa.mjs` 후 `npm --prefix work/refactor-qa run dev -- --port 3001`로 실행한다. 실제 환경 변수와 계정 없이 QA 시세를 사용하는 별도 앱이며 `/qa-fixture`에서 테스트 백업·Worker 계산을 실행한다. `/qa-mobile`은 390px 프레임이다. 이 파일들은 공개 앱에 포함되지 않는다.
+브라우저 격리 검증은 `node tests/prepare-browser-qa.mjs` 후 `npm --prefix work/refactor-qa run dev -- --port 3001`로 실행한다. 실제 환경 변수와 계정 없이 QA 시세를 사용하는 별도 앱이며 `/qa-fixture`에서 테스트 백업·Worker 계산을 실행한다. `/qa-mobile`은 390px 프레임이다. 이 파일들은 검증용 생성물이며 구현은 로컬 main 원본에서만 수정한다. 사용자에게 보여주는 최신 화면은 `localhost:3000`이다. 검증용 생성물은 공개 앱에 포함되지 않는다.
 
 실제 검증 결과와 한계는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#코드-구조-검토)에 기록한다. 운영 DB 증분 변경·복구는 [CLOUDFLARE.md](./CLOUDFLARE.md)를 따른다.
 

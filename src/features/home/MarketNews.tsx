@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useMarketNews } from "@/features/market/use-market-news";
+import { HomeSection } from "./HomeSection";
 import styles from "./home.module.css";
 export function MarketNews({ symbol }: { symbol?: string }) {
   const { stories, loading, error, partial, retry } = useMarketNews(symbol);
@@ -10,20 +11,13 @@ export function MarketNews({ symbol }: { symbol?: string }) {
   const [original, setOriginal] = useState(false);
   const hasTranslation = stories.some((story) => story.titleKo);
   return (
-    <section
-      className={styles.panel}
-      aria-label="종목 뉴스"
-    >
-      <div className={styles.sectionHead}>
-        <h2>종목 뉴스</h2>
-        {hasTranslation && <div className={styles.newsLanguage}>
+    <HomeSection title="종목 뉴스" actions={hasTranslation ? <div className={styles.newsLanguage}>
           {!original && <span>자동 번역</span>}
           <button type="button" onClick={() => setOriginal((value) => !value)}
             aria-label={original ? "뉴스 제목 한국어로 보기" : "뉴스 제목 원문으로 보기"}>
             {original ? "한국어" : "원문"}
           </button>
-        </div>}
-      </div>
+        </div> : undefined}>
       {(partial || (error && stories.length > 0)) && (
         <p className={styles.note} role="status">
           {error ? "갱신 실패 · 이전 뉴스 표시 중" : "일부 종목의 뉴스를 가져오지 못했어요."}
@@ -93,6 +87,6 @@ export function MarketNews({ symbol }: { symbol?: string }) {
           뉴스 더 보기 · {stories.length - visible}개
         </button>
       )}
-    </section>
+    </HomeSection>
   );
 }

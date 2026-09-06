@@ -4,7 +4,9 @@
 
 상단 시세: `MarketTicker.tsx`는 공유 시세와 표시를 연결하고, `ticker-instruments.ts`는 목록/금리 단위, `use-ticker-motion.ts`는 프레임·가시성·포커스·움직임 줄이기 수명을 소유한다. 항목 추가는 목록과 market-ticker 검증을 함께 갱신하며 복제 목록에 새 구독을 붙이지 않는다.
 
-장 일정: schedule/priority.ts는 시간별 우선순위, presentation.ts는 예외 알림 묶음·고정 주요 시장 선택·다음 일정 문구, timeline.ts는 거래소 시간→KST 하루 구간 절단을 소유한다. MarketSessions.tsx는 단일 시계/지역/펼치기와 시간축, MarketSessionCard.tsx는 상태·막대·다음 일정 한 행을 담당한다. 순수 계산은 market-timeline/market-schedule 테스트로 검증한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에서 수정하고 index 공개 창구로 소비한다.
+장 일정: schedule/priority.ts는 시간별 우선순위, presentation.ts는 예외 알림 묶음·고정 주요 6개국 선택·M/D HH:mm 형식의 다음 일정 문구, timeline.ts는 거래소 시간→KST 하루 구간 절단을 소유한다. MarketSessions.tsx는 지역 선택·별도 알림 띠 없이 단일 시계/미국 요약·기본 접힘/주요 6개국 시간축, MarketSessionCard.tsx는 상태·막대·다음 일정 한 행을 담당한다. 순수 계산은 market-timeline/market-schedule 테스트로 검증한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에서 수정하고 index 공개 창구로 소비한다.
+
+홈 배치: app/page.tsx가 지수 띠 아래 검색·최근 검색 → 순위 → 본문 광고·뉴스/일정을 조립하며, 일정 열은 이번 주 일정 → 접힌 장 시간표 → 내 투자 순서로 배치한다. 시간표는 자체 컨테이너 폭으로 반응형 배치를 적용한다. HomeSection.tsx는 순위·뉴스·일정·내 투자의 카드 밖 제목/행동과 공통 내용 카드를 소유한다. WeekCalendar는 날짜 선택과 목록만 담당하며 제목/KST는 MarketCalendar에서 전달한다.
 
 종목 탐색: `StockDiscovery.tsx`는 입력/검색 결과/선택, `DiscoveryShortcuts.tsx`는 로그인한 계정의 최근 검색만 표시하며 순위 데이터를 구독하지 않는다. `market/recent-searches.ts`는 React 없는 검증·계정별 저장, `use-recent-searches.ts`는 저장소 구독·계정 전환을 소유한다. 기록 범위를 늘릴 때 같은 훅을 사용하고 별도 저장 키/시세 조회를 추가하지 않는다. 검증은 `tests/recent-searches.test.mjs`.
 
@@ -100,7 +102,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 
 ### 스타일·자산·도구
 
-화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 별도 Git worktree를 만들 때는 프로젝트 루트 밖에 두어 타입 검사·도구 탐색에 중복 포함되지 않게 한다.
+화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 구현·수정은 로컬 main 원본에서 진행하며 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 격리 검증용 생성물을 별도 구현 원본으로 사용하지 않는다.
 
 | 위치 | 소유 범위 |
 | --- | --- |

@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { BookOpen, Star, Wallet } from "lucide-react";
 import { HomeWatchlist } from "./HomeWatchlist";
+import { HomeSection } from "./HomeSection";
 import styles from "./home.module.css";
 export function ResearchDesk() {
   return (
-    <section className={styles.desk} aria-label="나의 투자 작업">
-      <div className={styles.sectionHead}>
-        <div>
-          <h2>내 투자</h2>
-        </div>
-      </div>
+    <HomeSection title="내 투자" label="나의 투자 작업">
       <Link className={styles.deskAction} href="/watchlist">
         <Star size={18} />
         <span>
@@ -29,6 +25,6 @@ export function ResearchDesk() {
         </span>
       </Link>
       <HomeWatchlist />
-    </section>
+    </HomeSection>
   );
 }
