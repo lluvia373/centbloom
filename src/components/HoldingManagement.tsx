@@ -106,7 +106,7 @@ export function HoldingManagement({ target, onClose }: { target: HoldingAction |
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 ref={heading} tabIndex={-1} className="font-semibold outline-none">{target.name} 거래 관리</h3>
-          <p className="mt-1 text-xs leading-5 text-[#727680]">나눠 매수한 기록도 각각 수정하거나 삭제할 수 있어요. 날짜·수량·단가를 확인하고 해당 행의 버튼을 눌러주세요.</p>
+
         </div>
         <button type="button" disabled={busy} onClick={close} aria-label="거래 관리 닫기" className="rounded-lg p-2 hover:bg-white"><X size={16} /></button>
       </div>
@@ -114,8 +114,8 @@ export function HoldingManagement({ target, onClose }: { target: HoldingAction |
         onDeleted={(transaction) => { setLastDeleted(transaction); setUndoError(null); }}
         initialEditId={target.action === "edit" && records.length === 1 ? records[0].id : undefined} />
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e6e8eb] pt-4">
-        <p className="text-xs text-[#727680]">종목 자체를 없애려면 모든 매수·매도 기록을 삭제하세요.</p>
-        <button type="button" disabled={busy || records.length === 0} onClick={() => { setError(null); dialog.current?.showModal(); }} className="text-sm font-semibold text-[#b44848] disabled:opacity-50">전체 거래 삭제</button>
+
+        <button type="button" disabled={busy || records.length === 0} onClick={() => { setError(null); dialog.current?.showModal(); }} className="text-sm font-semibold text-[#b44848] disabled:opacity-50">이 종목의 전체 거래 삭제</button>
       </div>
     </section>}
     {target && <dialog ref={dialog} aria-labelledby="delete-holding-title" aria-describedby="delete-holding-description"

@@ -21,11 +21,7 @@ export default function DashboardPage() {
   const { loading, marketDataError } = usePortfolioMarket();
   return (
     <>
-      <PageHeading
-        eyebrow="OVERVIEW"
-        title="나의 투자 대시보드"
-        description="오늘의 자산을 확인하고, 다음 투자를 준비하세요."
-      >
+      <PageHeading title="나의 투자 대시보드">
         <WorkspaceDate />
         <AddTransactionLink />
       </PageHeading>
@@ -63,9 +59,9 @@ export default function DashboardPage() {
             </span>
             <div>
               <h3>투자 노트</h3>
-              <p>매수와 매도의 이유를 기록해두세요.</p>
+
             </div>
-            <Link href="/journal" aria-label="투자 노트 작성하기">
+            <Link href="/journal" aria-label="투자 노트">
               <ArrowUpRight size={18} />
             </Link>
           </div>

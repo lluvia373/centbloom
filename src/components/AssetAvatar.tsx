@@ -35,11 +35,9 @@ export function EmptyPortfolio({ compact = false }: { compact?: boolean }) {
       <span className="empty-icon">
         <ArrowUpRight size={27} />
       </span>
-      <h3>투자의 첫 페이지를 열어보세요</h3>
-      <p>첫 거래를 기록하면 자산과 수익이 한곳에 모입니다.</p>
-      <a href="/search" className="button-primary">
-        첫 거래 기록하기 <ArrowUpRight size={15} />
-      </a>
+      <h3>보유종목 없음</h3>
+
+
     </div>
   );
 }

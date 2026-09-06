@@ -14,11 +14,11 @@
 | 성과 이력 조회·저장 | [공유 훅](./src/hooks/usePerformanceHistory.ts) → [실행 서비스](./src/features/performance/service.ts) → [저장소](./src/features/performance/repository.ts) | performance-service, requests, sql-ledger |
 | 시세·검색·국가/통화 지원 | [클라이언트 API](./src/lib/stock-api.ts), [시장 분류](./src/lib/markets.ts), [서버 서비스](./src/features/market/server) | market-api, market-data, enrichment, requests |
 | 관심종목·노트 | [useWatchlist](./src/hooks/useWatchlist.ts), [useJournal](./src/hooks/useJournal.ts), 각각의 features UI | 격리 브라우저 CRUD, branded-storage |
-| 디자인·배치·로고 | 해당 app 페이지 → components/features UI → 아래 스타일·자산 소유 위치 | 격리 브라우저 데스크톱·모바일 비교 |
+| 디자인·배치·로고 | [디자인 기준](./DESIGN_SYSTEM.md) → 공통값 → 해당 페이지·UI·아래 스타일 소유 위치 | check:design, design-system; 격리 브라우저 데스크톱·모바일 비교 |
 | 로그인·공개 페이지 | [useAuth](./src/hooks/useAuth.tsx), [AuthGate](./src/components/AuthGate.tsx), [layout](./src/app/layout.tsx) | 계정 전환·공개/개인 접근 분리, 아래 배포 절차 |
 | 새 독립 기능 | 아래 확장 절차; 같은 성격의 기존 feature와 해당 PRODUCT_SPEC 절 | 기능의 순수 로직·실패·권한·UI 흐름 |
 
-테스트 이름은 `tests/<이름>.test.mjs`다. 실행 방법·브라우저 준비는 [README 검증](./README.md#검증). 구조 점검은 `node tests/check-import-cycles.mjs`.
+테스트 이름은 `tests/<이름>.test.mjs`다. 실행 방법·브라우저 준비는 [README 검증](./README.md#검증). 구조 점검은 `node tests/check-import-cycles.mjs`. 문서 검사는 [check-docs.mjs](./tests/check-docs.mjs), 누락·끊어진 링크·비공개 문서 추적 재현은 [documentation.test.mjs](./tests/documentation.test.mjs)에서 관리한다.
 
 ## 실행 흐름과 외부 사용 창구
 
@@ -69,15 +69,19 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 
 ### 스타일·자산·도구
 
+화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 루트 타입 검사는 별도 Git worktree인 `작업브랜치`를 제외한다.
+
 | 위치 | 소유 범위 |
 | --- | --- |
-| [app/globals.css](./src/app/globals.css) | 토큰·기본 요소·접근성 |
+| [styles/design-tokens.css](./src/styles/design-tokens.css) | 디자인 수치·서체·색상 원본과 Tailwind 연결. [기준 문서](./DESIGN_SYSTEM.md)의 표와 검사로 일치 확인 |
+| [app/globals.css](./src/app/globals.css) | 공통값 import·기존 변수 연결·기본 요소·접근성 |
+| [check-design.mjs](./tests/check-design.mjs), [design-system.test.mjs](./tests/design-system.test.mjs) | 스타일 검사·회귀. [기존 미정리](./tests/fixtures/design-baseline.json)는 감소만, [공식 이미지 예외](./tests/fixtures/design-exceptions.json)는 위치·값·사유 제한 |
 | [styles/workspace.css](./src/styles/workspace.css) | 공통 프레임·탐색·화면/패널/모달·반응형 |
 | [styles/portfolio.css](./src/styles/portfolio.css), [styles/charts.css](./src/styles/charts.css) | 자산/거래 UI; 차트/분석 UI |
 | [app/auth.css](./src/app/auth.css) | AuthGate 로그인 화면. components의 Tailwind 클래스도 실제 스타일 일부 |
 | [public](./public), [BRAND.md](./BRAND.md) | 로고 원본·파생 자산은 BRAND의 경로/출처 기준. `public/companies/sources.json`은 종목 이미지 출처. app의 icon/apple-icon/favicon은 브라우저 아이콘 |
 | [tests](./tests) | `.test.mjs`: 회귀 검사. `reference`: 동등성 비교용 이전 계산. `fixtures`: 격리 입력/SQL 스키마/실측. `load-typescript.mjs`: TS 검사 로더. `prepare-browser-qa.mjs`: 별도 QA 앱. `postgres-concurrency.mjs`: 실제 두 연결 검사 |
-| [설정 파일](./package.json) | package/lock: 명령·버전. tsconfig: TS·`@/` 별칭. eslint.config: 린트. next.config: Next 설정. open-next.config·wrangler.jsonc: Workers 빌드/배포. postcss.config: CSS 처리 |
+| [설정 파일](./package.json) | package/lock: 명령·버전. tsconfig: TS·`@/` 별칭. eslint.config: 린트. lint의 ESLint 대상은 src·tests·brand·루트 mjs/ts이며 새 코드 소유 폴더 추가 시 함께 갱신. next.config: Next 설정. open-next.config·wrangler.jsonc: Workers 빌드/배포. postcss.config: CSS 처리 |
 | [.gitignore](./.gitignore), [.env.example](./.env.example) | 비밀/생성물 제외·환경 변수 예시. work·node_modules·.next·.open-next는 구현 기준이 아니며 work는 커밋하지 않음 |
 
 ## 코드 추가·수정 절차
@@ -96,7 +100,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 - **저장 형식/DB**: 기존 데이터·이전 키·백업 호환과 원자적 RPC·RLS·revision을 함께 확인한다. 마이그레이션은 현재 운영 이력을 대조해 준비하고, 파일 생성/로컬 테스트를 운영 적용으로 표시하지 않는다. DB 적용 여부는 PROJECT_STATUS를 확인한다.
 - **시세/API**: stock-api의 요청 키에 결과를 바꾸는 모든 인자를 넣고 기존 캐시/취소 정책을 사용한다. route는 검증/응답, 시장별 변환은 server 서비스에 둔다. 새 화면 폴링은 useLiveQuotes로 필요한 종목만 구독한다. 보유 요약이 필요한 새 경로는 state/market.tsx의 활성 경로도 확인한다.
 - **성과 계산**: lib 계산의 고정 입력 동등성, service의 필요한 기간, 저장 revision과 Worker 직렬화 계약을 확인한다. 단순 표시 기간 변경은 range 훅부터 시작한다. 기존 의미 유지 리팩터링에서는 reference를 새 알고리즘에 맞춰 덮어쓰지 않는다.
-- **CSS**: 클래스 사용처와 기존 소유 파일을 `rg`로 찾고 해당 선언을 수정한다. layout의 import 순서와 Tailwind까지 확인한다. 파일 말미 override 추가만으로 해결하지 않는다.
+- **CSS**: DESIGN_SYSTEM을 먼저 읽고 공통값을 사용한다. check:design과 관련 화면 검증을 실행한다. 클래스 사용처와 기존 소유 파일을 `rg`로 찾고 해당 선언을 수정한다. layout의 import 순서와 Tailwind까지 확인한다. 파일 말미 override 추가만으로 해결하지 않는다.
 - **공개 커뮤니티**: 현재 redirect와 루트 AuthGate가 출발점이다. PRODUCT_SPEC의 비로그인 공개 읽기와 개인 영역 보호가 함께 작동하도록 접근 경계를 설계한다. 기존 투자 노트의 로컬 저장을 공개 글 저장소로 재사용하지 않는다.
 
 ## 탐색 비용과 한계

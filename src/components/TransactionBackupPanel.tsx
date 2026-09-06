@@ -156,11 +156,9 @@ function BackupSession() {
               <FileJson className="h-4 w-4 text-[#727680]" />
               거래 데이터 백업
             </h3>
+
             <p className="mt-1 text-xs leading-5 text-[#727680]">
-              전체 거래를 JSON으로 보관하거나 검증된 백업을 복원합니다.
-            </p>
-            <p className="mt-1 text-xs leading-5 text-[#727680]">
-              백업에는 실제 투자 기록이 포함되므로 안전한 장소에 보관하세요.
+              거래 백업: 관심종목·노트 제외 · 브라우저 데이터 삭제 전 백업
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

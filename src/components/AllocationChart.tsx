@@ -34,8 +34,8 @@ export function AllocationChart({
     <section className="surface">
       <div className="surface-header">
         <div>
-          <h2>자산 배분</h2>
-          <p>평가액 기준 보유 비중</p>
+          <h2>자산 배분 · 평가액 기준</h2>
+
         </div>
         <select
           value={mode}
@@ -104,11 +104,7 @@ export function AllocationChart({
                   ? `${((selected.value / total) * 100).toFixed(1)}%`
                   : `${holdings.length}개`}
               </strong>
-              <span>
-                {selected
-                  ? formatCurrency(selected.value, displayCurrency)
-                  : "나만의 포트폴리오"}
-              </span>
+              {selected && <span>{formatCurrency(selected.value, displayCurrency)}</span>}
             </div>
           </div>
           <div className="allocation-legend">
@@ -131,7 +127,7 @@ export function AllocationChart({
       ) : (
         <div className="empty-chart">
           <CircleDot size={30} />
-          <p>자산을 기록하면 종목별 비중을 보여드려요.</p>
+          <p>{holdings.length ? "시세 확인 필요" : "배분할 자산 없음"}</p>
         </div>
       )}
     </section>

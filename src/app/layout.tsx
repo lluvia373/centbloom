@@ -54,9 +54,6 @@ export default function RootLayout({
                     <StorageNotice />
                     {children}
                     <footer className="app-footer">
-                      <span>
-                        centifolio <span>나의 투자를, 나답게.</span>
-                      </span>
                       <span>Centifolio</span>
                     </footer>
                   </main>

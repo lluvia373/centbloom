@@ -1,35 +1,34 @@
 @import "tailwindcss";
+@import "../styles/design-tokens.css";
 :root {
   color-scheme: light;
-  --background: #f6f7f8;
-  --foreground: #202329;
-  --ink: #202329;
-  --muted: #727680;
-  --accent: #25282e;
-  --line: #e6e8eb;
-  --surface: #fff;
-  --positive: #16856b;
-  --negative: #d65353;
+  --background: var(--cf-color-canvas);
+  --foreground: var(--cf-color-ink);
+  --ink: var(--cf-color-ink);
+  --muted: var(--cf-color-muted);
+  --accent: var(--cf-color-action);
+  --line: var(--cf-color-line);
+  --surface: var(--cf-color-surface);
+  --positive: var(--cf-color-positive);
+  --negative: var(--cf-color-negative);
   --sidebar-width: 236px;
 }
 @theme inline {
-  --color-background: var(--background);
+  --color-background: var(--cf-color-canvas);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: #727680 transparent;
+  scrollbar-color: var(--cf-color-muted) transparent;
 }
 body {
   margin: 0;
-  font-family: var(--font-geist-sans), Arial, "Malgun Gothic", sans-serif;
+  font-family: var(--cf-font-ui);
   -webkit-font-smoothing: antialiased;
-  background: var(--background);
-  color: var(--ink);
-  font-size: 15px;
+  background: var(--cf-color-canvas);
+  color: var(--cf-color-ink);
+  font-size: var(--cf-text-body);
 }
 button {
   -webkit-tap-highlight-color: transparent;
@@ -53,50 +52,50 @@ a {
 input {
   -webkit-tap-highlight-color: transparent;
   color-scheme: light;
-  accent-color: #25282e;
+  accent-color: var(--cf-color-action);
 }
 select {
   -webkit-tap-highlight-color: transparent;
   color-scheme: light;
-  accent-color: #25282e;
+  accent-color: var(--cf-color-action);
 }
 textarea {
   -webkit-tap-highlight-color: transparent;
   color-scheme: light;
-  accent-color: #25282e;
+  accent-color: var(--cf-color-action);
 }
 button:disabled {
   cursor: not-allowed;
 }
 input::placeholder {
-  color: #727680;
+  color: var(--cf-color-muted);
 }
 textarea::placeholder {
-  color: #727680;
+  color: var(--cf-color-muted);
 }
 button:focus-visible {
-  outline: 2px solid #6c747f;
+  outline: 2px solid var(--cf-color-focus);
   outline-offset: 4px;
 }
 a:focus-visible {
-  outline: 2px solid #6c747f;
+  outline: 2px solid var(--cf-color-focus);
   outline-offset: 4px;
 }
 input:focus-visible {
-  outline: 2px solid #6c747f;
+  outline: 2px solid var(--cf-color-focus);
   outline-offset: 4px;
 }
 textarea:focus-visible {
-  outline: 2px solid #6c747f;
+  outline: 2px solid var(--cf-color-focus);
   outline-offset: 4px;
 }
 select:focus-visible {
-  outline: 2px solid #6c747f;
+  outline: 2px solid var(--cf-color-focus);
   outline-offset: 4px;
 }
 ::selection {
-  background: #dde6e2;
-  color: #202329;
+  background: var(--cf-color-selection);
+  color: var(--cf-color-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

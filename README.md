@@ -12,8 +12,10 @@
 | 코드 지도·파일 역할·기능 추가 방법 | [DEVELOPMENT.md](./DEVELOPMENT.md) |
 | 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
 | 구현·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
+| 구글 검색 조사·유입 계획 | [SEO_PLAN.md](./SEO_PLAN.md) |
 | Cloudflare 배포·로그인 설정 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
 | 승인 로고·자산·재생성 | [BRAND.md](./BRAND.md) |
+| 화면 문구·글꼴·크기·색상·간격·이미지·디자인 검사 | [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) |
 
 사업 계획은 로컬 전용 BUSINESS_MODEL.md에서 관리하며 공개 저장소에 포함하지 않는다. 파일이 없는 환경은 위 공개 문서를 따른다.
 
@@ -31,6 +33,10 @@ http://127.0.0.1:3000 에서 확인한다. 의존성·명령은 [package.json](.
 계정 연결 없이 로컬 저장 모드로 시작할 수 있다. Google 로그인은 [.env.example](./.env.example)과 [연결 절차](./CLOUDFLARE.md#supabase-연결)를 따른다.
 
 ## 검증
+
+문서만 변경할 때는 `npm run check:docs`로 관리 목록·상대 링크·제목 앵커·사업 문서 Git 추적 여부를 검사한다. `npm run lint`도 이 검사를 먼저 실행한다. 문서 역할과 결정의 모순은 별도로 검토한다.
+
+화면 변경은 `npm run check:design`으로 새 스타일 위반을 확인한다(lint에도 포함). `npm run audit:design`은 기존 미정리까지 포함해 전부 검사하며, 남아 있으면 실패한다. 기준·예외·수정 방법은 [디자인 기준](./DESIGN_SYSTEM.md#작성과-검사)을 따른다.
 
 ```sh
 npm run lint

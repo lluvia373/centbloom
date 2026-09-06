@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "check:docs": "node tests/check-docs.mjs",
+    "check:design": "node tests/check-design.mjs",
+    "audit:design": "node tests/check-design.mjs --strict",
+    "lint": "node tests/check-docs.mjs && node tests/check-design.mjs && eslint src tests brand *.mjs *.ts",
     "build:cloudflare": "opennextjs-cloudflare build",
     "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"

@@ -1,11 +1,12 @@
 "use client";
+import { CalculationHelp } from "@/components/CalculationHelp";
 import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
 import { usePreferences } from "@/hooks/usePortfolio";
 import { useWorkspace,useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { DEMO_FX,demoHistory } from "@/lib/demo";
 import { formatCurrency } from "@/lib/format";
 import { addCalendarDays } from "@/lib/performance";
-import { ChartNoAxesCombined,Info,Loader2 } from "lucide-react";
+import { ChartNoAxesCombined,Loader2 } from "lucide-react";
 import { useId,useMemo,useState } from "react";
 import {
 Area,
@@ -104,11 +105,7 @@ function ChartView({
       <div className="surface-header">
         <div>
           <h2>{mode === "assets" ? "투자자산 추이" : "운용수익률 추이"}</h2>
-          <p>
-            {mode === "assets"
-              ? "평가액과 누적 순투입금의 변화"
-              : "자금 유입과 유출을 제외한 운용 성과"}
-          </p>
+          {mode === "return" && <CalculationHelp label="운용수익률">자금 유입·유출의 영향을 제외한 기간별 투자 성과(TWR).</CalculationHelp>}
         </div>
         <select
           aria-label="차트 표시 기준"
@@ -265,22 +262,17 @@ function ChartView({
             <ChartNoAxesCombined size={30} />
           )}
           <strong>
-            {loading ? "자산 기록을 불러오고 있어요" : "아직 자산 기록이 없습니다"}
+            {loading ? "자산 기록 불러오는 중" : error ? "자산 기록 조회 실패" : "자산 기록 없음"}
           </strong>
-          <p>{error ?? "첫 거래부터 나만의 자산 그래프가 시작됩니다."}</p>
         </div>
       )}
       <p className="chart-footnote">
-        <Info size={11} />
-        {demo
-          ? "체험용 예시 데이터 · 수익률은 원화 기준, 달러 자산은 예시 환율 환산"
-          : (error ??
-            (mode === "return"
-              ? "원화 기준 운용수익률 · 자금 유입과 유출의 영향을 제외합니다."
-              : showUSD
-                ? "일별 원화 기록을 현재 환율로 환산한 참고 금액입니다."
-                : "매일 KST 기준 일별 투자자산 · 현금 잔액 미포함"))}
+        {demo ? (mode === "return" ? "샘플 데이터 · 원화 기준" : showUSD ? "샘플 데이터 · 예시 환율 환산 · 현금 미포함" : "샘플 데이터 · 원화 기준 · 현금 미포함")
+          : mode === "return" ? "원화 기준"
+          : showUSD ? "일별 원화 기록 · 현재 환율 환산 · 현금 미포함"
+          : "일별 투자자산 · KST 기준 · 현금 미포함"}
       </p>
+      {error && <p className="chart-footnote" role="alert">{error}</p>}
     </section>
   );
 }

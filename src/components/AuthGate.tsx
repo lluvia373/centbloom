@@ -11,7 +11,7 @@ function PortfolioPreview() {
     <section className="cf-auth-preview" aria-labelledby="preview-title">
       <div className="cf-auth-preview-heading">
         <h2 id="preview-title">내 포트폴리오</h2>
-        <span>미리보기</span>
+        <span>샘플 데이터</span>
       </div>
       <p className="cf-auth-preview-label">총 투자자산</p>
       <p className="cf-auth-preview-value">24,860,000<span>원</span></p>
@@ -29,7 +29,7 @@ function PortfolioPreview() {
         <div><span className="cf-auth-allocation-dot overseas" /><span>해외 주식</span><strong>35%</strong></div>
         <div><span className="cf-auth-allocation-dot etf" /><span>ETF</span><strong>32%</strong></div>
       </div>
-      <p className="cf-auth-preview-note">화면 이해를 위한 샘플 데이터입니다.</p>
+
     </section>
   );
 }
@@ -75,13 +75,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       <main id="main-content" className="cf-auth-main">
         <div className="cf-auth-stage">
           <section className="cf-auth-story" aria-labelledby="auth-story-title">
-            <h1 id="auth-story-title">내 투자를<br />한눈에 정리하세요.</h1>
-            <p className="cf-auth-intro">자산과 수익의 변화부터 관심종목과 투자 노트까지.{" "}<br className="cf-auth-desktop-break" />센티폴리오에서 함께 관리하세요.</p>
+            <h1 id="auth-story-title">내 투자 관리</h1>
+
           </section>
           <section aria-labelledby="login-title" className="cf-auth-login">
             <div className="cf-auth-login-content">
               <h2 id="login-title">센티폴리오 시작하기</h2>
-              <p className="cf-auth-login-description">Google 계정으로 간편하게 로그인하세요.<br />처음이라면 새 계정이 만들어집니다.</p>
+              <p className="cf-auth-login-description">처음 로그인하면 계정이 생성됩니다.</p>
               <button type="button" onClick={handleGoogleLogin} disabled={signingIn} aria-busy={signingIn} className="cf-auth-google">
                 {signingIn ? <Loader2 size={20} className="animate-spin" aria-hidden="true" /> : (
                   <span className="cf-auth-google-icon">
@@ -97,15 +97,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
               </button>
               {error && <p role="alert" className="cf-auth-error">{error}</p>}
               <div className="cf-auth-storage-note">
-                <p>거래 기록은 계정에 연결됩니다.</p>
-                <p>관심종목과 투자 노트는 현재 브라우저에 저장됩니다.</p>
+                <p>거래: 계정에 저장</p>
+                <p>관심종목·노트: 이 브라우저에 저장</p>
               </div>
             </div>
           </section>
           <PortfolioPreview />
         </div>
       </main>
-      <footer className="cf-auth-footer"><span>© Centifolio</span><span>포트폴리오 · 성과 분석 · 투자 노트</span></footer>
+      <footer className="cf-auth-footer"><span>© Centifolio</span></footer>
     </div>
   );
 }

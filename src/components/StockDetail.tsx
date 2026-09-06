@@ -195,11 +195,9 @@ return <>
       >
         <div>
           <p className="text-sm font-semibold">
-            이 기업에 투자하는 이유가 있나요?
+            투자 노트
           </p>
-          <p className="mt-1 text-xs text-[#727680]">
-            투자 노트에 생각을 남기고, 다음 선택의 기준으로 삼아보세요.
-          </p>
+
         </div>
         <ArrowUpRight className="h-5 w-5 shrink-0" />
       </Link>

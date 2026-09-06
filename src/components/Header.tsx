@@ -74,7 +74,6 @@ export function Header() {
           <BrandMark size={44} />
           <span>centifolio</span>
         </Link>
-        <p className="nav-label">WORKSPACE</p>
         <nav className="sidebar-nav" aria-label="주요 메뉴">
           {links.map(({ href, label, icon: Icon }) => (
             <Link
@@ -230,24 +229,18 @@ export function Header() {
   );
 }
 export function PageHeading({
-  eyebrow,
   title,
-  description,
   children,
 }: {
-  eyebrow: string;
   title: string;
-  description: string;
   children?: React.ReactNode;
 }) {
   return (
     <div className="page-heading">
       <div>
-        <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
-        <p className="page-description">{description}</p>
       </div>
-      <div className="page-heading-actions">{children}</div>
+      {children && <div className="page-heading-actions">{children}</div>}
     </div>
   );
 }
@@ -260,11 +253,6 @@ export function PortfolioMode() {
           {isDemo ? <Layers3 size={15} /> : <Wallet size={15} />}
         </span>
         <strong>{isDemo ? "샘플 포트폴리오" : "내 포트폴리오"}</strong>
-        <span>
-          {isDemo
-            ? "예시 데이터로 기능을 살펴보세요."
-            : "나의 거래 기록을 바탕으로 보여드려요."}
-        </span>
       </div>
       <button onClick={() => setDemo(!isDemo)}>
         {isDemo ? "내 포트폴리오 시작하기" : "샘플 둘러보기"}

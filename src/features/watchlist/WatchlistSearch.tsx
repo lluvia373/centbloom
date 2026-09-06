@@ -34,7 +34,7 @@ export function WatchlistSearch({
     <section className={`${panel} p-5 sm:p-6`} aria-label="관심종목 검색">
       <div className="mb-3 flex items-center justify-between gap-3">
         <label htmlFor="watchlist-search" className="text-sm font-semibold">
-          다음으로 지켜볼 기업은?
+          종목 검색
         </label>
         <span className="text-xs text-[#727680]">
           한국 · 미국 · 일본 · 홍콩 · 중국

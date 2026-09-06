@@ -1,21 +1,24 @@
 "use client";
+import { CalculationHelp } from "@/components/CalculationHelp";
 
 export function MetricCard({
   label,
   value,
   description,
+  help,
 }: {
   label: string;
   value: string;
-  description: string;
+  description?: string;
+  help?: string;
 }) {
   return (
     <div className="bg-[#ffffff] px-5 py-4 sm:px-7">
-      <p className="text-xs text-[#727680]">{label}</p>
+      <div className="text-cf-caption text-cf-muted">{label}{help && <CalculationHelp label={label}>{help}</CalculationHelp>}</div>
       <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#202329]">
         {value}
       </p>
-      <p className="mt-1 text-[11px] text-[#727680]">{description}</p>
+      {description && <p className="mt-1 text-cf-caption text-cf-muted">{description}</p>}
     </div>
   );
 }

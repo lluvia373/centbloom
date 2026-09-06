@@ -7,10 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { JOURNAL_SENTIMENTS } from "@/hooks/useJournal";
 import {
   ArrowDownUp,
-  ArrowUpRight,
   BookOpen,
   Check,
-  ChevronRight,
   Clock3,
   Eye,
   NotebookPen,
@@ -53,12 +51,10 @@ function JournalWorkspace() {
     <div className="space-y-7 text-[#202329]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="mt-2 text-[28px] font-semibold tracking-tight sm:text-[32px]">
+          <h1 className="text-cf-title font-semibold">
             투자 노트
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[#727680]">
-            숫자 뒤에 있는 생각을 남기고, 나만의 투자 기준을 만드세요.
-          </p>
+
         </div>
         <button
           type="button"
@@ -70,7 +66,7 @@ function JournalWorkspace() {
         </button>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_290px]">
+      <div className="space-y-4">
         <div className="min-w-0 space-y-5">
           <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-5 sm:p-6">
             {[
@@ -139,6 +135,7 @@ function JournalWorkspace() {
             />
           )}
 
+          <p className="text-cf-caption text-cf-muted">이 브라우저에 계정별 저장 · 브라우저 데이터 삭제 시 노트 삭제</p>
           <div className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff]">
             <div className="space-y-4 border-b border-[#e6e8eb] p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
@@ -193,33 +190,15 @@ function JournalWorkspace() {
                 노트를 불러오고 있어요.
               </p>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center px-6 py-16 text-center sm:py-20">
-                <div className="relative mb-5 flex h-[76px] w-[76px] items-center justify-center rounded-2xl bg-[#f3f4f6]">
-                  <NotebookPen className="h-8 w-8 stroke-[1.3] text-[#727680]" />
-                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border-[3px] border-[#dde0e4] bg-[#f3f4f6]">
-                    <Plus className="h-3 w-3 text-[#727680]" />
-                  </span>
-                </div>
+              <div className="flex flex-col items-center px-6 py-8 text-center">
+                <NotebookPen size={24} className="mb-4 text-cf-muted" aria-hidden="true" />
                 <h3 className="text-base font-semibold">
                   {entries.length === 0
-                    ? "좋은 투자는 좋은 기록에서"
+                    ? "작성한 노트 없음"
                     : "일치하는 노트가 없어요"}
                 </h3>
-                <p className="mt-2 max-w-xs text-[13px] leading-6 text-[#727680]">
-                  {entries.length === 0
-                    ? "매수한 이유, 지켜보는 기업, 배운 점까지. 오늘의 생각이 다음 투자의 기준이 됩니다."
-                    : "다른 검색어를 입력하거나 분류를 변경해보세요."}
-                </p>
-                {entries.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => openEditor()}
-                    disabled={Boolean(storageError)}
-                    className="mt-6 flex items-center gap-2 text-xs font-semibold text-[#727680] disabled:opacity-40"
-                  >
-                    첫 번째 노트 쓰기 <ArrowUpRight className="h-3.5 w-3.5" />
-                  </button>
-                ) : (
+
+                {entries.length > 0 && (
                   <button
                     type="button"
                     onClick={() => {
@@ -249,54 +228,7 @@ function JournalWorkspace() {
           </div>
         </div>
 
-        <aside className="space-y-5">
-          <div className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-6">
-            <h2 className="text-xs font-semibold">무엇을 기록할까요?</h2>
-            <div className="mt-5 space-y-5">
-              {[
-                {
-                  number: "01",
-                  title: "투자의 이유",
-                  text: "이 기업의 어떤 점을 좋게 봤나요?",
-                },
-                {
-                  number: "02",
-                  title: "나만의 기준",
-                  text: "어떤 상황에서 생각이 바뀔까요?",
-                },
-                {
-                  number: "03",
-                  title: "투자 후 돌아보기",
-                  text: "예상과 실제는 어떻게 달랐나요?",
-                },
-              ].map((item) => (
-                <div key={item.number} className="flex items-start gap-3">
-                  <span className="mt-0.5 font-mono text-xs text-[#727680]">
-                    {item.number}
-                  </span>
-                  <div>
-                    <h3 className="text-xs font-medium">{item.title}</h3>
-                    <p className="mt-1.5 text-xs leading-5 text-[#727680]">
-                      {item.text}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => openEditor()}
-              disabled={!ready || Boolean(storageError)}
-              className="mt-6 flex w-full items-center justify-between border-t border-[#e6e8eb] pt-4 text-xs font-medium text-[#727680] disabled:opacity-40"
-            >
-              생각을 기록으로 남기기 <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
-          <p className="px-2 text-xs leading-5 text-[#727680]">
-            노트는 현재 계정별로 이 브라우저에 저장됩니다. 브라우저 데이터를
-            지우면 노트도 삭제됩니다.
-          </p>
-        </aside>
+
       </div>
     </div>
   );

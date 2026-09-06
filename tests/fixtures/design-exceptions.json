@@ -1,0 +1,30 @@
+[
+  {
+    "file": "src/components/AuthGate.tsx",
+    "rule": "color",
+    "value": "#4285F4",
+    "count": 1,
+    "reason": "공식 Google 로그인 아이콘의 원색 보존. 일반 UI 색에는 적용하지 않음."
+  },
+  {
+    "file": "src/components/AuthGate.tsx",
+    "rule": "color",
+    "value": "#34A853",
+    "count": 1,
+    "reason": "공식 Google 로그인 아이콘의 원색 보존. 일반 UI 색에는 적용하지 않음."
+  },
+  {
+    "file": "src/components/AuthGate.tsx",
+    "rule": "color",
+    "value": "#FBBC05",
+    "count": 1,
+    "reason": "공식 Google 로그인 아이콘의 원색 보존. 일반 UI 색에는 적용하지 않음."
+  },
+  {
+    "file": "src/components/AuthGate.tsx",
+    "rule": "color",
+    "value": "#EA4335",
+    "count": 1,
+    "reason": "공식 Google 로그인 아이콘의 원색 보존. 일반 UI 색에는 적용하지 않음."
+  }
+]

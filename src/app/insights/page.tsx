@@ -1,4 +1,5 @@
 "use client";
+import { CalculationHelp } from "@/components/CalculationHelp";
 import { AllocationChart } from "@/components/AllocationChart";
 import {
 AddTransactionLink,
@@ -11,25 +12,18 @@ import { WealthChart } from "@/components/WealthChart";
 import { usePreferences } from "@/hooks/usePortfolio";
 import { useWorkspaceSummary } from "@/hooks/useWorkspace";
 import { formatCurrency } from "@/lib/format";
-import { ChevronDown,Leaf,Lightbulb,Scale } from "lucide-react";
+import { ChevronDown,Leaf,Scale } from "lucide-react";
 import { useState } from "react";
 export default function InsightsPage() {
   const { summary, isDemo } = useWorkspaceSummary();
   const { displayCurrency } = usePreferences();
   const [details, setDetails] = useState(false);
   const holdings = summary?.holdings ?? [];
-  const largest = [...holdings].sort(
-    (a, b) => b.displayMarketValue - a.displayMarketValue,
-  )[0];
   const maxGain = Math.max(...holdings.map((h) => Math.abs(h.gainLossKRW)), 1);
   const ready = holdings.length > 0 && holdings.every((h) => h.quote);
   return (
     <>
-      <PageHeading
-        eyebrow="PERFORMANCE"
-        title="성과 분석"
-        description="종목별 손익과 환율이 수익에 미친 영향을 확인하세요."
-      >
+      <PageHeading title="성과 분석">
         <AddTransactionLink />
       </PageHeading>
       <PortfolioMode />
@@ -70,7 +64,7 @@ export default function InsightsPage() {
             </div>
           ) : (
             <div className="empty-chart">
-              시세가 확인된 자산을 기록하면 기여도를 보여드려요.
+              {holdings.length ? "시세 확인 필요" : "보유종목 없음"}
             </div>
           )}
         </section>
@@ -79,10 +73,10 @@ export default function InsightsPage() {
           displayCurrency={displayCurrency}
         />
       </div>
-      <div className="analytics-grid">
+      <div className="page-section">
         <section className="surface">
           <div className="surface-header">
-            <h2>내 수익의 두 가지 원인</h2>
+            <h2>주가·환율 손익</h2>
             <p>원화 평가 기준</p>
           </div>
           <div className="insight-row">
@@ -90,7 +84,7 @@ export default function InsightsPage() {
               <Leaf size={17} />
             </span>
             <p>
-              주가 변화가 만든 손익
+              주가 손익
               <br />
               <strong>
                 {ready
@@ -104,49 +98,19 @@ export default function InsightsPage() {
               <Scale size={17} />
             </span>
             <p>
-              환율 변화가 만든 손익
+              환율 손익
               <br />
               <strong>
                 {ready ? formatCurrency(summary?.fxImpactKRW ?? 0, "KRW") : "—"}
               </strong>
             </p>
           </div>
-          <p className="analytics-note">
+          <CalculationHelp label="주가·환율 손익">
             주가 손익은 매입 당시 환율로, 환율 손익은 매입 당시와 현재 환율의
             차이로 계산합니다. 합계는 원화 평가손익과 같습니다.
-          </p>
+          </CalculationHelp>
         </section>
-        <section className="surface">
-          <div className="surface-header">
-            <h2>나의 포트폴리오 읽기</h2>
-            <Lightbulb size={17} color="#a2b58f" />
-          </div>
-          <div className="insight-explanation">
-            <Leaf size={21} />
-            <div>
-              <h3>
-                {ready && largest
-                  ? `${largest.name}, 가장 큰 자산의 조각`
-                  : "기록이 쌓이면 투자가 보입니다"}
-              </h3>
-              <p>
-                {ready && largest
-                  ? `${largest.name}의 비중은 전체 투자자산의 ${((largest.displayMarketValue / (summary?.totalValue || 1)) * 100).toFixed(1)}%입니다. ${holdings.length}개 보유 종목이 만드는 자산의 구성을 확인해 보세요.`
-                  : "첫 거래를 기록한 뒤 자산 배분과 수익 기여도를 확인할 수 있습니다."}
-              </p>
-            </div>
-          </div>
-          <div className="insight-explanation">
-            <Lightbulb size={21} />
-            <div>
-              <h3>평가손익과 운용수익률은 달라요</h3>
-              <p>
-                평가손익은 보유 자산과 매입원가의 차이입니다. 운용수익률은 자금
-                유입·유출의 영향을 제외해 기간별 투자 성과를 살펴봅니다.
-              </p>
-            </div>
-          </div>
-        </section>
+
       </div>
       {!isDemo && (
         <section className="page-section">

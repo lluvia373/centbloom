@@ -87,11 +87,7 @@ export default function PortfolioPage() {
   };
   return (
     <>
-      <PageHeading
-        eyebrow="MY PORTFOLIO"
-        title="내 포트폴리오"
-        description="보유종목과 거래 내역을 한눈에 확인하세요."
-      >
+      <PageHeading title="내 포트폴리오">
         <AddTransactionLink />
       </PageHeading>
       <PortfolioMode />

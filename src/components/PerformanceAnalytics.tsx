@@ -92,12 +92,9 @@ export function PerformanceAnalytics() {
       <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] px-5 py-16 text-center sm:px-7">
         <CalendarRange className="mx-auto h-6 w-6 text-[#3b8879]" />
         <h2 className="mt-4 font-semibold text-[#202329]">
-          첫 거래부터 기록을 시작합니다
+          {error ? "성과 조회 실패" : "성과 기록 없음"}
         </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#727680]">
-          거래를 하나 등록하면 생성 시각부터 오늘까지의 일별 자산과 수익률을
-          만듭니다.
-        </p>
+        {error && <p role="alert" className="mt-2 text-cf-caption text-cf-negative">{error}</p>}
       </section>
     );
   }
@@ -194,12 +191,12 @@ export function PerformanceAnalytics() {
               ? "미운용"
               : formatOptionalPercent(metrics.operatingReturn)
           }
-          description="입출금 영향을 제거한 비교용 성과"
+          help="운용수익률(TWR): 자금 유입·유출의 영향을 제외한 기간별 투자 성과. 보유 자산과 매입원가의 차이인 평가손익과 구분합니다."
         />
         <MetricCard
           label="내 자금수익률"
           value={formatOptionalPercent(metrics.moneyWeightedReturn)}
-          description="투입한 금액과 기간을 함께 반영"
+          help="자금수익률(MWR): 기간 손익을 시작 자산과 기간 가중 순투입금의 합으로 나눈 수익률(Modified Dietz). 분모가 0 이하이면 계산 불가로 표시합니다."
         />
         <MetricCard
           label="선택 기간 손익"
@@ -324,21 +321,11 @@ export function PerformanceAnalytics() {
           )}
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 text-xs text-[#727680] sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            {inactivePeriods.length > 0
-              ? "회색 구간은 자산이 0원이었던 미운용 기간입니다. 자산선은 0원, 수익률선은 고정됩니다."
-              : "거래 이력과 일별 종가를 기준으로 매일의 투자자산을 재구성합니다."}
-          </p>
-          <p className="shrink-0">
-            {benchmarkLoading
-              ? "비교 자료 확인 중"
-              : benchmarkSeries
-                ? dividendLabel(benchmarkSeries)
-                : "비교 자산을 검색해 추가할 수 있습니다"}
-          </p>
-        </div>
-        {error && <p className="mt-3 text-xs text-[#946a24]">{error}</p>}
+        {(inactivePeriods.length > 0 || benchmarkLoading || benchmarkSeries) && <div className="mt-4 flex flex-col gap-2 text-cf-caption text-cf-muted">
+          {inactivePeriods.length > 0 && <p>회색 구간: 미운용 · 자산 0원, 수익률 고정</p>}
+          {(benchmarkLoading || benchmarkSeries) && <p>{benchmarkLoading ? "비교 자료 확인 중" : dividendLabel(benchmarkSeries!)}</p>}
+        </div>}
+        {error && <p role="alert" className="mt-3 text-xs text-[#946a24]">{error}</p>}
       </div>
     </section>
   );
