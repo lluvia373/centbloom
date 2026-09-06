@@ -103,9 +103,9 @@
 
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
-| 로컬 프로젝트 | centifolio 루트 · main | 내부 작업브랜치 폴더/브랜치 제거 완료. 비공개 자료는 Git 제외 work/release-archive에 보존 |
+| 로컬 프로젝트 | centifolio 루트 · main을 병합본 조회 기준으로 사용 | 작업 폴더 정리 전 비공개 자료를 Git 제외 work/release-archive/header-cleanup-20260907에 보존 |
 | 공개 Cloudflare | 09-06 main 앱 `391b52b` 배포. Worker `6cc84d05-ce4c-4e03-a9c7-c891027ad3af`. [공개 서비스](https://centifolio.stock-web-demo.workers.dev/) | Wrangler 수동 배포. Git 자동 Builds 미연결. 이전 복구 버전 `5dfa5296-3a66-43d9-9f2e-5b223a3a953c` |
-| GitHub·로컬 | [PR #12](https://github.com/lluvia373/centifolio/pull/12) main 병합. 공개 홈·화면 문구·문서/디자인 기준 전체 반영 | 배포 기록은 앱 이후 문서 커밋으로 main 동기화 |
+| GitHub·로컬 | [PR #14](https://github.com/lluvia373/centifolio/pull/14): 시장·내 투자·설정과 로컬 main 변경 통합, 아래 09-07 검증 통과 | 병합 상태는 PR, 공개 배포는 별도 행 기준 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 09-07 확인: 광고 ID 미발급. `/portfolio` 하단 예약 영역 표시, 실제 광고는 기본 비활성 | 사이트 승인·광고 단위 ID·로그인 페이지 크롤러 접근·고지 준비 후 활성화/배포. 실제 송출 미확인 |
 
