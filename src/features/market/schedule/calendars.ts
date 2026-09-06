@@ -1,22 +1,12 @@
 import type { ExchangeCalendar } from "./types";
+import { holidays, holidayRanges, year } from "./calendar-data";
+import { europeCalendars } from "./europe-calendars";
+import { nordicCalendars } from "./nordic-calendars";
+import { internationalCalendars } from "./international-calendars";
 
-// Reviewed 2026-09-06. Sources and annual update steps: MARKET_CALENDARS.md.
-// An omitted day is a normal session ONLY inside the explicitly verified year.
-function holidays(entries: [string, string][]): Record<string, string> {
-  return Object.fromEntries(entries.map(([date, reason]) => ["2026-" + date, reason]));
-}
-function holidayRanges(entries: [string, string, string][]) {
-  const result: Record<string, string> = {};
-  for (const [start, end, reason] of entries) {
-    for (let day = Date.parse("2026-" + start + "T00:00:00Z"); day <= Date.parse("2026-" + end + "T00:00:00Z"); day += 86400000)
-      result[new Date(day).toISOString().slice(0, 10)] = reason;
-  }
-  return result;
-}
-const year = { validFrom: "2026-01-01", validThrough: "2026-12-31" };
-export const calendars: ExchangeCalendar[] = [
+const originalCalendars: ExchangeCalendar[] = [
   {
-    ...year, id: "US", name: "미국", exchange: "NYSE 정규장", timeZone: "America/New_York",
+    ...year, id: "US", region: "미주", name: "미국", exchange: "NYSE 정규장", timeZone: "America/New_York",
     windows: [{ start: 570, end: 960 }],
     holidays: holidays([
       ["01-01","신정"],["01-19","마틴 루터 킹 데이"],["02-16","대통령의 날"],
@@ -30,7 +20,7 @@ export const calendars: ExchangeCalendar[] = [
     sources: [{label:"NYSE 휴일·거래시간",url:"https://www.nyse.com/trade/hours-calendars"}],
   },
   {
-    ...year, id: "KR", name: "한국", exchange: "KRX 정규장", timeZone: "Asia/Seoul",
+    ...year, id: "KR", region: "아시아", name: "한국", exchange: "KRX 정규장", timeZone: "Asia/Seoul",
     windows: [{start:540,end:930}],
     holidays: holidays([
       ["01-01","신정"],["02-16","설날"],["02-17","설날"],["02-18","설날"],
@@ -50,7 +40,7 @@ export const calendars: ExchangeCalendar[] = [
     ],
   },
   {
-    ...year, id:"JP", name:"일본", exchange:"도쿄 현물 정규장", timeZone:"Asia/Tokyo",
+    ...year, id: "JP", region: "아시아", name:"일본", exchange:"도쿄 현물 정규장", timeZone:"Asia/Tokyo",
     windows:[{start:540,end:690},{start:750,end:930}],
     holidays:holidays([
       ["01-01","신정"],["01-02","연초"],["01-03","연초"],["01-12","성인의 날"],
@@ -67,7 +57,7 @@ export const calendars: ExchangeCalendar[] = [
     ],
   },
   {
-    ...year,id:"HK",name:"홍콩",exchange:"HKEX 현물 정규장",timeZone:"Asia/Hong_Kong",
+    ...year,id: "HK", region: "아시아",name:"홍콩",exchange:"HKEX 현물 정규장",timeZone:"Asia/Hong_Kong",
     // Ordinary equities; extended-morning-session instruments are excluded.
     windows:[{start:570,end:720},{start:780,end:960},{start:960,end:970,auction:true}],
     holidays:holidays([
@@ -85,7 +75,7 @@ export const calendars: ExchangeCalendar[] = [
     ],
   },
   {
-    ...year,id:"CN",name:"중국",exchange:"상하이 A주 정규장",timeZone:"Asia/Shanghai",
+    ...year,id: "CN", region: "아시아",name:"중국",exchange:"상하이 A주 정규장",timeZone:"Asia/Shanghai",
     windows:[{start:570,end:690},{start:780,end:900}],
     holidays:holidayRanges([
       ["01-01","01-03","신정"],["02-15","02-23","춘절"],["04-04","04-06","청명절"],
@@ -99,3 +89,5 @@ export const calendars: ExchangeCalendar[] = [
     ],
   },
 ];
+
+export const calendars: ExchangeCalendar[] = [...originalCalendars, ...internationalCalendars, ...europeCalendars, ...nordicCalendars];

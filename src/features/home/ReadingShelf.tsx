@@ -10,7 +10,7 @@ export function ReadingShelf() {
           <h2>투자 판단을 위한 읽을거리</h2>
         </div>
         <Link href="/community" className={styles.textLink}>
-          가이드 전체 ↗
+          가이드 전체
         </Link>
       </div>
       <div className={styles.readingGrid}>
@@ -27,7 +27,7 @@ export function ReadingShelf() {
             <h3>{article.title}</h3>
             <p>{article.summary}</p>
             <span className={styles.articleByline}>
-              Centifolio 읽을거리 <span>↗</span>
+              Centifolio 읽을거리
             </span>
           </Link>
         ))}

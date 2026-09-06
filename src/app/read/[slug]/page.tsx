@@ -1,3 +1,4 @@
+import { AdSlot } from "@/features/ads";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reading } from "@/features/home/reading";
@@ -33,9 +34,10 @@ export default async function ReadingPage({
       {article.paragraphs.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}
+      <AdSlot placement="article-bottom" />
       <div className={styles.articleEnd}>
         <p>읽고 떠오른 생각을 나만의 투자 노트에 남겨보세요.</p>
-        <Link href="/journal">투자 노트 작성하기 ↗</Link>
+        <Link href="/journal">투자 노트 작성하기</Link>
       </div>
     </article>
   );

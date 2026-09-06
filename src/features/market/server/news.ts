@@ -1,17 +1,21 @@
 import { normalizeNews } from "../news-model";
 import { providerRequests, yahoo } from "./provider";
 
-export function fetchNews(symbol?: string, signal?: AbortSignal) {
+export function fetchNews(symbol: string, signal?: AbortSignal) {
   return providerRequests.request(
-    "news:" + (symbol ?? "market"),
+    "news:" + symbol,
     async (signal) => {
       const response = await yahoo.search(
-        symbol ?? "US stock market",
+        symbol,
         { quotesCount: 0, newsCount: 20 },
         { fetchOptions: { signal } },
       );
-      return normalizeNews(response.news);
+      // Search can return unrelated stories; require the provider's explicit ticker association.
+      const related = response.news.filter((row) => row.relatedTickers?.includes(symbol));
+      return normalizeNews(related).map((story) => ({
+        ...story, symbols: [symbol, ...story.symbols.filter((ticker) => ticker !== symbol)].slice(0, 3),
+      }));
     },
-    { signal, ttlMs: 120_000 },
+    { signal, ttlMs: 45_000 },
   );
 }

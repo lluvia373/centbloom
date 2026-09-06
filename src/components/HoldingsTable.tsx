@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency,formatPercent } from "@/lib/format";
 import { MARKETS,marketForSymbol } from "@/lib/markets";
 import type { DisplayCurrency,HoldingWithQuote } from "@/lib/types";
-import { ArrowDownUp,ArrowUpRight,Pencil,Search,Trash2 } from "lucide-react";
+import { ArrowDownUp,Pencil,Search,Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo,useState } from "react";
 import { AssetAvatar,EmptyPortfolio } from "./AssetAvatar";
@@ -56,7 +56,7 @@ export function HoldingsTable({
         </h2>
         {compact ? (
           <Link href="/portfolio" className="subtle-link">
-            전체 보기 <ArrowUpRight size={13} />
+            전체 보기
           </Link>
         ) : (
           <div className="portfolio-controls">

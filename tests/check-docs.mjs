@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 
@@ -20,6 +21,20 @@ function read(file) {
   const absolute = resolve(root, file);
   if (!cache.has(absolute)) cache.set(absolute, readFileSync(absolute, "utf8"));
   return cache.get(absolute);
+}
+// The private plan is absent in public checkouts. When present, require review
+// of the current decision text; this checks freshness, not semantic correctness.
+if (existsSync(resolve(root, privateDoc))) {
+  if (!existsSync(resolve(root, "DECISIONS.md"))) {
+    errors.push(privateDoc + ": cannot verify decision review without DECISIONS.md");
+  } else {
+    const decisionText = read("DECISIONS.md").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
+    const hash = createHash("sha256").update(decisionText).digest("hex");
+    const markers = [...read(privateDoc).matchAll(/<!-- business-model-decisions-sha256: ([a-f0-9]{64}) -->/g)];
+    if (markers.length !== 1 || markers[0][1] !== hash) {
+      errors.push(privateDoc + ": missing or stale decision review; sync product, revenue assumptions, milestones and metrics before updating the marker. Expected SHA-256: " + hash);
+    }
+  }
 }
 function withoutCode(text) {
   let fence = "";
@@ -107,5 +122,5 @@ if (errors.length) {
   console.error("Documentation check failed:\n" + [...new Set(errors)].map((error) => "- " + error).join("\n"));
   process.exitCode = 1;
 } else {
-  console.log("Documentation check passed: " + documents.size + " documents, registries and inline local links/anchors.");
+  console.log("Documentation check passed: " + documents.size + " documents, registries, inline local links/anchors and local business decision review.");
 }

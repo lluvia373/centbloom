@@ -164,7 +164,6 @@ function TransactionFormSession({
                   className="flex items-center gap-1 text-xs font-medium text-[#727680]"
                 >
                   종목 보기
-                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f3f4f6] p-1">
@@ -326,7 +325,7 @@ function TransactionFormSession({
                   </div>
                 )}
                 <p className="mt-2 text-xs leading-5 text-[#727680]">
-                  날짜 미입력 시 오늘(한국시간)
+                  날짜 미입력 시 오늘(KST)
                 </p>
               </div>
               {totalAmount > 0 && validMarket && (

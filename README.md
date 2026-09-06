@@ -26,22 +26,20 @@
 
 ## 로컬 실행
 
-프로젝트 루트에서 `npm run dev -- --hostname localhost --port 2000`으로 실행한다. 별도의 내부 작업 폴더는 사용하지 않는다.
-
-## 로컬 실행
+항상 main에서 별도 로컬 브랜치·Git worktree를 만든다. 작업 폴더는 프로젝트 루트 밖에 두고 그 안에서 실행한다. 푸시·병합은 사용자 지시 후 진행하며, 병합 확인 뒤 로컬 main 동기화·해당 브랜치와 폴더 삭제까지 마친다.
 
 ```sh
 npm ci
-npm run dev -- --hostname 127.0.0.1 --port 3000
+npm run dev -- --hostname localhost --port 3000
 ```
 
-http://127.0.0.1:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
+http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
 
 계정 연결 없이 로컬 저장 모드로 시작할 수 있다. Google 로그인은 [.env.example](./.env.example)과 [연결 절차](./CLOUDFLARE.md#supabase-연결)를 따른다.
 
 ## 검증
 
-문서만 변경할 때는 `npm run check:docs`로 관리 목록·상대 링크·제목 앵커·사업 문서 Git 추적 여부를 검사한다. `npm run lint`도 이 검사를 먼저 실행한다. 문서 역할과 결정의 모순은 별도로 검토한다.
+문서만 변경할 때는 `npm run check:docs`로 관리 목록·상대 링크·제목 앵커·사업 문서 Git 추적 여부를 검사한다. 로컬 사업 문서가 있으면 최신 DECISIONS 검토값도 확인하며 누락·불일치 시 실패한다. `npm run lint`에도 포함된다. 실제 내용 동기화와 검토값 갱신은 [문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다. 공개 체크아웃에 없는 개인 계획은 생성하지 않는다.
 
 화면 변경은 `npm run check:design`으로 새 스타일 위반을 확인한다(lint에도 포함). `npm run audit:design`은 기존 미정리까지 포함해 전부 검사하며, 남아 있으면 실패한다. 기준·예외·수정 방법은 [디자인 기준](./DESIGN_SYSTEM.md#작성과-검사)을 따른다.
 

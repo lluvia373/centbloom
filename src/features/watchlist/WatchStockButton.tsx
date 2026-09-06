@@ -36,7 +36,7 @@ export function WatchStockButton({
       </button>
       {saved && (
         <Link className="ml-3 text-cf-caption text-cf-muted" href="/watchlist">
-          목록 보기 ↗
+          목록 보기
         </Link>
       )}
       {error && (

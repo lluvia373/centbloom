@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { discoveryStocks, type MarketFilter } from "@/lib/markets";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
 import { formatCurrency, formatPercent } from "@/lib/format";
@@ -36,7 +36,6 @@ export function LiveMarkets() {
               <div className="flex items-center justify-between gap-2">
                 <AssetAvatar symbol={stock.symbol} logoUrl={quote?.logoUrl} small />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-[#202329]">{stock.name}</span>
-                <ArrowUpRight size={13} className="shrink-0 text-[#727680]" />
               </div>
               <p className="mt-1 text-[11px] text-[#727680]">{stock.symbol} · {stock.exchange}</p>
               {quote ? <>

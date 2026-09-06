@@ -1,5 +1,4 @@
 .home {
-  max-width: 1440px;
   margin-block: 0;
   margin-inline: auto;
   color: var(--cf-color-ink);
@@ -42,7 +41,7 @@
   padding: 0 var(--cf-space-4);
   border: 1px solid var(--cf-color-line);
   border-radius: var(--cf-radius-card);
-  height: 54px;
+  height: 44px;
   color: var(--cf-color-muted);
 }
 .searchBox:focus-within {
@@ -57,31 +56,30 @@
   background: none;
   font-size: var(--cf-text-label);
 }
-.searchBox kbd {
-  font-size: var(--cf-text-caption);
-  white-space: nowrap;
-  color: var(--cf-color-muted);
-  background: var(--cf-color-canvas);
-  padding: var(--cf-space-1) var(--cf-space-1);
-  border-radius: var(--cf-radius-control);
-}
 .suggestions {
   display: flex;
-  gap: var(--cf-space-3);
-  font-size: var(--cf-text-caption);
-  margin: var(--cf-space-3) var(--cf-space-1) 0;
-  color: var(--cf-color-muted);
   flex-wrap: wrap;
+  gap: var(--cf-space-3);
+  margin: 0 0 var(--cf-space-3);
+  font-size: var(--cf-text-caption);
+  line-height: var(--cf-leading-body);
 }
 .suggestions > span {
   color: var(--cf-color-muted);
+  white-space: nowrap;
+}
+.suggestions a {
+  color: var(--cf-color-ink);
 }
 .suggestions a:hover {
-  color: var(--cf-color-ink);
+  text-decoration: underline;
+}
+.rankingSection > .sectionHead {
+  margin-bottom: var(--cf-space-3);
 }
 .searchResults {
   position: absolute;
-  top: 60px;
+  top: calc(100% + var(--cf-space-1));
   inset-inline: 0;
   background: var(--cf-color-surface);
   border: 1px solid var(--cf-color-line);
@@ -172,11 +170,6 @@
 .newsList li:last-child {
   padding-bottom: 0;
 }
-.newsNumber {
-  padding-top: var(--cf-space-1);
-  font-size: var(--cf-text-caption);
-  color: var(--cf-color-warning);
-}
 .newsTitle {
   display: block;
   color: var(--cf-color-ink);
@@ -187,12 +180,6 @@
 }
 .newsTitle:hover {
   color: var(--cf-color-market-up);
-}
-.newsTitle svg {
-  display: inline;
-  margin-left: var(--cf-space-2);
-  vertical-align: middle;
-  color: var(--cf-color-muted);
 }
 .newsMeta {
   display: flex;
@@ -353,61 +340,10 @@
   line-height: var(--cf-leading-body);
 }
 .articleByline {
-  display: flex;
-  justify-content: space-between;
+  display: block;
   font-size: var(--cf-text-caption);
   color: var(--cf-color-muted);
   margin-top: var(--cf-space-6);
-}
-.calendar a {
-  display: flex;
-  align-items: center;
-  gap: var(--cf-space-4);
-  padding: var(--cf-space-6) 0;
-  border-bottom: 1px solid var(--cf-color-soft);
-}
-.calendar a > time {
-  width: 42px;
-  text-align: center;
-  flex-shrink: 0;
-}
-.calendar time strong {
-  display: block;
-  font-size: var(--cf-text-title);
-  color: var(--cf-color-ink);
-  font-weight: var(--cf-weight-medium);
-}
-.calendar time span {
-  font-size: var(--cf-text-caption);
-  color: var(--cf-color-muted);
-}
-.calendar a > div {
-  flex: 1;
-}
-.calendar a > span {
-  color: var(--cf-color-muted);
-}
-.calendar a > div strong {
-  font-weight: var(--cf-weight-medium);
-  font-size: var(--cf-text-label);
-}
-.calendar p {
-  font-size: var(--cf-text-caption);
-  color: var(--cf-color-muted);
-  margin: var(--cf-space-1) 0;
-}
-.calendar small {
-  font-size: var(--cf-text-caption);
-  color: var(--cf-color-warning);
-}
-.calendarFoot {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--cf-space-2);
-  font-size: var(--cf-text-caption);
-  color: var(--cf-color-muted);
-  margin-top: var(--cf-space-4);
 }
 .article {
   max-width: 720px;
@@ -525,12 +461,6 @@
   }
   .article h1 {
     font-size: var(--cf-text-title);
-  }
-  .calendar a {
-    gap: var(--cf-space-3);
-  }
-  .calendar a > div strong {
-    font-size: var(--cf-text-label);
   }
 }
 
@@ -714,3 +644,22 @@
 .moreMovers { width: 100%; min-height: 44px; color: var(--cf-color-muted); font-size: var(--cf-text-label); border-top: 1px solid var(--cf-color-line); }
 .moreMovers:hover { background: var(--cf-color-soft); }
 .moreMovers:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
+
+.newsLanguage {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-3);
+  color: var(--cf-color-muted);
+  font-size: var(--cf-text-caption);
+}
+.newsLanguage button {
+  padding: var(--cf-space-2);
+  border-radius: var(--cf-radius-control);
+  color: var(--cf-color-ink);
+  cursor: pointer;
+}
+.newsLanguage button:hover { background: var(--cf-color-soft); }
+.newsLanguage button:focus-visible {
+  outline: 2px solid var(--cf-color-focus);
+  outline-offset: 2px;
+}

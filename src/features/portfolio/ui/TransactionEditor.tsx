@@ -109,7 +109,7 @@ export function TransactionEditor({
               className={inputClass}
             />
             <p className="mt-1 text-xs text-[#727680]">
-              날짜 미입력 시 오늘(한국시간) · 날짜 변경 시 환율 재계산
+              날짜 미입력 시 오늘(KST) · 날짜 변경 시 환율 재계산
             </p>
           </div>
 

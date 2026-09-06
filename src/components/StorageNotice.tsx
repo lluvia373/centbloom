@@ -5,13 +5,15 @@ import {
   useTransactions,
 } from "@/hooks/usePortfolio";
 import { AlertCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 export function StorageNotice() {
+  const pathname = usePathname();
   const { error, status, writable } = useTransactions();
   const { retryStorage, reloadTransactions } = useTransactionCommands();
   const { preferenceError } = usePreferences();
   const storageError =
     error ??
-    preferenceError ??
+    (pathname === "/settings" ? null : preferenceError) ??
     (status === "ready" && !writable
       ? "거래 저장 서버 업데이트가 필요합니다. 기존 거래는 조회할 수 있습니다."
       : null);

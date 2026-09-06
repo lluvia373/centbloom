@@ -1,4 +1,5 @@
 "use client";
+import { primaryNavigation, navigationArea, navigationPageName } from "@/features/navigation";
 import { BrandMark } from "@/components/BrandMark";
 import { MarketNotification } from "@/features/market/MarketNotification";
 import { MarketTicker } from "@/features/market/MarketTicker";
@@ -9,11 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePreferences } from "@/hooks/usePortfolio";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import {
-ArrowDownUp,
-ArrowUpRight,
 Bell,
-BookOpen,
-ChartNoAxesCombined,
 ChevronRight,
 CircleHelp,
 Layers3,
@@ -22,38 +19,27 @@ LogOut,
 Plus,
 Search,
 Settings2,
-Star,
 Wallet,
 X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect,useRef,useState } from "react";
-const links = [
-  { href: "/", label: "시장", icon: LayoutDashboard },
-  { href: "/discover", label: "종목 탐색", icon: Search },
-  { href: "/portfolio", label: "내 포트폴리오", icon: Wallet },
-  { href: "/watchlist", label: "관심종목", icon: Star },
-  { href: "/journal", label: "투자 노트", icon: BookOpen },
-];
+const icons = { market: LayoutDashboard, investment: Wallet, settings: Settings2 };
+const links = primaryNavigation.map((item) => ({ ...item, icon: icons[item.area] }));
 export function Header() {
   const pathname = usePathname();
   const publicPage = isPublicRoute(pathname);
   const marketHome = pathname === "/";
   const { user, configured, signOut } = useAuth();
-  const { displayCurrency, setDisplayCurrency } = usePreferences();
+  const showActions = !marketHome || (configured && !user);
 
   const { isDemo, setDemo } = useWorkspace();
   const [panel, setPanel] = useState<"notifications" | "help" | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const pageName =
-    links.find((item) => item.href === pathname)?.label ??
-    (pathname === "/community" ? "리서치 가이드" : pathname === "/insights" ? "성과 분석" : pathname === "/discover" ? "종목 탐색" : pathname.startsWith("/read/") ? "읽을거리" : pathname === "/settings"
-      ? "설정"
-      : pathname === "/search"
-        ? "거래 기록"
-        : "종목 살펴보기");
-  const samplePage = ["/portfolio", "/insights"].includes(pathname);
+  const area = navigationArea(pathname);
+  const pageName = navigationPageName(pathname);
+  const samplePage = ["/portfolio", "/insights", "/transactions"].includes(pathname);
   useEffect(() => {
     if (!panel) return;
     const close = (event: MouseEvent) => {
@@ -80,40 +66,31 @@ export function Header() {
           <span>centifolio</span>
         </Link>
         <nav className="sidebar-nav" aria-label="주요 메뉴">
-          {links.map(({ href, label, icon: Icon }) => (
+          {links.filter((item) => item.area !== "settings").map(({ href, label, area: linkArea, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className={pathname === href ? "active" : ""}
-              aria-current={pathname === href ? "page" : undefined}
+              className={area === linkArea ? "active" : ""}
+              aria-current={area === linkArea ? "page" : undefined}
             >
               <Icon size={18} strokeWidth={1.7} />
               <span>{label}</span>
-              {pathname === href && <span className="nav-dot" />}
+              {area === linkArea && <span className="nav-dot" />}
             </Link>
           ))}
         </nav>
-        <div className="sidebar-divider" />
-        <nav className="sidebar-nav" aria-label="도구">
-          <Link href="/insights" className={pathname === "/insights" ? "active" : ""}><ChartNoAxesCombined size={18}/><span>성과 분석</span></Link>
-          <Link
-            href="/search"
-            onClick={() => setDemo(false)}
-            className={pathname === "/search" ? "active" : ""}
-            aria-current={pathname === "/search" ? "page" : undefined}
-          >
-            <ArrowDownUp size={18} strokeWidth={1.7} />
-            <span>거래 기록</span>
-          </Link>
-          <Link
-            href="/settings"
-            className={pathname === "/settings" ? "active" : ""}
-            aria-current={pathname === "/settings" ? "page" : undefined}
-          >
-            <Settings2 size={18} strokeWidth={1.7} />
-            <span>설정 및 데이터</span>
-          </Link>
-        </nav>
+        <div className="sidebar-account">
+          <nav className="sidebar-nav" aria-label="계정 메뉴">
+            {links.filter((item) => item.area === "settings").map(({ href, label, icon: Icon }) => (
+              <Link key={href} href={href} className={area === "settings" ? "active" : ""}
+                aria-current={area === "settings" ? "page" : undefined}>
+                <Icon size={18} strokeWidth={1.7} />
+                <span>{label}</span>
+                {area === "settings" && <span className="nav-dot" />}
+              </Link>
+            ))}
+          </nav>
+        </div>
         <div className="sidebar-bottom">
           <Link className="profile" href="/settings" aria-label="계정 설정">
             <span className="profile-avatar">{user?.email?.slice(0, 1).toUpperCase() ?? "C"}</span>
@@ -125,9 +102,9 @@ export function Header() {
           </Link>
         </div>
       </aside>
-      <header className={`topbar ${marketHome ? marketHeader.header : ""}`}>
+      {pathname !== "/portfolio" && <header className={`topbar ${marketHome ? marketHeader.header + (showActions ? "" : " " + marketHeader.quotesOnly) : ""}`}>
         {marketHome ? <MarketTicker /> : <div className="breadcrumbs">
-          <span>centifolio</span>
+          <span>{area === "investment" ? "내 투자" : "centifolio"}</span>
           <ChevronRight size={13} />
           <strong>{pageName}</strong>
         </div>}
@@ -135,8 +112,8 @@ export function Header() {
           <BrandMark size={36} />
           <span>centifolio</span>
         </Link>
-        <div className="topbar-actions" ref={panelRef}>
-          <Link
+        {showActions && <div className="topbar-actions" ref={panelRef}>
+          {!marketHome && <Link
             href="/discover"
             aria-label="종목 검색"
             className="topbar-search"
@@ -144,23 +121,9 @@ export function Header() {
           >
             <Search size={16} />
             <span>종목 검색</span>
-            <span className="search-shortcut">↗</span>
-          </Link>
-          {!publicPage && <div className="currency-switch" role="group" aria-label="표시 통화">
-            {(["KRW", "USD"] as const).map((currency) => (
-              <button
-                key={currency}
-                onClick={() => setDisplayCurrency(currency)}
-                aria-pressed={displayCurrency === currency}
-                className={displayCurrency === currency ? "selected" : ""}
-              >
-                {currency}
-              </button>
-            ))}
-          </div>}
-          <Link href="/settings" className="icon-button mobile-settings" aria-label="설정 및 데이터">
-            <Settings2 size={18} />
-          </Link>
+          </Link>}
+          {!publicPage && <CurrencySwitch />}
+
           {!marketHome && <button
             className="icon-button"
             aria-label="업데이트 상태"
@@ -196,12 +159,12 @@ export function Header() {
                 목표가를, 투자 노트에는 선택의 이유를 남길 수 있습니다.
               </p>
               <Link href="/settings" onClick={() => setPanel(null)}>
-                데이터 백업 및 설정 <ArrowUpRight size={14} />
+                데이터 백업 및 설정
               </Link>
             </div>
           )}
           {configured && !user && <Link href="/portfolio" className="button-secondary">로그인</Link>}
-          {configured && user && (
+          {!marketHome && configured && user && (
             <button
               className="icon-button"
               aria-label="로그아웃"
@@ -210,26 +173,18 @@ export function Header() {
               <LogOut size={17} />
             </button>
           )}
-        </div>
-      </header>
+        </div>}
+      </header>}
       <nav className="mobile-nav" aria-label="모바일 메뉴">
-        {links.map(({ href, label, icon: Icon }) => (
+        {links.map(({ href, label, area: linkArea, icon: Icon }) => (
           <Link
             key={href}
             href={href}
-            className={pathname === href ? "active" : ""}
-            aria-current={pathname === href ? "page" : undefined}
+            className={area === linkArea ? "active" : ""}
+            aria-current={area === linkArea ? "page" : undefined}
           >
             <Icon size={20} />
-            <span>
-              {label === "내 포트폴리오"
-                ? "자산"
-                : label === "시장"
-                  ? "홈"
-                  : label === "성과 분석"
-                    ? "분석"
-                    : label}
-            </span>
+            <span>{label}</span>
           </Link>
         ))}
       </nav>
@@ -264,7 +219,6 @@ export function PortfolioMode() {
       </div>
       <button onClick={() => setDemo(!isDemo)}>
         {isDemo ? "내 포트폴리오 시작하기" : "샘플 둘러보기"}
-        <ArrowUpRight size={14} />
       </button>
     </div>
   );
@@ -280,5 +234,23 @@ export function AddTransactionLink() {
       <Plus size={16} />
       거래 기록하기
     </Link>
+  );
+}
+
+export function CurrencySwitch() {
+  const { displayCurrency, setDisplayCurrency } = usePreferences();
+  return (
+<div className="currency-switch" role="group" aria-label="표시 통화">
+            {(["KRW", "USD"] as const).map((currency) => (
+              <button
+                key={currency}
+                onClick={() => setDisplayCurrency(currency)}
+                aria-pressed={displayCurrency === currency}
+                className={displayCurrency === currency ? "selected" : ""}
+              >
+                {currency}
+              </button>
+            ))}
+          </div>
   );
 }
