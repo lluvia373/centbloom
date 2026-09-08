@@ -10,7 +10,7 @@
 
 - 2026-09-08 사용자 요청: 명칭·코드·문서·로고 자산 경로를 센트블룸으로 변경. 기존 거래 백업·관심종목·노트·최근 검색·성과 캐시·대기 거래의 이전 브랜드 호환을 추가했다. 기존 원본 이미지 바이트와 적용된 SQL/복구 스키마는 보존한다.
 - 로컬 루트: `C:\Users\proje\Desktop\개인용\centbloom`, main. GitHub 저장소·소개·홈페이지와 Supabase 프로젝트 이름·Auth Site URL을 변경했다. 새 주소와 이전 주소 모두 같은 센트블룸 앱을 제공한다. .com은 구매·연결하지 않았다.
-- Windows 검증: 자동 테스트 161개·TypeScript·ESLint·문서 12개·Next.js/OpenNext 운영 빌드 통과. 새 디자인 위반 0, 기존 미정리 1,603개 유지. 로고 원본 8개의 Git 해시 일치. 공개 홈/포트폴리오/캘린더·이전 주소 시세 API HTTP 200, 새/이전 주소 BUILD_ID 일치. 실제 사용자 로그인 후 쓰기·기기 간 이동은 미검증이다.
+- Windows 검증: 자동 테스트 161개·TypeScript·ESLint·문서 12개·Next.js/OpenNext 운영 빌드 통과. 새 디자인 위반 0, 기존 미정리 1,603개 유지. 로고 원본 8개의 Git 해시 일치. 공개 홈/포트폴리오/캘린더·이전 주소 시세 API HTTP 200, 새/이전 주소 BUILD_ID 일치. 브라우저에서 금색 로고 로딩·이전 이름 없음·가로 넘침 없음·Centbloom 로그인 화면을 확인했다. 실제 사용자 로그인 후 쓰기·기기 간 이동은 미검증이다.
 - 이 체크아웃에는 비공개 BUSINESS_MODEL.md가 없어 검토하지 않았다. 개인 계획은 재생성하지 않았다.
 
 ## 09-07 병합 검증
@@ -113,8 +113,8 @@
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
 | 로컬 프로젝트 | centbloom 루트 · 로컬 main에서 모든 구현·수정, 확인 주소 localhost:3000 | 시장·설정 브랜치/폴더 정리 완료, 비공개 자료는 Git 제외 work/release-archive에 보존 |
-| 공개 Cloudflare | 09-08 센트블룸 배포. [새 서비스](https://centbloom.stock-web-demo.workers.dev/) `7e8724e0-ab5b-4549-9e2e-79ec52af9833`, [이전 주소](https://centifolio.stock-web-demo.workers.dev/) 호환 Worker `8159542d-3cd0-4f2e-bbaa-b89f5a54eb1f`. BUILD_ID `otvIHgJs_HHX2ymJT1KZM` 일치 | 기존 앱 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`. 두 Worker의 main 자동 Builds 설정, 실제 새 커밋 실행 확인 필요. 운영 DB 변경 없음 |
-| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 이번 브랜드 변경을 main에 반영 | 최종 커밋과 자동 배포 결과는 GitHub main/Cloudflare Builds 확인 |
+| 공개 Cloudflare | 09-08 코드 `371cd2e`의 두 GitHub 자동 Builds 성공. [새 서비스](https://centbloom.stock-web-demo.workers.dev/) `efb3593e-314c-4bf2-b436-c6390cd1b3b5`, [이전 주소](https://centifolio.stock-web-demo.workers.dev/) 호환 Worker `f4f08256-5238-46d2-9e5c-d15e203915d2`. 양쪽 BUILD_ID `tWNtFJMPIL1uLcZEr3mM2` 일치 | 이전 앱 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`, 최초 센트블룸 수동 배포 `7e8724e0-ab5b-4549-9e2e-79ec52af9833`. 운영 DB 변경 없음 |
+| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 브랜드 코드 `371cd2e`를 main에 반영했고 로컬/원격 커밋·트리 해시 일치 확인 | 이후 이 배포 결과 문서만 갱신. 실제 로그인 후 쓰기·다중 기기는 미검증 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 09-07 확인: 광고 ID 미발급. `/portfolio` 하단 예약 영역 표시, 실제 광고는 기본 비활성 | 사이트 승인·광고 단위 ID·로그인 페이지 크롤러 접근·고지 준비 후 활성화/배포. 실제 송출 미확인 |
 
@@ -172,7 +172,7 @@
 | 09-06 Windows 로컬 · 거래 날짜 선택화 | 빌드·TypeScript·ESLint·회귀 테스트 10개 통과(한국시간 자정·월/연도 경계 포함). 별도 3001 브라우저에서 날짜 없이 매수/매도→오늘 저장, 선택한 과거 매수일 저장, 날짜 변경 후 단가 유지·과거 환율 반영, 저장된 날짜 09-06→09-04 수정 확인 | 테스트 거래만 사용. 실제 계정 서버 쓰기·모바일 미검증, 공개 미반영. 과거 환율이 없는 날짜는 기존 조회 오류로 저장 차단 |
 | 09-06 Windows 로컬 · 보유종목 수정/삭제 | Next.js 빌드·TypeScript·ESLint·회귀 테스트 9개 통과. 별도 3001 테스트 데이터로 수량 5→7/단가 200→210, 과거 매도 초과 차단, 삭제 취소, 매수·매도 2건 일괄 삭제와 다른 종목 보존, 새 탭 유지, 샘플 버튼 숨김·마지막 종목 삭제 확인 | 실제 계정 데이터는 변경하지 않음. Supabase 계정/티커 필터·403·삭제 0건은 모의 HTTP 검사이며 실제 서버 쓰기/RLS·다중 기기 동시 변경·모바일은 미검증. 공개 미반영 |
 | 09-06 Windows 로컬 · 구조 검토, `ac7525b` 이후 미커밋 변경 포함 | 소스 62개 정적 분석·앱 진입점 의존성 추적, ESLint·TypeScript·기존 테스트 4개 통과. 함수 수준 재현·가상 데이터 성능 측정은 아래 참조 | 코드 수정 없음. 외부 서비스는 모의 처리했으며 공개 서비스·실제 계정·브라우저 성능·전체 빌드는 이번 검토에서 재검증하지 않음 |
-| 09-06 로컬/외부 · Centbloom 이름 통일 | GitHub 이름·homepage·origin 연결, Cloudflare 동일 Worker/배포 버전·자기 참조 연결 유지, 새 URL/시세 API HTTP 200·Google 로그인 복귀. 로컬 빌드·ESLint·저장 키 호환/시장 테스트 6개 통과 | 로컬 기능은 공개 미반영. 로그인 후 일부 브라우저 시세 미확인 표시는 기존 제약으로 남아 있으며 직접 API 검사는 정상 |
+| 09-06 로컬/외부 · 이전 Centifolio 이름 통일 | GitHub 이름·homepage·origin 연결, Cloudflare 동일 Worker/배포 버전·자기 참조 연결 유지, 새 URL/시세 API HTTP 200·Google 로그인 복귀. 로컬 빌드·ESLint·저장 키 호환/시장 테스트 6개 통과 | 로컬 기능은 공개 미반영. 로그인 후 일부 브라우저 시세 미확인 표시는 기존 제약으로 남아 있으며 직접 API 검사는 정상 |
 | 09-06 Windows 로컬 · 종목 마크 | 빌드·TypeScript·ESLint·기존 테스트 4개, 이미지 원본 15개 해시, 데스크톱 한국/일본/홍콩/중국 로고 로딩·미지원 티커 표시, 실제 시세/환율 7건·검색 8건 회귀 통과 | 로컬 전용. 공급원 전체 종목 로고·이미지 실패 이벤트·이번 변경의 모바일 화면은 미검증 |
 | 09-06 외부 · 이전 호스팅 정리 | 프로젝트/배포 삭제·저장소 연결 해제·GitHub 설치 앱 제거 확인. 이전 배포 URL HTTP 410, Cloudflare HTTP 200 | GitHub 과거 배포 이력 78건은 사용자 결정으로 유지. 로컬 코드는 푸시·배포하지 않음 |
 | 09-06 Windows 로컬 · 해외 시세 변경분 | 빌드·TypeScript·ESLint, 시장/코드/별칭/환산 테스트 4개, 실제 시세·환율 7건·검색 8건·해외 차트/과거 가격 6건, 브라우저의 국가별 가격·모바일 넘침 없음·일본 거래 입력·관심종목 추가/정리·503 장애 때 이전 가격 유지와 자동 복구 | 로컬만 검증. 주말이므로 장중 가격 변화·거래소 체결 스트리밍·실제 계정 저장은 미검증. 테스트 서버의 초기 외부 연결 제한은 실행 환경 조정 후 해소 |
