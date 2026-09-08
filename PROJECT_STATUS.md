@@ -6,12 +6,12 @@
 
 작업 시작 시 [환경별 진행 상태](#환경별-진행-상태)·[현재 제약](#현재-제약)·[다음 작업](#다음-작업)을 확인한다. 코드 위치와 추가 방법은 [DEVELOPMENT.md](./DEVELOPMENT.md), 과거 검증은 관련 변경일 때만 아래 기록을 읽는다.
 
-## Wanted Sans 전체 적용
+## Wanted Sans 전체 적용 — 배포 완료
 
 - 사용자 선택 D 방향을 공통 글꼴에 연결했다. 공식 v1.0.3 가변 WOFF2와 OFL을 보관하고 next/font/local로 자체 제공한다. 브랜드 굵기 600·공통 제목 자간을 사용하며 크기와 금액 정렬은 유지한다.
 - 2026-09-08 Windows 로컬 main: 자동 테스트 161개·ESLint·TypeScript·문서 12개·Next.js/OpenNext 배포 빌드 통과. 새 디자인 위반 0, 기존 미정리 1,601개(브랜드 굵기/자간 2개 해결).
 - localhost:3000의 1440px 메인, 390px 메인·캘린더·AAPL 상세·로그인 화면에서 Wanted Sans 공통 상속, 컨트롤/제목 적용, 가로 넘침 0·브라우저 JS 오류 0 확인. 폰트 원본의 한글·라틴·통화 기호 포함, 400~1000 가변 축, tnum 숫자 10개 동일 폭 1280 확인. 실제 로그인 후 개인 화면과 실제 모바일 기기 전수 검증은 하지 않았다.
-- Cloudflare Git Builds 배포 진행 중. 공개 폰트 응답·화면은 완료 후 확인한다.
+- 2026-09-08 공개 Cloudflare: 코드 `4ab9f17`의 centbloom/이전 주소 종료 Builds 모두 성공. 공개 홈·로그인 화면 1440px/390px Wanted Sans·브랜드 600·가로 넘침 0·JS 오류 0 확인. 배포 WOFF2 HTTP 200, 원본과 동일한 SHA-256 `4259e7e9a172e634c2cb419d793b84148990316341e910443e5d10965b2c8f16`, 1,289,292바이트, 1년 immutable 캐시 확인. 금색 장미·기능·DB 변경 없음. 이후 상태 문서만 갱신하며 실행 코드와 폰트 원본은 동일하다.
 
 ## 센트블룸 전환 — 배포 완료
 
@@ -123,8 +123,8 @@
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
 | 로컬 프로젝트 | centbloom 루트 · 로컬 main에서 모든 구현·수정, 확인 주소 localhost:3000 | 시장·설정 브랜치/폴더 정리 완료, 비공개 자료는 Git 제외 work/release-archive에 보존 |
-| 공개 Cloudflare | 센트블룸 코드 `371cd2e` 자동 Builds 성공 이후 문서 갱신. [공개 서비스](https://centbloom.stock-web-demo.workers.dev/) HTTP 200. 09-08 후속 요청으로 이전 centifolio 공개·미리보기 종료: `80478087-8f50-4a89-9e4d-38a79aba08d3`, HTTP 404 | 과거 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`과 배포 이력은 보존. DB 변경 없음 |
-| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 브랜드 코드 `371cd2e`를 main에 반영했고 로컬/원격 커밋·트리 해시 일치 확인 | 후속 요청의 이전 주소 종료 설정·문서를 반영. 실제 로그인 후 쓰기·다중 기기는 미검증 |
+| 공개 Cloudflare | Wanted Sans 코드 `4ab9f17` 자동 Builds 성공·공개 폰트/화면 확인 이후 문서 갱신. [공개 서비스](https://centbloom.stock-web-demo.workers.dev/) HTTP 200. 09-08 후속 요청으로 이전 centifolio 공개·미리보기 종료: `80478087-8f50-4a89-9e4d-38a79aba08d3`, HTTP 404 | 과거 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`과 배포 이력은 보존. DB 변경 없음 |
+| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 브랜드·글꼴 코드 `4ab9f17`를 main에 반영했고 공개 배포 확인 | 후속 요청의 이전 주소 종료 설정·문서를 반영. 실제 로그인 후 쓰기·다중 기기는 미검증 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 09-07 확인: 광고 ID 미발급. `/portfolio` 하단 예약 영역 표시, 실제 광고는 기본 비활성 | 사이트 승인·광고 단위 ID·로그인 페이지 크롤러 접근·고지 준비 후 활성화/배포. 실제 송출 미확인 |
 
