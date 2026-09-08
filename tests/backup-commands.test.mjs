@@ -13,3 +13,11 @@ test('malformed backup and chronologically invalid edits/deletes fail before rep
  assert.throws(()=>applyCommand(original,{type:'delete',id:tx.id}),/초과/);
  assert.throws(()=>applyCommand(original,{type:'import',mode:'replace',records:[{...tx,price:NaN}]}));assert.equal(original.length,2);assert.equal(original[0].quantity,5);
 });
+
+test('Centifolio backup amounts survive import and export uses the Centbloom format',()=>{
+ const original={format:'centifolio-transactions',version:1,exportedAt:'2020-01-01T00:00:00Z',transactions:[tx]};
+ const parsed=parseTransactionBackup(original);assert.equal(parsed.ok,true);
+ const exported=JSON.parse(serializeTransactionBackup(parsed.backup.transactions));
+ assert.equal(exported.format,'centbloom-transactions');assert.equal(exported.transactions[0].quantity,5);assert.equal(exported.transactions[0].price,100);assert.equal(exported.transactions[0].fee,1);
+ assert.equal(original.format,'centifolio-transactions');
+});

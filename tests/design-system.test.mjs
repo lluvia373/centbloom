@@ -65,9 +65,9 @@ test("real token documentation matches; drift, removed or duplicated tokens fail
 });
 function fixture(t) {
   const base = realpathSync(tmpdir());
-  const directory = mkdtempSync(join(base, "centifolio-design-"));
+  const directory = mkdtempSync(join(base, "centbloom-design-"));
   t.after(() => {
-    if (dirname(directory) !== base || !directory.startsWith(join(base, "centifolio-design-"))) throw new Error("Unsafe fixture cleanup");
+    if (dirname(directory) !== base || !directory.startsWith(join(base, "centbloom-design-"))) throw new Error("Unsafe fixture cleanup");
     rmSync(directory, { recursive: true, force: true });
   });
   const write = (file, text) => {

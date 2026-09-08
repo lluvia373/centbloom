@@ -1,8 +1,8 @@
-# Centifolio
+# Centbloom
 
 공개 시장 정보와 투자 읽을거리에서 관심종목·개인 포트폴리오로 이어지는 앱. 첫 공개 버전에는 회원 토론을 포함하지 않는다. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
 
-[GitHub 저장소](https://github.com/lluvia373/centifolio) · [공개 웹](https://centifolio.stock-web-demo.workers.dev/)
+[GitHub 저장소](https://github.com/lluvia373/centbloom) · [공개 웹](https://centbloom.stock-web-demo.workers.dev/)
 
 ## 문서 안내
 
@@ -26,7 +26,7 @@
 
 ## 로컬 실행
 
-모든 구현·수정은 `C:\Users\Siyun\Desktop\works\centifolio`의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
+모든 구현·수정은 `C:\Users\proje\Desktop\개인용\centbloom`의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
 
 ```sh
 npm ci

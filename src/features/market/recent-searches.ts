@@ -1,3 +1,5 @@
+import { readBrandedStorage } from "@/lib/branded-storage";
+
 export interface RecentStock { symbol: string; name: string }
 const limit = 6;
 function valid(value: unknown): value is RecentStock {
@@ -20,17 +22,17 @@ export function parseRecentSearches(raw: string | null): RecentStock[] {
   } catch { return []; }
 }
 export function createRecentSearches(storage: () => Pick<Storage, "getItem" | "setItem">) {
-  const key = (userId: string) => "centifolio:recent-searches:v1:" + encodeURIComponent(userId);
+  const key = (userId: string) => "centbloom:recent-searches:v1:" + encodeURIComponent(userId);
   return {
     read(userId: string | null): string | null {
       if (!userId) return null;
-      try { return storage().getItem(key(userId)); } catch { return null; }
+      try { return readBrandedStorage(storage(), key(userId)); } catch { return null; }
     },
     record(userId: string | null, stock: RecentStock): boolean {
       if (!userId || !valid(stock)) return false;
       try {
         const target = storage();
-        const raw = target.getItem(key(userId));
+        const raw = readBrandedStorage(target, key(userId));
         // Preserve malformed stored content instead of silently replacing it.
         if (raw !== null && !Array.isArray(JSON.parse(raw))) return false;
         const symbol = stock.symbol.toUpperCase();

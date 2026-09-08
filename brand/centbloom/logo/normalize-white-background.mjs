@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const logoDir = path.dirname(fileURLToPath(import.meta.url));
-const activeName = "centifolio-logo-gold-on-white.png";
-const archiveName = "centifolio-logo-gold-on-white.pre-pixel-edit.png";
+const activeName = "centbloom-logo-gold-on-white.png";
+const archiveName = "centbloom-logo-gold-on-white.pre-pixel-edit.png";
 const sourceHash = "105631ec014d89463e43b42d2a9aba7afaaa7c5e024d00021ad0dd276c5b2dcd";
 const hash = (buffer) => createHash("sha256").update(buffer).digest("hex");
 

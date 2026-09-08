@@ -29,8 +29,8 @@ export function calendarHref(day: string, kind: EventFilter = "all") {
 export function safeReturn(value: string | null | undefined, fallback = "/calendar") {
   if (!value || !/^\/(?:calendar)?(?:\?|$)/.test(value)) return fallback;
   try {
-    const url = new URL(value,"https://centifolio.invalid");
-    if (url.origin !== "https://centifolio.invalid" || !["/","/calendar"].includes(url.pathname)) return fallback;
+    const url = new URL(value,"https://centbloom.invalid");
+    if (url.origin !== "https://centbloom.invalid" || !["/","/calendar"].includes(url.pathname)) return fallback;
     return url.pathname + url.search;
   } catch { return fallback; }
 }

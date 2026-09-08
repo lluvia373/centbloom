@@ -39,7 +39,7 @@ function AdSlot({ client, slot }: AdSenseConfig) {
         data-adtest={process.env.NODE_ENV === "production" ? undefined : "on"}
       />
       <Script
-        id="centifolio-adsense"
+        id="centbloom-adsense"
         src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`}
         crossOrigin="anonymous"
         strategy="lazyOnload"

@@ -1,4 +1,4 @@
-# Centifolio 구글 검색 유입 계획
+# Centbloom 구글 검색 유입 계획
 
 확인: 2026-09-06 · 조사와 실행 제안. 구현·공개 배포는 별도 승인 범위를 따른다.
 
@@ -14,10 +14,10 @@
 | --- | --- |
 | [루트 레이아웃](./src/app/layout.tsx)·[로그인 제한](./src/components/AuthGate.tsx) | 인증 설정 시 모든 화면이 AuthGate 안에 있다. 비로그인 공개 콘텐츠 경로를 분리해야 한다 |
 | [커뮤니티 경로](./src/app/community/page.tsx) | 현재 /journal로 이동한다. 검색 진입점이 될 공개 게시글 상세가 없다 |
-| [공개 홈](https://centifolio.stock-web-demo.workers.dev/) | HTTP 200이지만 초기 HTML에 로그인 상태 확인 화면. 실제 Google 렌더링 결과는 미검증 |
+| [공개 홈](https://centbloom.stock-web-demo.workers.dev/) | HTTP 200이지만 초기 HTML에 로그인 상태 확인 화면. 실제 Google 렌더링 결과는 미검증 |
 | 제목·대표 URL | 공통 제목/설명만 확인했고 개별 페이지 메타데이터·canonical 구현은 찾지 못했다. 공개 홈 HTML에도 canonical 없음 |
-| [사이트맵](https://centifolio.stock-web-demo.workers.dev/sitemap.xml) | HTTP 404. 로컬 sitemap 파일도 없음. 사이트맵 부재 자체가 색인 불가를 뜻하지는 않음 |
-| [robots.txt](https://centifolio.stock-web-demo.workers.dev/robots.txt) | HTTP 200. 응답은 content signals 설명 주석이며 User-agent/Disallow/Sitemap 규칙 없음. Googlebot의 실제 접근은 Search Console에서 확인 필요 |
+| [사이트맵](https://centbloom.stock-web-demo.workers.dev/sitemap.xml) | HTTP 404. 로컬 sitemap 파일도 없음. 사이트맵 부재 자체가 색인 불가를 뜻하지는 않음 |
+| [robots.txt](https://centbloom.stock-web-demo.workers.dev/robots.txt) | HTTP 200. 응답은 content signals 설명 주석이며 User-agent/Disallow/Sitemap 규칙 없음. Googlebot의 실제 접근은 Search Console에서 확인 필요 |
 | 성과 | Search Console 소유권/색인 상태·실제 Google 순위·검색량·클릭·실사용 성능 미확인 |
 
 **당시 핵심 진단:** 공개 콘텐츠 부족과 로그인 제한. 현재는 공개 경로의 수집·본문·메타데이터·색인 상태를 확인한다. [Google의 JavaScript 수집·렌더링 안내](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
@@ -63,7 +63,7 @@
 
 ## 노출·클릭·참여를 늘릴 추가 방법
 
-| 방법 | 센티폴리오 적용·판단 기준 |
+| 방법 | 센트블룸 적용·판단 기준 |
 | --- | --- |
 | 종목·주제별 모음 | 실제 관련 글과 답이 모인 주제부터 페이지화. 빈 게시판·티커만 바뀐 설명을 수천 개 만들지 않음 |
 | 내부 링크·오래된 글 개선 | 실제 변경·새 근거를 기존 읽을거리에 반영하고 연결. 같은 의도의 운영자 안내가 중복되면 통합 검토 |
@@ -99,6 +99,6 @@
 | 공개 후 28일 | 페이지/검색어별 노출·클릭·CTR·평균 게재순위, 검색 방문자의 참여 | 노출 없음→수집/색인/내용 확인; 노출 있으나 클릭 적음→의도·제목·검색 결과 비교; 방문 후 참여 낮음→본문·다음 행동 개선 |
 | 이후 매주·4주 비교 | 기존 페이지 수정 3개 이내, 효과 있는 주제 확대 | 브랜드 검색과 비브랜드 검색 구분. 적은 표본의 CTR·평균 순위 변동으로 성공/실패를 단정하지 않음 |
 
-검색에서 **보임/클릭됨**은 [Search Console](https://support.google.com/webmasters/answer/7576553?hl=en), 사이트에서 **읽음/개인 저장/재방문**은 [이슈 #11](https://github.com/lluvia373/centifolio/issues/11)로 측정한다. 검색어별 방문자를 개인 단위로 식별할 수 있다고 가정하지 않는다. 실제 자료가 없으면 미측정으로 남긴다.
+검색에서 **보임/클릭됨**은 [Search Console](https://support.google.com/webmasters/answer/7576553?hl=en), 사이트에서 **읽음/개인 저장/재방문**은 [이슈 #11](https://github.com/lluvia373/centbloom/issues/11)로 측정한다. 검색어별 방문자를 개인 단위로 식별할 수 있다고 가정하지 않는다. 실제 자료가 없으면 미측정으로 남긴다.
 
 이 문서는 SEO 전략·조사 근거·우선순위의 기준이며, 관리·수정은 [AGENTS.md의 문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다. 개별 실행은 기준 문서를 링크한 GitHub 이슈로 관리하고, 구현·검증 결과는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)에 기록한다.

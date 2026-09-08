@@ -155,7 +155,7 @@ export function inspectSource(file, source, tokens) {
         }
         const src = attrs.get("src")?.initializer;
         if (src && ts.isStringLiteral(src) && src.text.startsWith("/brand/")
-          && (file !== "src/components/BrandMark.tsx" || src.text !== "/brand/centifolio-logo-gold-on-white.webp")) {
+          && (file !== "src/components/BrandMark.tsx" || src.text !== "/brand/centbloom-logo-gold-on-white.webp")) {
           add("brand-component", src.text, node.getStart(tree), node.getText(tree));
         }
       }

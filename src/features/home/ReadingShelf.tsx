@@ -27,7 +27,7 @@ export function ReadingShelf() {
             <h3>{article.title}</h3>
             <p>{article.summary}</p>
             <span className={styles.articleByline}>
-              Centifolio 읽을거리
+              Centbloom 읽을거리
             </span>
           </Link>
         ))}

@@ -50,7 +50,7 @@ export default function PortfolioPage() {
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "centifolio-holdings.csv";
+    anchor.download = "centbloom-holdings.csv";
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();

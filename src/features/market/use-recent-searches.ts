@@ -3,7 +3,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { createRecentSearches, parseRecentSearches, type RecentStock } from "./recent-searches";
 
 const repository = createRecentSearches(() => window.localStorage);
-const changed = "centifolio:recent-searches-changed";
+const changed = "centbloom:recent-searches-changed";
 const serverSnapshot = () => null;
 function subscribe(listener: () => void) {
   window.addEventListener("storage", listener);

@@ -1,6 +1,6 @@
 "use client";
 
-import { legacyStorageKey,readBrandedStorage } from "@/lib/branded-storage";
+import { isBrandedStorageKey,readBrandedStorage } from "@/lib/branded-storage";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
@@ -20,7 +20,7 @@ export interface WatchlistItem {
   addedAt: string;
 }
 
-const STORAGE_EVENT = "centifolio:watchlist-changed";
+const STORAGE_EVENT = "centbloom:watchlist-changed";
 const UNAVAILABLE = "__storage_unavailable__";
 const EMPTY: WatchlistItem[] = [];
 const currencyIsValid = (value: unknown): value is string =>
@@ -121,15 +121,13 @@ export function useWatchlist({
   quoteLimit = 50,
 }: { loadQuotes?: boolean; quoteLimit?: number } = {}) {
   const { user, loading: authLoading } = useAuth();
-  const key = `centifolio:watchlist:v1:${user?.id ?? "guest"}`;
+  const key = `centbloom:watchlist:v1:${user?.id ?? "guest"}`;
   const subscribe = useCallback(
     (onChange: () => void) => {
       const handler = (event: Event) => {
         if (
           event instanceof StorageEvent &&
-          event.key !== key &&
-          event.key !== legacyStorageKey(key) &&
-          event.key !== null
+          !isBrandedStorageKey(event.key, key)
         )
           return;
         if (event instanceof CustomEvent && event.detail !== key) return;

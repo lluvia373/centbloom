@@ -1,3 +1,4 @@
+import { readBrandedStorage } from "@/lib/branded-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { PortfolioPerformancePoint } from "@/lib/types";
 export interface SavedHistory {
@@ -7,7 +8,7 @@ export interface SavedHistory {
   serverSynced?: boolean;
 }
 const key = (userId: string | null) =>
-  `centifolio-performance-v2:${userId ?? "guest"}`;
+  `centbloom-performance-v2:${userId ?? "guest"}`;
 function validHistory(value: unknown): value is SavedHistory {
   if (!value || typeof value !== "object") return false;
   const raw = value as SavedHistory;
@@ -36,7 +37,7 @@ export async function readHistory(
   signal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   let saved: SavedHistory | null = null;
   try {
-    const raw = JSON.parse(localStorage.getItem(key(userId)) ?? "null");
+    const raw = JSON.parse(readBrandedStorage(localStorage, key(userId)) ?? "null");
     if (validHistory(raw)) saved = raw;
   } catch {
     /* Derived cache only; original records remain untouched. */

@@ -6,13 +6,13 @@ import sharp from "sharp";
 
 const logoDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(logoDir, "../../..");
-const originalName = "centifolio-logo-gold-on-black.original.png";
+const originalName = "centbloom-logo-gold-on-black.original.png";
 const expectedHash = "8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3";
 const original = await readFile(path.join(logoDir, originalName));
-const whiteName = "centifolio-logo-gold-on-white.png";
+const whiteName = "centbloom-logo-gold-on-white.png";
 const whiteHash = "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070";
 const whiteSource = await readFile(path.join(logoDir, whiteName));
-const preEditName = "centifolio-logo-gold-on-white.pre-pixel-edit.png";
+const preEditName = "centbloom-logo-gold-on-white.pre-pixel-edit.png";
 const preEditHash = "105631ec014d89463e43b42d2a9aba7afaaa7c5e024d00021ad0dd276c5b2dcd";
 const preEditSource = await readFile(path.join(logoDir, preEditName));
 const pixelValidation = JSON.parse(await readFile(path.join(logoDir, "background-pixel-validation.json"), "utf8"));
@@ -41,7 +41,7 @@ for (let i = 0; i < transparentPixels.length; i += 4) {
 if (transparentBackgroundPixels !== pixelValidation.backgroundPixels) {
   throw new Error("Transparent background does not match the verified background mask.");
 }
-const transparentName = "centifolio-logo-gold-transparent.png";
+const transparentName = "centbloom-logo-gold-transparent.png";
 const transparentSource = await sharp(transparentPixels, { raw: { width: info.width, height: info.height, channels: 4 } })
   .png({ compressionLevel: 9, palette: false }).toBuffer();
 const decodedTransparent = await sharp(transparentSource).raw().toBuffer();
@@ -68,16 +68,16 @@ async function record(file, buffer, method) {
     method,
   });
 }
-await record(`brand/centifolio/logo/${originalName}`, original, "Byte-for-byte copy of the user-approved attachment; no processing.");
-await record(`brand/centifolio/logo/${preEditName}`, preEditSource, "Byte-for-byte archive of the earlier image_gen white-background derivative, before user-authorized background pixel normalization.");
-await record(`brand/centifolio/logo/${whiteName}`, whiteSource, "User-authorized deterministic normalization of near-white neutral background pixels to RGB(255,255,255). Every pixel outside the recorded background mask is unchanged from the archived pre-edit derivative.");
-await record(`brand/centifolio/logo/${transparentName}`, transparentSource, "Exact-white background alpha set to 0 before resizing. All source RGB values and all non-background alpha values are unchanged. No crop, rotation, recoloring, or generation.");
+await record(`brand/centbloom/logo/${originalName}`, original, "Byte-for-byte copy of the user-approved attachment; no processing.");
+await record(`brand/centbloom/logo/${preEditName}`, preEditSource, "Byte-for-byte archive of the earlier image_gen white-background derivative, before user-authorized background pixel normalization.");
+await record(`brand/centbloom/logo/${whiteName}`, whiteSource, "User-authorized deterministic normalization of near-white neutral background pixels to RGB(255,255,255). Every pixel outside the recorded background mask is unchanged from the archived pre-edit derivative.");
+await record(`brand/centbloom/logo/${transparentName}`, transparentSource, "Exact-white background alpha set to 0 before resizing. All source RGB values and all non-background alpha values are unchanged. No crop, rotation, recoloring, or generation.");
 
 const outputs = [
-  ["brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png", 4096, "png", false, original, "approved original"],
-  ["public/brand/centifolio-logo-gold-on-black.webp", 640, "webp", false, original, "approved original"],
-  ["brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png", 4096, "png", false, whiteSource, "white-background derivative"],
-  ["public/brand/centifolio-logo-gold-on-white.webp", 640, "webp", false, whiteSource, "white-background derivative"],
+  ["brand/centbloom/logo/centbloom-logo-gold-on-black.4096.png", 4096, "png", false, original, "approved original"],
+  ["public/brand/centbloom-logo-gold-on-black.webp", 640, "webp", false, original, "approved original"],
+  ["brand/centbloom/logo/centbloom-logo-gold-on-white.4096.png", 4096, "png", false, whiteSource, "white-background derivative"],
+  ["public/brand/centbloom-logo-gold-on-white.webp", 640, "webp", false, whiteSource, "white-background derivative"],
   ["src/app/icon.png", 96, "png", true, transparentSource, "transparent-background derivative"],
   ["src/app/apple-icon.png", 180, "png", true, whiteSource, "white-background derivative"],
 ];
@@ -119,7 +119,7 @@ records.push({
 });
 
 const manifest = {
-  brand: "Centifolio",
+  brand: "Centbloom",
   status: "User-approved gold rose identity; exact-white web logo and transparent browser icons",
   approvedDate: "2026-09-05",
   sourceAttachment: "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",

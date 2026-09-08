@@ -10,9 +10,9 @@ import test from "node:test";
 const checker = fileURLToPath(new URL("./check-docs.mjs", import.meta.url));
 function fixture(t) {
   const base = realpathSync(tmpdir());
-  const root = mkdtempSync(join(base, "centifolio-docs-"));
+  const root = mkdtempSync(join(base, "centbloom-docs-"));
   t.after(() => {
-    if (dirname(root) !== base || !root.startsWith(join(base, "centifolio-docs-"))) {
+    if (dirname(root) !== base || !root.startsWith(join(base, "centbloom-docs-"))) {
       throw new Error("Refusing to remove a path outside the test fixture directory");
     }
     rmSync(root, { recursive: true, force: true });

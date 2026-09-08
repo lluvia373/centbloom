@@ -27,7 +27,7 @@ function backupFileName(): string {
   const date = new Date().toLocaleDateString("sv-SE", {
     timeZone: "Asia/Seoul",
   });
-  return `centifolio-transactions-${date}.json`;
+  return `centbloom-transactions-${date}.json`;
 }
 
 export function TransactionBackupPanel() {

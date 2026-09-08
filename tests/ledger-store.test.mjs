@@ -65,7 +65,7 @@ test('remote deletions never resurrect from local cache; uncertain commit retrie
  assert.ok((await store.execute({type:'add',transaction:record(2)})).error);assert.equal(store.getSnapshot().status,'failed');
  assert.ok((await store.execute({type:'add',transaction:record(3)})).error);
  await store.retry();assert.equal(store.getSnapshot().status,'ready');assert.equal(requests[0],requests[1]);assert.equal(current.transactions.length,1);
- assert.equal(JSON.parse(storage.getItem('centifolio-local-original:user'))[0].id,validId(1));
+ assert.equal(JSON.parse(storage.getItem('centbloom-local-original:user'))[0].id,validId(1));
 });
 test('server success with cache quota failure is explicit, recoverable, and not duplicate creation',async()=> {
  const storage=memoryStorage(),base=transactionCache(storage,'user');let fail=true;
@@ -92,6 +92,16 @@ test('local commit quota, stale revisions, invalid outbox and reload lock failur
  await assert.rejects(repo.commit({id:validId(10),revision:initial.revision,transactions:[]}));
  const original=storage.getItem('stock-transactions');storage.setItem=()=>{throw Error('quota');};
  await assert.rejects(repo.commit({id:validId(11),revision:JSON.stringify([record(1)]),transactions:[]}));assert.equal(storage.getItem('stock-transactions'),original);
- const broken=memoryStorage();broken.setItem('centifolio-pending-transaction:user',JSON.stringify({id:validId(1),revision:'r',transactions:[{id:'bad'}]}));assert.throws(()=>transactionCache(broken,'user').pending());
+ const broken=memoryStorage();broken.setItem('centbloom-pending-transaction:user',JSON.stringify({id:validId(1),revision:'r',transactions:[{id:'bad'}]}));assert.throws(()=>transactionCache(broken,'user').pending());
  const store=createLedgerStore({repository:{read:async()=>({transactions:[],revision:'0',writable:true})},lock:async()=>{throw Error('lock unavailable');}});await store.start();await store.reload();assert.match(store.getSnapshot().error,/lock unavailable/);
+});
+
+test('pre-rename pending requests keep their identity and do not resurrect after confirmation',()=>{
+ const storage=memoryStorage();const change={id:validId(8),revision:'old',transactions:[record(1)]};
+ storage.setItem('centifolio-pending-transaction:user',JSON.stringify(change));
+ storage.setItem('centifolio-local-original:user','original recovery bytes');
+ const cache=transactionCache(storage,'user');assert.equal(cache.pending().id,validId(8));
+ cache.confirm([record(1)]);assert.equal(cache.pending(),null);
+ assert.equal(storage.getItem('centifolio-local-original:user'),'original recovery bytes');
+ assert.equal(storage.getItem('centifolio-pending-transaction:user'),null);
 });

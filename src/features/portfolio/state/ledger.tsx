@@ -46,6 +46,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
             "안전한 동시 저장을 지원하는 브라우저에서 다시 시도해 주세요.",
           );
         return await navigator.locks.request(
+          // Keep the lock shared with tabs opened before the brand change.
           `centifolio-ledger:${userId ?? "guest"}`,
           async () => await action(),
         );

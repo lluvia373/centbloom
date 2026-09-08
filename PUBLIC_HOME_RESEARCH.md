@@ -1,7 +1,7 @@
 # 공개 시장 홈 조사와 회원 전환 제안
 
 조사일: 2026-09-06 KST. 상태: 조사·제안이며 구현 승인/완료를 뜻하지 않는다.
-대상: Centifolio 로컬 작업 브랜치. 이번 조사에서는 앱 코드를 변경하지 않았다.
+대상: Centbloom 로컬 작업 브랜치. 이번 조사에서는 앱 코드를 변경하지 않았다.
 
 현재 적용: 이후 사용자 결정은 [DECISIONS.md](./DECISIONS.md)를 따른다. 미국 주력·다국가 지원, 핵심 사건 3개 고정 제한 없음, 첫 공개 버전 토론 제외가 확정됐다. D012로 샘플 포트폴리오·가상 로그인 미리보기 제안은 폐기했다. 개인 기록 진입은 실제 거래 입력과 빈 상태를 사용한다. 아래 경쟁사의 샘플 사례는 조사 사실이며 구현 요구가 아니다. 기존 공개 홈 조사 시점의 배치/전환 후보는 역사적 제안이며 이 결정과 충돌하는 부분은 초기 구현에 적용하지 않는다.
 
@@ -13,12 +13,12 @@
 
 공식 도움말의 메뉴·하위 화면을 확인했다. 모든 서비스의 로그인 후 화면을 직접 조작한 조사는 아니다. 이용자 수는 기업 발표이며 메뉴 구조가 성장을 일으켰다는 인과 근거로 사용하지 않는다.
 
-| 서비스 | 확인한 구성 | Centifolio에 적용할 판단 |
+| 서비스 | 확인한 구성 | Centbloom에 적용할 판단 |
 | --- | --- | --- |
 | [Yahoo Finance](https://help.yahoo.com/kb/finance/track-investments-watch-portfolio-toolkit-sln7034.html) | My Portfolio에서 관심목록·보유 기록·여러 포트폴리오를 관리하고 보유 기록에 메모 추가 | 포트폴리오를 매수 전 관심과 매수 후 기록을 담는 넓은 이름으로 써도 된다. 전체 투자 노트와 보유종목 메모가 동일한 기능이라는 뜻은 아니다 |
 | [Sharesight](https://help.sharesight.com/ca/show_holding/) | 포트폴리오 선택 아래 투자·도구·세금·설정. 보유종목 안에 Summary, Trades & income, Notes & files, 종목 뉴스 | 거래·배당·판단 기록을 종목에서 함께 확인하는 연결을 채택. [벤치마크 비교](https://help.sharesight.com/eu/benchmarking/)도 포트폴리오 안에 둔다 |
 | [Simply Wall St](https://support.simplywall.st/hc/en-us/articles/9423775242383-Understanding-the-Portfolio-Returns-Analysis-Calculations) | Portfolio Hub에서 여러 포트폴리오 접근. 포트폴리오 안에 보유·수익·소식·배당·분석 화면과 영역 | 개인 분석을 다른 최상위 메뉴로 분산시키지 않는다. 관심목록에서는 [투자 관점 작성과 포트폴리오 이동](https://support.simplywall.st/hc/en-us/articles/8300824110991-Managing-and-Modifying-Your-Watchlist-A-Comprehensive-Guide)을 연결 |
-| [Koyfin](https://www.koyfin.com/help/topic/functionality/) | My Watchlists, My Portfolios, My Screens, Models 등 별도 도구. 포트폴리오에도 [구성과 분석](https://www.koyfin.com/help/my-portfolios/) 제공 | 독립적인 조건 검색·분석 작업이 충분히 클 때 메뉴를 분리하는 참고 사례. 현재 Centifolio의 검색/시세 목록만으로는 그 필요가 작다 |
+| [Koyfin](https://www.koyfin.com/help/topic/functionality/) | My Watchlists, My Portfolios, My Screens, Models 등 별도 도구. 포트폴리오에도 [구성과 분석](https://www.koyfin.com/help/my-portfolios/) 제공 | 독립적인 조건 검색·분석 작업이 충분히 클 때 메뉴를 분리하는 참고 사례. 현재 Centbloom의 검색/시세 목록만으로는 그 필요가 작다 |
 
 서비스 규모 참고: Yahoo는 [2024년 발표](https://www.yahooinc.com/press/yahoo-finance-launches-premium-experience-with-new-content-and-tools)에서 전 세계 월 방문자 1억 5천만 이상, Sharesight는 [공식 파트너 안내](https://www.sharesight.com/uk/become-a-partner/)에서 투자자 50만 이상, Simply Wall St는 [2026년 2월 제품 소식](https://support.simplywall.st/hc/en-us/articles/7894830045199-What-s-New)에서 투자자 700만을 밝혔다. 방문자와 누적 이용자는 서로 다른 지표이며 현재 매출·활성 사용자는 확인하지 않았다.
 
@@ -99,7 +99,7 @@ Yahoo 미국 홈은 오류/시장 페이지 429로 현재 전체 배치를 확�
 
 ## 서비스별 관찰
 
-| 서비스 | 실제 확인한 공개 정보/구성 | 계정·유료 연결 관찰 | Centifolio에 적용할 아이디어 |
+| 서비스 | 실제 확인한 공개 정보/구성 | 계정·유료 연결 관찰 | Centbloom에 적용할 아이디어 |
 | --- | --- | --- | --- |
 | [토스증권](https://www.tossinvest.com/) | 장 운영 상태, 지수, 일정, 거래대금/거래량/급등락 목록. 산업·외국인/기관 탭, 종목 관련 글과 관심 TOP 목록 | 관심종목 클릭 후 QR 로그인 안내 실제 확인. 일부 이유에는 로그인 안내 문구 | 한국어 중심의 촘촘한 종목 행과 관심 버튼, 종목에 붙는 짧은 관련 이슈 |
 | [네이버 Npay 증권](https://finance.naver.com/) | 주요뉴스, 거래/상승/하락/시총 TOP, 최근 조회/MY STOCK, 국내·해외·시장지표·리서치 탐색 | MY 탐색 노출. 정확한 저장/쓰기 제한은 이번 클릭 검사 제외 | 국내 투자자가 익숙한 정보 분류와 최근 본 종목 |
@@ -112,7 +112,7 @@ Yahoo 미국 홈은 오류/시장 페이지 429로 현재 전체 배치를 확�
 | [Yahoo Finance 포트폴리오](https://finance.yahoo.com/portfolios) | 전체 홈 확인 실패. 공개 포트폴리오 소개에서 성과·보유 내역·분산·배당 지표 예시 확인 | 로그인으로 포트폴리오 시작. 공식 도움말도 관심목록/보유 기록에 로그인 절차 설명 | 실제 자산을 입력하기 전에 샘플로 결과를 보여주기 |
 | [Yahoo! Finance 일본](https://finance.yahoo.co.jp/) | 등락·거래량·게시판 글 수 순위, 펀드 분류, 최근 본 종목, 경제지표·실적 일정 | 조회 증가 순위 일부를 VIP 전용으로 표시. 무료 가입과 유료 가입은 구분해야 함 | 시장 인기와 커뮤니티 활동 순위를 서로 다른 기준으로 제시 |
 | [Seeking Alpha](https://seekingalpha.com/) | 인기 분석, 인기 뉴스, 필자, 업종/배당/ETF/실적 탐색 | Create Free Account·Premium·포트폴리오 소개. 글별 본문 제한은 이번 조사에서 일괄 검증하지 않음 | 뉴스와 해석 글을 분리하고 작성자/근거를 표시 |
-| [Simply Wall St](https://simplywall.st/) | 뉴스 포털형보다 제품 소개형. 포트폴리오 분석·배당·환율 손익 등의 결과 소개 | 포트폴리오 데모와 무료 시작을 나란히 제공 | Centifolio 개인 기능의 샘플 체험. 홈 전체를 광고형 소개로 만들 필요는 없음 |
+| [Simply Wall St](https://simplywall.st/) | 뉴스 포털형보다 제품 소개형. 포트폴리오 분석·배당·환율 손익 등의 결과 소개 | 포트폴리오 데모와 무료 시작을 나란히 제공 | Centbloom 개인 기능의 샘플 체험. 홈 전체를 광고형 소개로 만들 필요는 없음 |
 | [TipRanks](https://www.tipranks.com/) | 메인은 검색·제품 소개 중심. 메뉴에 애널리스트/내부자 거래, 종목·ETF 비교, 배당/실적/IPO 일정, 계산기 | 플랜·업그레이드, 뉴스레터 이메일 구독 안내 | 계산기와 비교 도구로 검색 유입 확보. 메뉴 전부가 홈 본문이거나 무료라는 뜻은 아님 |
 
 공식 전환/기능 근거:
@@ -221,7 +221,7 @@ Yahoo 미국 홈은 오류/시장 페이지 429로 현재 전체 배치를 확�
 
 상태: 비교 후 2026-09-07 사용자가 B안(주요 시장 시간 막대 기본 노출)을 선택했다. 아래 비교는 결정 근거이며 현재 동작은 DECISIONS의 D002와 PRODUCT_SPEC을 따른다.
 
-| 사례 | 확인한 표현 | Centifolio에서 참고할 점 / 한계 | 확인 범위 |
+| 사례 | 확인한 표현 | Centbloom에서 참고할 점 / 한계 | 확인 범위 |
 | --- | --- | --- | --- |
 | [토스증권 홈](https://www.tossinvest.com/) | 지수 영역 위에 작은 점과 국내/해외 장 닫힘을 한 줄로 표시 | 홈 공간을 적게 사용. 이것만으로는 여러 나라의 다음 개장이나 휴장 이유를 비교하기 어려움 | 비로그인 데스크톱 실제 화면·문구 확인. 상태 클릭 후 상세 일정은 확인하지 못함 |
 | [Stock Market Hours](https://stockmarkethours.org/) | 시장별 24시간 가로 막대, 현재 시각 세로선, 시간대 선택, 전체 타임라인 링크. 일본/홍콩 점심 시간은 막대가 끊김 | 거래 시간의 겹침과 개장 순서를 읽기 쉬운 후보. 홈에는 소수 시장, 전체는 확장 화면으로 분리 가능 | 비로그인 데스크톱 실제 화면·Asia/Seoul 표시 확인. 미국 외 공휴일은 반영하지 않는다고 명시하므로 화면 표현만 참고 |
@@ -237,4 +237,4 @@ Yahoo 미국 홈은 오류/시장 페이지 429로 현재 전체 배치를 확�
 - 두 후보 모두 여러 공휴일/단축장 알림은 누락하지 않고 사유·날짜·다음 개장을 함께 보여준다. 단순 주말과 공휴일을 구분하며 현재 정규장 데이터 범위를 유지한다.
 - 현재 위치가 계속 바뀌는 문제를 피하려면 시장 행 순서와 예외 알림의 우선순위를 분리하는 방안을 함께 검토한다. 휴장 중요도 갱신 요구 자체를 없애는 제안은 아니다.
 
-재현 자료: Git 제외 work/research-toss.jpg, work/research-timeline.jpg, work/research-clock.jpg. 모두 실제 페이지 캡처이며 Centifolio 구현 시안이 아니다.
+재현 자료: Git 제외 work/research-toss.jpg, work/research-timeline.jpg, work/research-clock.jpg. 모두 실제 페이지 캡처이며 Centbloom 구현 시안이 아니다.

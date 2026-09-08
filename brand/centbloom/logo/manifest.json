@@ -1,5 +1,5 @@
 {
-  "brand": "Centifolio",
+  "brand": "Centbloom",
   "status": "User-approved gold rose identity; exact-white web logo and transparent browser icons",
   "approvedDate": "2026-09-05",
   "sourceAttachment": "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",
@@ -10,7 +10,7 @@
   },
   "identity": "The gold rose itself is the logo. Preserve its shape, angle and gold character. Black is an optional presentation background, not part of the logo identity.",
   "activeDerivative": {
-    "file": "centifolio-logo-gold-on-white.png",
+    "file": "centbloom-logo-gold-on-white.png",
     "sha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
     "background": "opaque pure white RGB(255,255,255) in the recorded background mask",
     "method": "Earlier built-in image_gen derivative followed by explicitly authorized background-only RGB pixel normalization and deterministic resizing",
@@ -19,9 +19,9 @@
     "limitation": "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original."
   },
   "browserIconDerivative": {
-    "file": "centifolio-logo-gold-transparent.png",
+    "file": "centbloom-logo-gold-transparent.png",
     "sha256": "815c222951930976052b43b07cec2979a763e0319c5313cdf0e1c9886e6c3998",
-    "input": "centifolio-logo-gold-on-white.png",
+    "input": "centbloom-logo-gold-on-white.png",
     "method": "Set alpha to 0 only for the previously verified exact-white background mask before resizing. All source RGB values and foreground alpha remain unchanged.",
     "transparentBackgroundPixels": 1275151,
     "unchangedForegroundPixels": 297365,
@@ -39,7 +39,7 @@
   "resolutionNote": "The 4096px image is an interpolated enlargement, not a higher-detail original or a vector master. Lossless encoding preserves the resampled output, not new source detail.",
   "files": [
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-on-black.original.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-on-black.original.png",
       "width": 1254,
       "height": 1254,
       "bytes": 954981,
@@ -47,7 +47,7 @@
       "method": "Byte-for-byte copy of the user-approved attachment; no processing."
     },
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.pre-pixel-edit.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-on-white.pre-pixel-edit.png",
       "width": 1254,
       "height": 1254,
       "bytes": 961741,
@@ -55,7 +55,7 @@
       "method": "Byte-for-byte archive of the earlier image_gen white-background derivative, before user-authorized background pixel normalization."
     },
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-on-white.png",
       "width": 1254,
       "height": 1254,
       "bytes": 453372,
@@ -63,7 +63,7 @@
       "method": "User-authorized deterministic normalization of near-white neutral background pixels to RGB(255,255,255). Every pixel outside the recorded background mask is unchanged from the archived pre-edit derivative."
     },
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-transparent.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-transparent.png",
       "width": 1254,
       "height": 1254,
       "bytes": 490618,
@@ -71,7 +71,7 @@
       "method": "Exact-white background alpha set to 0 before resizing. All source RGB values and all non-background alpha values are unchanged. No crop, rotation, recoloring, or generation."
     },
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-on-black.4096.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-on-black.4096.png",
       "width": 4096,
       "height": 4096,
       "bytes": 2542100,
@@ -79,7 +79,7 @@
       "method": "Lanczos3 resampling from approved original to 4096 × 4096; lossless PNG encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
-      "file": "public/brand/centifolio-logo-gold-on-black.webp",
+      "file": "public/brand/centbloom-logo-gold-on-black.webp",
       "width": 640,
       "height": 640,
       "bytes": 131084,
@@ -87,7 +87,7 @@
       "method": "Lanczos3 resampling from approved original to 640 × 640; lossless WEBP encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
-      "file": "brand/centifolio/logo/centifolio-logo-gold-on-white.4096.png",
+      "file": "brand/centbloom/logo/centbloom-logo-gold-on-white.4096.png",
       "width": 4096,
       "height": 4096,
       "bytes": 2440667,
@@ -95,7 +95,7 @@
       "method": "Lanczos3 resampling from white-background derivative to 4096 × 4096; lossless PNG encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
-      "file": "public/brand/centifolio-logo-gold-on-white.webp",
+      "file": "public/brand/centbloom-logo-gold-on-white.webp",
       "width": 640,
       "height": 640,
       "bytes": 86588,

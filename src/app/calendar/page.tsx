@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { CalendarBrowser } from "@/features/calendar/CalendarBrowser";
 import styles from "@/features/calendar/calendar.module.css";
-export const metadata: Metadata = {title:"증시 캘린더 | Centifolio"};
+export const metadata: Metadata = {title:"증시 캘린더 | Centbloom"};
 export default async function CalendarPage({searchParams}: {searchParams:Promise<{event?:string|string[]}>}) {
   await connection();
   const {event} = await searchParams;

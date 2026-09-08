@@ -1,6 +1,6 @@
 "use client";
 
-import { legacyStorageKey,readBrandedStorage } from "@/lib/branded-storage";
+import { isBrandedStorageKey,readBrandedStorage } from "@/lib/branded-storage";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useCallback,useSyncExternalStore } from "react";
@@ -28,7 +28,7 @@ interface JournalSnapshot {
   ready: boolean;
 }
 
-const CHANGE_EVENT = "centifolio-journal-change";
+const CHANGE_EVENT = "centbloom-journal-change";
 const MAX_ENTRIES = 1000;
 const SERVER_SNAPSHOT: JournalSnapshot = {
   entries: [],
@@ -129,11 +129,11 @@ function writeEntries(key: string, entries: JournalEntry[]): string | null {
 
 export function useJournal() {
   const { user, loading } = useAuth();
-  const storageKey = `centifolio-journal:v1:${user?.id ?? "local"}`;
+  const storageKey = `centbloom-journal:v1:${user?.id ?? "local"}`;
   const subscribe = useCallback(
     (listener: () => void) => {
       const handleStorage = (event: StorageEvent) => {
-        if (event.key === storageKey || event.key === legacyStorageKey(storageKey) || event.key === null) listener();
+        if (isBrandedStorageKey(event.key, storageKey)) listener();
       };
       window.addEventListener("storage", handleStorage);
       window.addEventListener(CHANGE_EVENT, listener);

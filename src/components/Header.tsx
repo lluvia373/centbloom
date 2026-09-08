@@ -57,9 +57,9 @@ export function Header() {
         본문으로 건너뛰기
       </a>
       <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="Centifolio 홈">
+        <Link href="/" className="brand" aria-label="Centbloom 홈">
           <BrandMark size={44} />
-          <span>centifolio</span>
+          <span>centbloom</span>
         </Link>
         <nav className="sidebar-nav" aria-label="주요 메뉴">
           {links.filter((item) => item.area !== "settings").map(({ href, label, area: linkArea, icon: Icon }) => (
@@ -100,13 +100,13 @@ export function Header() {
       </aside>
       {pathname !== "/portfolio" && <header className={`topbar ${marketHome ? marketHeader.header + (showActions ? "" : " " + marketHeader.quotesOnly) : ""}`}>
         {marketHome ? <MarketTicker /> : <div className="breadcrumbs">
-          <span>{area === "investment" ? "내 투자" : "centifolio"}</span>
+          <span>{area === "investment" ? "내 투자" : "centbloom"}</span>
           <ChevronRight size={13} />
           <strong>{pageName}</strong>
         </div>}
-        <Link href="/" className="mobile-brand" aria-label="Centifolio 홈">
+        <Link href="/" className="mobile-brand" aria-label="Centbloom 홈">
           <BrandMark size={36} />
-          <span>centifolio</span>
+          <span>centbloom</span>
         </Link>
         {showActions && <div className="topbar-actions" ref={panelRef}>
           {!marketHome && <Link
@@ -144,7 +144,7 @@ export function Header() {
           {!marketHome && panel === "help" && (
             <div className="topbar-popover">
               <h3>
-                Centifolio 사용 안내{" "}
+                Centbloom 사용 안내{" "}
                 <button aria-label="닫기" onClick={() => setPanel(null)}>
                   <X size={15} />
                 </button>

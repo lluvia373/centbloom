@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "centifolio",
+  "account_id": "87cf0ec0e51a40a26fe9b98266a8ef16",
+  "name": "centbloom",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-05",
   "compatibility_flags": [
@@ -13,7 +14,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "centifolio"
+      "service": "centbloom"
     }
   ],
   "observability": {

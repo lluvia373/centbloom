@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = reading.find((item) => item.slug === slug);
   return {
-    title: article ? article.title + " | Centifolio" : "읽을거리 | Centifolio",
+    title: article ? article.title + " | Centbloom" : "읽을거리 | Centbloom",
   };
 }
 export default async function ReadingPage({
@@ -30,7 +30,7 @@ export default async function ReadingPage({
       <span className={styles.eyebrow}>{article.tag}</span>
       <h1>{article.title}</h1>
       <p className={styles.articleSummary}>{article.summary}</p>
-      <div className={styles.articleMeta}>Centifolio 읽을거리 · 2026.09.06</div>
+      <div className={styles.articleMeta}>Centbloom 읽을거리 · 2026.09.06</div>
       {article.paragraphs.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}

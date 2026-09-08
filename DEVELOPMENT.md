@@ -95,7 +95,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [components](./src/components)의 시장 UI | `StockDetail`, `StockChart`: 독립 시세/차트 상태. `LiveMarkets`: 세계 주식. `WatchlistPreview`: 관심 3개. `MarketPicker`, `QuoteStatus`, `PriceChange`: 선택·시세 상태/변동 표시 |
 | [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 상단바 또는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 샘플 미리보기 없는 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
 | [lib/portfolio.ts](./src/lib/portfolio.ts), [lib/performance.ts](./src/lib/performance.ts) | 순수 보유 상태·원가·거래 이력 검증; KST 날짜·일별 성과·수익률 계산 |
-| [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 이전 브랜드 키 읽기 호환. 이름에 stock이 남은 저장 키를 임의 변경하지 않음 |
+| [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 센트블룸/이전 두 브랜드 읽기·이벤트 호환과 완료한 outbox 키 정리. 이름에 stock이 남은 거래 키와 이전 탭의 거래 잠금은 유지 |
 | [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
 | [shared/async](./src/shared/async), [shared/react/use-operation-scope.ts](./src/shared/react/use-operation-scope.ts) | `pool.ts`: 동시 실행 제한. `request-cache.ts`: 공유 요청·취소/TTL/timeout. `shared-resource.ts`: 공유 결과·수명/폴링. operation scope: 화면/계정 해제 후 UI 반영 차단 |
 | [supabase/migrations](./supabase/migrations), [supabase/rollback](./supabase/rollback) | 기존 DB의 거래 CAS·원자적 교체/성과 저장 증분 SQL과 복구 SQL. 새 DB의 전체 초기 스키마는 아님 |
@@ -114,6 +114,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [app/auth.css](./src/app/auth.css) | AuthGate 로그인 화면. components의 Tailwind 클래스도 실제 스타일 일부 |
 | [public](./public), [BRAND.md](./BRAND.md) | 로고 원본·파생 자산은 BRAND의 경로/출처 기준. `public/companies/sources.json`은 종목 이미지 출처. app의 icon/apple-icon/favicon은 브라우저 아이콘 |
 | [tests](./tests) | `.test.mjs`: 회귀 검사. `reference`: 동등성 비교용 이전 계산. `fixtures`: 격리 입력/SQL 스키마/실측. `load-typescript.mjs`: TS 검사 로더. `prepare-browser-qa.mjs`: 별도 QA 앱. `postgres-concurrency.mjs`: 실제 두 연결 검사 |
+| [이전 주소 Worker](./legacy-worker.mjs), [호환 설정](./wrangler.legacy.jsonc) | 이전 브라우저 출처를 유지한 센트블룸 서비스 바인딩 전달. 앱 배포·검증 뒤 deploy:legacy 실행 |
 | [설정 파일](./package.json) | package/lock: 명령·버전. tsconfig: TS·`@/` 별칭. eslint.config: 린트. lint의 ESLint 대상은 src·tests·brand·루트 mjs/ts이며 새 코드 소유 폴더 추가 시 함께 갱신. next.config: Next 설정. open-next.config·wrangler.jsonc: Workers 빌드/배포. postcss.config: CSS 처리 |
 | [.gitignore](./.gitignore), [.env.example](./.env.example) | 비밀/생성물 제외·환경 변수 예시. work·node_modules·.next·.open-next는 구현 기준이 아니며 work는 커밋하지 않음 |
 

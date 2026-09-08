@@ -1,8 +1,8 @@
 {
   "tool": "Sharp deterministic pixel editing; explicitly requested by user",
   "mode": "background-only pixel normalization",
-  "source": "centifolio-logo-gold-on-white.pre-pixel-edit.png",
-  "output": "centifolio-logo-gold-on-white.png",
+  "source": "centbloom-logo-gold-on-white.pre-pixel-edit.png",
+  "output": "centbloom-logo-gold-on-white.png",
   "outputKind": "Opaque pure-white background PNG, not an alpha cutout",
   "userInstruction": "배경 픽셀만 직접 수정해",
   "method": "Replace only near-white neutral background RGB pixels with (255,255,255); no crop, rotation, resampling, foreground recoloring or generation.",
@@ -14,8 +14,8 @@
   "originalDerivative": {
     "tool": "Built-in image_gen",
     "mode": "background edit",
-    "source": "centifolio-logo-gold-on-black.original.png",
-    "output": "centifolio-logo-gold-on-white.pre-pixel-edit.png",
+    "source": "centbloom-logo-gold-on-black.original.png",
+    "output": "centbloom-logo-gold-on-white.pre-pixel-edit.png",
     "outputKind": "Opaque white-background derivative, not an alpha cutout",
     "prompts": [
       "Edit the supplied exact brand image. Change ONLY the black background to solid pure white #FFFFFF, including every black negative-space opening between and inside the petals and leaves. Preserve the gold rose EXACTLY as supplied: same antique-gold color and subtle texture, identical contours and shape, all the same leaves, petals and stem, exact angle, position, square canvas and margins. Do NOT redraw, stylize, beautify, rotate, crop, resize the subject, add outlines, shadows, glow or text. This is a plain background replacement for a white website. Output a flat opaque PNG with pure white background and clean gold edges. No transparency, checkerboard, colored fringing or speckles.",

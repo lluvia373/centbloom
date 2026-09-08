@@ -1,3 +1,4 @@
+import { readBrandedStorage, removeBrandedStorage } from "@/lib/branded-storage";
 import {
   loadStoredTransactions,
   saveStoredTransactions,
@@ -50,10 +51,10 @@ export function localRepository(
 // A recoverable outbox records the exact idempotent request before sending it.
 // It never replaces the last confirmed transaction cache with unconfirmed data.
 export function transactionCache(storage: Storage, userId: string | null) {
-  const pendingKey = scopedKey("centifolio-pending-transaction", userId);
+  const pendingKey = scopedKey("centbloom-pending-transaction", userId);
   return {
     pending(): Commit | null {
-      const raw = storage.getItem(pendingKey);
+      const raw = readBrandedStorage(storage, pendingKey);
       if (!raw) return null;
       const value = JSON.parse(raw) as Commit;
       if (
@@ -89,21 +90,21 @@ export function transactionCache(storage: Storage, userId: string | null) {
       storage.setItem(pendingKey, JSON.stringify(change));
     },
     abandon() {
-      const pending = storage.getItem(pendingKey);
+      const pending = readBrandedStorage(storage, pendingKey);
       if (pending) {
         storage.setItem(`${pendingKey}:recovery:${Date.now()}`, pending);
-        storage.removeItem(pendingKey);
+        removeBrandedStorage(storage, pendingKey);
       }
     },
     confirm(transactions: Transaction[]) {
       const previous = loadStoredTransactions(storage, userId);
       if (previous.error) throw new Error(previous.error);
-      const originalKey = scopedKey("centifolio-local-original", userId);
-      if (previous.transactions.length && !storage.getItem(originalKey))
+      const originalKey = scopedKey("centbloom-local-original", userId);
+      if (previous.transactions.length && !readBrandedStorage(storage, originalKey))
         storage.setItem(originalKey, JSON.stringify(previous.transactions));
       const error = saveStoredTransactions(storage, transactions, userId);
       if (error) throw new Error(error);
-      storage.removeItem(pendingKey);
+      removeBrandedStorage(storage, pendingKey);
     },
   };
 }

@@ -23,8 +23,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  applicationName: "Centifolio",
-  title: "Centifolio — 나의 투자를, 나답게.",
+  applicationName: "Centbloom",
+  title: "센트블룸 | Centbloom",
+  metadataBase: new URL("https://centbloom.stock-web-demo.workers.dev"),
+  openGraph: { siteName: "Centbloom", locale: "ko_KR", type: "website" },
   description:
     "자산의 흐름과 투자성과, 관심종목과 투자 생각을 연결하는 나만의 투자 공간.",
 };

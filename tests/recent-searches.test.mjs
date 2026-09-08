@@ -52,3 +52,12 @@ test("ranking shortcuts are removed; only the signed-in account recent searches 
  const own=shortcuts("a");assert.match(own,/최근 검색/);assert.match(own,/RECENT_A/);
  assert.doesNotMatch(own,/거래량 상위|상승 종목|ACTIVE|GAINER/);
 });
+
+test("existing Centifolio searches survive the first Centbloom selection",()=>{
+ const {store,data}=fixture();const original=JSON.stringify([stock("AAPL")]);
+ data.set("centifolio:recent-searches:v1:a",original);
+ assert.equal(parseRecentSearches(store.read("a"))[0].symbol,"AAPL");
+ assert.equal(store.record("a",stock("NVDA")),true);
+ assert.deepEqual(Array.from(parseRecentSearches(store.read("a")),s=>s.symbol),["NVDA","AAPL"]);
+ assert.equal(data.get("centifolio:recent-searches:v1:a"),original);assert.equal(store.read("b"),null);
+});

@@ -10,7 +10,7 @@ export function BrandMark({
 }) {
   return (
     <Image
-      src="/brand/centifolio-logo-gold-on-white.webp"
+      src="/brand/centbloom-logo-gold-on-white.webp"
       alt=""
       aria-hidden="true"
       width={size}

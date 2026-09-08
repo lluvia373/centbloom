@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "account_id": "87cf0ec0e51a40a26fe9b98266a8ef16",
+  "name": "centifolio",
+  "main": "legacy-worker.mjs",
+  "compatibility_date": "2026-09-05",
+  "workers_dev": true,
+  "services": [
+    {
+      "binding": "CENTBLOOM",
+      "service": "centbloom"
+    }
+  ]
+}
