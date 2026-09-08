@@ -89,6 +89,9 @@ export function createQuoteHub(
               version: old.version + 1,
             });
           }
+        } finally {
+          // Publish each settled symbol without waiting for unrelated slow quotes.
+          if (!controller.signal.aborted && wanted().includes(symbol)) emit([symbol]);
         }
       }),
     );

@@ -18,13 +18,14 @@
 | 순백색 편집본 | [흰 PNG](./brand/centbloom/logo/centbloom-logo-gold-on-white.png) | 1254px |
 | 투명 파생본 | [투명 PNG](./brand/centbloom/logo/centbloom-logo-gold-transparent.png) | 1254px |
 | 흰 확대본 | [4096 PNG](./brand/centbloom/logo/centbloom-logo-gold-on-white.4096.png) | 4096px |
-| 웹 로고 | [흰 WebP](./public/brand/centbloom-logo-gold-on-white.webp) | 640px |
+| 웹 로고 | [투명 WebP](./public/brand/centbloom-logo-gold-transparent.webp) | 640px |
+| 흰 배경 표시용 자산 | [흰 WebP](./public/brand/centbloom-logo-gold-on-white.webp) | 640px |
 | 이전 웹 자산 | [검정 WebP](./public/brand/centbloom-logo-gold-on-black.webp) | 640px |
 | 웹 앱 아이콘 | [icon.png](./src/app/icon.png) | 96px |
 | Apple 아이콘 | [apple-icon.png](./src/app/apple-icon.png) | 180px |
 | 탭 아이콘 | [favicon.ico](./src/app/favicon.ico) | 64px |
 
-모두 정사각형이다. 웹 로고·Apple 아이콘은 흰 배경, 웹 앱·탭 아이콘은 투명 배경을 사용한다.
+모두 정사각형이다. 웹 로고·웹 앱·탭 아이콘은 투명 배경을 사용한다. 2026-09-08 사용자 요청으로 웹 로고에도 기존 투명 파생본을 적용해 주변 배경이 그대로 보이도록 했다. Apple 홈 화면 아이콘은 별도 흰 배경 표시용 자산을 유지한다.
 
 ## 종목 마크
 
@@ -37,7 +38,7 @@
 - 첨부 원본은 바이트 그대로 보관한다. 해시·크기·변환 기준은 [manifest.json](./brand/centbloom/logo/manifest.json).
 - 최초 흰 편집본은 이미지 생성 도구의 파생본이며 검정 원본과 픽셀 단위로 동일하지 않다. [편집 근거](./brand/centbloom/logo/background-edit.json).
 - 사용자 승인으로 밝고 중립적인 배경만 순백색으로 수정했다. 투명본은 같은 마스크의 알파만 0으로 만들며 RGB·장미 불투명도는 보존한다.
-- PNG·ICO는 Lanczos3 축소 후 알파 4/255 이하만 제거한다. 4096px 파일은 확대 파생본이며 새 고해상도 원화·벡터가 아니다.
+- 투명 WebP·PNG·ICO는 Lanczos3 축소 후 알파 4/255 이하만 제거한다. 4096px 파일은 확대 파생본이며 새 고해상도 원화·벡터가 아니다.
 - 마스크·픽셀 보존 수치는 [검증 자료](./brand/centbloom/logo/background-pixel-validation.json)를 따른다. 이전 시안은 최종 로고로 쓰지 않는다.
 
 저장소 루트에서 실행한다.

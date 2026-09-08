@@ -50,3 +50,16 @@ test('timed-out non-cooperative loaders release logical pool slots for later req
  await Promise.all([assert.rejects(cache.request('hung-a',()=>new Promise(()=>{}),{timeoutMs:10})),assert.rejects(cache.request('hung-b',()=>new Promise(()=>{}),{timeoutMs:10}))]);
  assert.equal(await cache.request('recovered',async()=>42,{timeoutMs:100}),42);
 });
+
+test('fast quotes notify subscribers before an unrelated slow quote completes',async(t)=>{
+ let releaseSlow;const gate=new Promise(r=>releaseSlow=r);const published=[];
+ const hub=createQuoteHub(async symbol=>{if(symbol==='SLOW')await gate;return {symbol,price:100,currency:'USD'};},60000);
+ const off=hub.subscribe(['FAST','SLOW'],()=>published.push(Object.keys(hub.snapshot(['FAST','SLOW']).quotes).join(',')));
+ t.after(()=>{off();releaseSlow()});
+ for(let i=0;i<100&&!published.includes('FAST');i++)await tick();
+ assert.ok(published.includes('FAST'),'fast quote must render while the slow request is pending');
+ assert.equal(hub.snapshot(['FAST','SLOW']).loading,true);
+ releaseSlow();
+ for(let i=0;i<100&&hub.snapshot(['FAST','SLOW']).loading;i++)await tick();
+ assert.equal(hub.snapshot(['FAST','SLOW']).loading,false);
+});

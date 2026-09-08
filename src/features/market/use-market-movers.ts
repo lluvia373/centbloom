@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useSyncExternalStore } from "react";
 import { marketRequests } from "@/lib/stock-api";
-import type { MoverKind, MoversResult } from "./movers-model";
+import { MOVERS_CACHE_MS, type MoverKind, type MoversResult } from "./movers-model";
 import { createMoversStore } from "./movers-store";
 const store = createMoversStore((kind, signal) =>
   marketRequests.request(
@@ -14,7 +14,7 @@ const store = createMoversStore((kind, signal) =>
       if (!response.ok) throw new Error("Movers unavailable");
       return response.json() as Promise<MoversResult>;
     },
-    { signal, ttlMs: 30_000 },
+    { signal, ttlMs: MOVERS_CACHE_MS },
   ),
 );
 let consumers = 0;

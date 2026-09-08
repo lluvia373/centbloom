@@ -1,31 +1,38 @@
-.header:global(.topbar) {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--cf-space-4);
-  height: 60px;
+.header {
+  position: sticky;
+  top: 0;
   z-index: 48;
+  width: calc(100% - var(--sidebar-width));
+  margin-left: auto;
+  background: var(--cf-color-canvas);
+  border-bottom: 1px solid var(--cf-color-line);
+}
+.ticker {
   padding-inline: var(--cf-space-6);
+  background: var(--cf-color-surface);
+  border-bottom: 1px solid var(--cf-color-line);
 }
-.header :global(.topbar-actions) { gap: var(--cf-space-2); }
-.header :global(.button-secondary) {
-  white-space: nowrap;
-  padding: var(--cf-space-2) var(--cf-space-3);
-  font-size: var(--cf-text-caption);
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-3);
+  width: 100%;
+  max-width: calc(var(--cf-page-content-width) + var(--cf-space-6) * 2);
+  margin-inline: auto;
+  padding: var(--cf-space-3) var(--cf-space-6);
 }
+.search > div { flex: 1; min-width: 0; }
+.login {
+  flex-shrink: 0;
+  color: var(--cf-color-ink);
+  font-size: var(--cf-text-label);
+  font-weight: var(--cf-weight-medium);
+  padding: var(--cf-space-3) var(--cf-space-2);
+}
+.login:hover { text-decoration: underline; }
+.login:focus-visible { outline: 2px solid var(--cf-color-focus); }
 @media (max-width: 760px) {
-  .header:global(.topbar) {
-    height: auto;
-    grid-template-rows: 52px auto;
-    gap: 0 var(--cf-space-3);
-    padding-inline: var(--cf-space-4);
-  }
-  .header > section { grid-column: 1 / -1; grid-row: 2; }
-  .header :global(.mobile-brand) { grid-column: 1; grid-row: 1; font-size: var(--cf-text-section); }
-  .header :global(.mobile-brand .brand-mark) { width: 30px; height: 30px; }
-  .header :global(.topbar-actions) { grid-column: 2; grid-row: 1; gap: var(--cf-space-1); }
+  .header { width: 100%; margin-left: 0; }
+  .ticker { padding-inline: 0; }
+  .search { padding-inline: var(--cf-space-4); }
 }
-@media (max-width: 360px) {
-  .header:global(.topbar) { padding-inline: var(--cf-space-3); }
-}
-
-.quotesOnly:global(.topbar) { grid-template-columns: minmax(0, 1fr); }

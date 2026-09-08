@@ -16,17 +16,15 @@
 }
 .rail { display: none; }
 
-/* 1120px content + two 160px rails + two 24px gaps + two 24px outer gutters. */
+/* Keep the centered content/search alignment; only the right gutter carries an ad. */
 @media (hover: hover) and (pointer: fine) and (min-height: 760px) {
   @container cf-page (min-width: 1536px) {
     .frame {
       grid-template-columns: minmax(0, 1fr) var(--cf-page-content-width) minmax(0, 1fr);
       gap: var(--cf-space-6);
     }
-    .rail { display: block; min-width: 0; }
-    .rail:first-child { justify-self: end; }
-    .rail:last-child { justify-self: start; }
-    .frame [data-ad-placement="home-top"] { display: none; }
+    .content { grid-column: 2; }
+    .rail { display: block; min-width: 0; grid-column: 3; justify-self: start; }
   }
 }
 @media (max-width: 760px) {

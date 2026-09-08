@@ -48,12 +48,14 @@ const decodedTransparent = await sharp(transparentSource).raw().toBuffer();
 if (!decodedTransparent.equals(transparentPixels)) throw new Error("Transparent PNG changed source RGB or alpha pixels.");
 await writeFile(path.join(logoDir, transparentName), transparentSource);
 
-async function clearAlphaRinging(buffer) {
+async function clearAlphaRinging(buffer, format = "png") {
   const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   // Lanczos can leave 4/255-opacity ringing beyond the visible silhouette.
   for (let i = 3; i < data.length; i += 4) if (data[i] <= 4) data[i] = 0;
-  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
-    .png({ compressionLevel: 9, palette: false }).toBuffer();
+  const pipeline = sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } });
+  return (format === "webp"
+    ? pipeline.webp({ lossless: true, effort: 6 })
+    : pipeline.png({ compressionLevel: 9, palette: false })).toBuffer();
 }
 
 const records = [];
@@ -78,6 +80,7 @@ const outputs = [
   ["public/brand/centbloom-logo-gold-on-black.webp", 640, "webp", false, original, "approved original"],
   ["brand/centbloom/logo/centbloom-logo-gold-on-white.4096.png", 4096, "png", false, whiteSource, "white-background derivative"],
   ["public/brand/centbloom-logo-gold-on-white.webp", 640, "webp", false, whiteSource, "white-background derivative"],
+  ["public/brand/centbloom-logo-gold-transparent.webp", 640, "webp", true, transparentSource, "transparent-background derivative"],
   ["src/app/icon.png", 96, "png", true, transparentSource, "transparent-background derivative"],
   ["src/app/apple-icon.png", 180, "png", true, whiteSource, "white-background derivative"],
 ];
@@ -87,7 +90,7 @@ for (const [file, size, format, alpha, input, sourceLabel] of outputs) {
   let buffer = await (format === "webp"
     ? pipeline.webp({ lossless: true, effort: 6 })
     : pipeline.png({ compressionLevel: 9, palette: false })).toBuffer();
-  if (input === transparentSource) buffer = await clearAlphaRinging(buffer);
+  if (input === transparentSource) buffer = await clearAlphaRinging(buffer, format);
   await writeFile(path.join(projectDir, file), buffer);
   await record(file, buffer, `Lanczos3 resampling from ${sourceLabel} to ${size} × ${size}; lossless ${format.toUpperCase()} encoding${alpha ? "; RGBA preserving source transparency" : ""}${input === transparentSource ? "; alpha values at most 4/255 cleared to remove resize ringing" : ""}. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing.`);
 }
@@ -120,17 +123,17 @@ records.push({
 
 const manifest = {
   brand: "Centbloom",
-  status: "User-approved gold rose identity; exact-white web logo and transparent browser icons",
+  status: "User-approved gold rose identity; transparent web logo and browser icons",
   approvedDate: "2026-09-05",
   sourceAttachment: "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",
   originalSha256: expectedHash,
   originalDimensions: { width: 1254, height: 1254 },
   identity: "The gold rose itself is the logo. Preserve its shape, angle and gold character. Black is an optional presentation background, not part of the logo identity.",
   activeDerivative: {
-    file: whiteName,
-    sha256: whiteHash,
-    background: "opaque pure white RGB(255,255,255) in the recorded background mask",
-    method: "Earlier built-in image_gen derivative followed by explicitly authorized background-only RGB pixel normalization and deterministic resizing",
+    file: transparentName,
+    sha256: hash(transparentSource),
+    background: "transparent alpha in the recorded background mask",
+    method: "Reuse the existing transparent derivative for the web logo; preserve the gold foreground and source RGB values",
     provenance: "background-edit.json",
     pixelValidation: "background-pixel-validation.json",
     limitation: "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original.",
@@ -142,8 +145,8 @@ const manifest = {
     method: "Set alpha to 0 only for the previously verified exact-white background mask before resizing. All source RGB values and foreground alpha remain unchanged.",
     transparentBackgroundPixels,
     unchangedForegroundPixels: info.width * info.height - transparentBackgroundPixels,
-    uses: ["src/app/icon.png", "src/app/favicon.ico"],
-    note: "Web logo and Apple home-screen icon keep their white background. Browser icon transparency lets the tab background show through.",
+    uses: ["public/brand/centbloom-logo-gold-transparent.webp", "src/app/icon.png", "src/app/favicon.ico"],
+    note: "Web logo and browser icons let the surrounding background show through. The separate Apple home-screen icon retains its white presentation background.",
   },
   exportTool: { name: "sharp", version: sharp.versions.sharp, libvips: sharp.versions.vips },
   resolutionNote: "The 4096px image is an interpolated enlargement, not a higher-detail original or a vector master. Lossless encoding preserves the resampled output, not new source detail.",

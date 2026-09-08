@@ -34,11 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let mounted = true;
 
-    void supabase.auth.getUser().then(({ data }) => {
-      if (!mounted) return;
-      setUser(data.user ?? null);
-      setLoading(false);
-    });
+    // INITIAL_SESSION restores browser UI state; server access remains protected by RLS.
+    // A separate getUser request holds the auth lock and can overwrite newer events.
 
     const {
       data: { subscription },

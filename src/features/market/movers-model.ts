@@ -1,4 +1,6 @@
 import type { StockQuote } from "@/lib/types";
+export const MOVERS_REFRESH_MS = 30_000;
+export const MOVERS_CACHE_MS = 5_000;
 export const moverKinds = ["active", "gainers", "losers"] as const;
 export type MoverKind = (typeof moverKinds)[number];
 export interface MoversResult {

@@ -1,5 +1,6 @@
 import {
   normalizeMovers,
+  MOVERS_CACHE_MS,
   type MoverKind,
   type MoversResult,
 } from "../movers-model";
@@ -31,6 +32,6 @@ export function fetchMovers(
         fetchedAt: new Date().toISOString(),
       };
     },
-    { signal, ttlMs: 30_000 },
+    { signal, ttlMs: MOVERS_CACHE_MS },
   );
 }

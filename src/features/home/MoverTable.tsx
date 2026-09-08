@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import Link from "next/link";
+import { Flame } from "lucide-react";
 import { AssetAvatar } from "@/components/AssetAvatar";
 import {
   formatCurrency,
@@ -8,6 +9,7 @@ import {
   formatCompactNumber,
 } from "@/lib/format";
 import { useMarketMovers } from "@/features/market/use-market-movers";
+import { describeRankChange, type RankChange } from "@/features/market/mover-ranks";
 import type { MoverKind } from "@/features/market/movers-model";
 import styles from "./home.module.css";
 const titles = {
@@ -15,6 +17,17 @@ const titles = {
   losers: "하락 종목",
   active: "거래량 상위",
 };
+function RankMovement({ change }: { change: RankChange | undefined }) {
+  const delta = typeof change === "number" ? change : 0;
+  const color = delta > 0 ? styles.up : delta < 0 ? styles.down : "";
+  const label = describeRankChange(change);
+  return (
+    <span className={[styles.rankChange, color].filter(Boolean).join(" ")} title={label} aria-label={label}>
+      {change === "new" ? "신규" : delta ? (delta > 0 ? "▲" : "▼") + Math.abs(delta) : "—"}
+    </span>
+  );
+}
+
 export function MoverTable({ kind }: { kind: MoverKind }) {
   const { data, failed, refresh } = useMarketMovers(kind);
   const [expanded, setExpanded] = useState(false);
@@ -24,6 +37,7 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
       <div className={styles.moverHeading}>
         <h3>
           <span
+            aria-hidden="true"
             className={
               kind === "gainers"
                 ? styles.up
@@ -32,13 +46,13 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
                   : styles.note
             }
           >
-            {kind === "gainers" ? "↗" : kind === "losers" ? "↘" : "≋"}
+            {kind === "gainers" ? "↗" : kind === "losers" ? "↘" : <Flame size={16} className={styles.volumeIcon} aria-hidden="true" />}
           </span>{" "}
           {titles[kind]}
         </h3>
       </div>
       <div className={styles.tableLegend}>
-        <span>종목</span>
+        <span title="순위 변동은 직전 정상 조회 목록과 비교합니다">순위 · 종목</span>
         <span>{kind === "active" ? "현재가 · 거래량" : "현재가 · 등락률"}</span>
       </div>
       {!data && (
@@ -51,9 +65,12 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
           <li key={q.symbol}>
             <Link
               href={"/stock/" + encodeURIComponent(q.symbol)}
-              title={q.name + " · " + q.quotedAt + " · 미국 정규장 기준 · 지연 가능"}
+              title={q.name + " · 미국 정규장 기준 · 지연 가능"}
             >
-              <span className={styles.rank}>{i + 1}</span>
+              <span className={styles.rankPosition}>
+                <span className={styles.rank} aria-label={String(i + 1) + "위"}>{i + 1}</span>
+                <RankMovement change={data.rankChanges[q.symbol]} />
+              </span>
               <AssetAvatar symbol={q.symbol} logoUrl={q.logoUrl} small />
               <span className={styles.stockName}>
                 <strong>{q.symbol}</strong>

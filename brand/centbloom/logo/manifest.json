@@ -1,6 +1,6 @@
 {
   "brand": "Centbloom",
-  "status": "User-approved gold rose identity; exact-white web logo and transparent browser icons",
+  "status": "User-approved gold rose identity; transparent web logo and browser icons",
   "approvedDate": "2026-09-05",
   "sourceAttachment": "codex-clipboard-ff734878-8a85-48c3-9a64-acf747ac0e24.png",
   "originalSha256": "8c2c5ff68b6cce02452e42344db69adfe525f536c97b64e831b8314ed4d331c3",
@@ -10,10 +10,10 @@
   },
   "identity": "The gold rose itself is the logo. Preserve its shape, angle and gold character. Black is an optional presentation background, not part of the logo identity.",
   "activeDerivative": {
-    "file": "centbloom-logo-gold-on-white.png",
-    "sha256": "7d9d1542a8bfb95e70441861bb6ec0ec41c263f5f75a6d54220cf24bfceee070",
-    "background": "opaque pure white RGB(255,255,255) in the recorded background mask",
-    "method": "Earlier built-in image_gen derivative followed by explicitly authorized background-only RGB pixel normalization and deterministic resizing",
+    "file": "centbloom-logo-gold-transparent.png",
+    "sha256": "815c222951930976052b43b07cec2979a763e0319c5313cdf0e1c9886e6c3998",
+    "background": "transparent alpha in the recorded background mask",
+    "method": "Reuse the existing transparent derivative for the web logo; preserve the gold foreground and source RGB values",
     "provenance": "background-edit.json",
     "pixelValidation": "background-pixel-validation.json",
     "limitation": "Gold foreground is pixel-identical to the archived white derivative outside the background mask. That earlier generated derivative is not pixel-identical to the approved black original."
@@ -26,10 +26,11 @@
     "transparentBackgroundPixels": 1275151,
     "unchangedForegroundPixels": 297365,
     "uses": [
+      "public/brand/centbloom-logo-gold-transparent.webp",
       "src/app/icon.png",
       "src/app/favicon.ico"
     ],
-    "note": "Web logo and Apple home-screen icon keep their white background. Browser icon transparency lets the tab background show through."
+    "note": "Web logo and browser icons let the surrounding background show through. The separate Apple home-screen icon retains its white presentation background."
   },
   "exportTool": {
     "name": "sharp",
@@ -101,6 +102,14 @@
       "bytes": 86588,
       "sha256": "910cb56cd1a005a25450135655eba892319286d586dbf8e1cc02fa21e085363d",
       "method": "Lanczos3 resampling from white-background derivative to 640 × 640; lossless WEBP encoding. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
+    },
+    {
+      "file": "public/brand/centbloom-logo-gold-transparent.webp",
+      "width": 640,
+      "height": 640,
+      "bytes": 105242,
+      "sha256": "f1289966843b2e1d04993bd8edac522f0661171b9673293878db8f3509dbb4ba",
+      "method": "Lanczos3 resampling from transparent-background derivative to 640 × 640; lossless WEBP encoding; RGBA preserving source transparency; alpha values at most 4/255 cleared to remove resize ringing. No additional crop, rotation, recoloring, sharpening, or AI generation during resizing."
     },
     {
       "file": "src/app/icon.png",

@@ -1,9 +1,18 @@
 import { createPollingStore, type PollingView } from "@/shared/async/polling-store";
-import type { MoverKind, MoversResult } from "./movers-model";
-export type MoversView = PollingView<MoversResult>;
+import { MOVERS_REFRESH_MS, type MoverKind, type MoversResult } from "./movers-model";
+import { compareMoverRanks, type RankedMoversResult } from "./mover-ranks";
+export type MoversView = PollingView<RankedMoversResult>;
 export function createMoversStore(
   load: (kind: MoverKind, signal: AbortSignal) => Promise<MoversResult>,
-  interval = 60_000,
+  interval = MOVERS_REFRESH_MS,
 ) {
-  return createPollingStore(load, interval);
+  const store = createPollingStore<MoverKind, RankedMoversResult>(
+    async (kind, signal): Promise<RankedMoversResult> => {
+      const result = await load(kind, signal);
+      if (result.kind !== kind) throw new Error("Mismatched movers list");
+      return compareMoverRanks(result, store.snapshot(kind).data);
+    },
+    interval,
+  );
+  return store;
 }

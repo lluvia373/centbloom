@@ -11,7 +11,7 @@ const timeFormat = new Intl.DateTimeFormat("ko-KR", {
   hour12: false, timeZone: "Asia/Seoul",
 });
 
-/** Market-home-only consumer of the existing shared quote subscription. */
+/** Shared app-header consumer of the existing shared quote subscription. */
 export function MarketTicker() {
   const { quotes, failedSymbols } = useLiveQuotes(symbols);
   const viewportRef = useRef<HTMLDivElement>(null);

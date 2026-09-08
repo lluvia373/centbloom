@@ -10,7 +10,7 @@ function renderRail(pathname, enabled) {
     "./preview-mode": { adPreviewEnabled: enabled },
     "./side-rail.module.css": { default: {} },
   });
-  return renderToStaticMarkup(createElement(SideRailPreview, { side: "left" }));
+  return renderToStaticMarkup(createElement(SideRailPreview));
 }
 
 test("side rail previews remain absent from personal and authentication routes", () => {
@@ -18,7 +18,7 @@ test("side rail previews remain absent from personal and authentication routes",
     assert.equal(renderRail(path, true), "", path);
   }
   for (const path of ["/", "/discover", "/stock/AAPL", "/calendar", "/calendar/cpi", "/read/read-the-index"]) {
-    assert.match(renderRail(path, true), /data-ad-side="left"/, path);
+    assert.match(renderRail(path, true), /data-ad-side="right"/, path);
   }
 });
 
@@ -28,7 +28,7 @@ test("disabled previews render no dummy inventory, ad scripts or tracking reques
     "./preview-mode": { adPreviewEnabled: false },
     "./ads.module.css": { default: {} },
   });
-  assert.equal(renderToStaticMarkup(createElement(AdSlot, { placement: "home-top" })), "");
+  assert.equal(renderToStaticMarkup(createElement(AdSlot, { placement: "calendar-bottom" })), "");
   assert.doesNotMatch(renderRail("/", true), /<script|<iframe|<ins|adsbygoogle/);
 });
 

@@ -1,56 +1,20 @@
 "use client";
-import { primaryNavigation, navigationArea, navigationPageName } from "@/features/navigation";
+import { primaryNavigation, navigationArea } from "@/features/navigation";
 import { BrandMark } from "@/components/BrandMark";
-import { MarketNotification } from "@/features/market/MarketNotification";
 import { MarketTicker } from "@/features/market/MarketTicker";
+import { StockDiscovery } from "@/features/home/StockDiscovery";
 import marketHeader from "@/features/market/MarketHeader.module.css";
-import { isPublicRoute } from "@/features/auth/public-routes";
-
 import { useAuth } from "@/hooks/useAuth";
 import { usePreferences } from "@/hooks/usePortfolio";
-import {
-Bell,
-ChevronRight,
-CircleHelp,
-LayoutDashboard,
-LogOut,
-Plus,
-Search,
-Settings2,
-Wallet,
-X,
-} from "lucide-react";
+import { ChevronRight, LayoutDashboard, Plus, Settings2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect,useRef,useState } from "react";
 const icons = { market: LayoutDashboard, investment: Wallet, settings: Settings2 };
 const links = primaryNavigation.map((item) => ({ ...item, icon: icons[item.area] }));
 export function Header() {
   const pathname = usePathname();
-  const publicPage = isPublicRoute(pathname);
-  const marketHome = pathname === "/";
-  const { user, configured, signOut } = useAuth();
-  const showActions = !marketHome || (configured && !user);
-
-  const [panel, setPanel] = useState<"notifications" | "help" | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const { user, configured } = useAuth();
   const area = navigationArea(pathname);
-  const pageName = navigationPageName(pathname);
-  useEffect(() => {
-    if (!panel) return;
-    const close = (event: MouseEvent) => {
-      if (!panelRef.current?.contains(event.target as Node)) setPanel(null);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setPanel(null);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [panel]);
   return (
     <>
       <a href="#main-content" className="skip-link">
@@ -98,78 +62,13 @@ export function Header() {
           </Link>
         </div>
       </aside>
-      {pathname !== "/portfolio" && <header className={`topbar ${marketHome ? marketHeader.header + (showActions ? "" : " " + marketHeader.quotesOnly) : ""}`}>
-        {marketHome ? <MarketTicker /> : <div className="breadcrumbs">
-          <span>{area === "investment" ? "내 투자" : "centbloom"}</span>
-          <ChevronRight size={13} />
-          <strong>{pageName}</strong>
-        </div>}
-        <Link href="/" className="mobile-brand" aria-label="Centbloom 홈">
-          <BrandMark size={36} />
-          <span>centbloom</span>
-        </Link>
-        {showActions && <div className="topbar-actions" ref={panelRef}>
-          {!marketHome && <Link
-            href="/discover"
-            aria-label="종목 검색"
-            className="topbar-search"
-          >
-            <Search size={16} />
-            <span>종목 검색</span>
-          </Link>}
-          {!publicPage && pathname !== "/settings" && <CurrencySwitch />}
-
-          {!marketHome && <button
-            className="icon-button"
-            aria-label="업데이트 상태"
-            aria-expanded={panel === "notifications"}
-            onClick={() =>
-              setPanel(panel === "notifications" ? null : "notifications")
-            }
-          >
-            <Bell size={18} />
-            <span className="notification-dot" />
-          </button>}
-          {!marketHome && <button
-            className="icon-button help-button"
-            aria-label="앱 사용 안내"
-            aria-expanded={panel === "help"}
-            onClick={() => setPanel(panel === "help" ? null : "help")}
-          >
-            <CircleHelp size={18} />
-          </button>}
-          {!marketHome && panel === "notifications" && (
-            <MarketNotification setPanel={setPanel} />
-          )}
-          {!marketHome && panel === "help" && (
-            <div className="topbar-popover">
-              <h3>
-                Centbloom 사용 안내{" "}
-                <button aria-label="닫기" onClick={() => setPanel(null)}>
-                  <X size={15} />
-                </button>
-              </h3>
-              <p>
-                거래를 기록하고, 자산의 흐름을 살펴보세요. 관심종목에는
-                목표가를, 투자 노트에는 선택의 이유를 남길 수 있습니다.
-              </p>
-              <Link href="/settings" onClick={() => setPanel(null)}>
-                데이터 백업 및 설정
-              </Link>
-            </div>
-          )}
-          {configured && !user && <Link href="/portfolio" className="button-secondary">로그인</Link>}
-          {!marketHome && configured && user && (
-            <button
-              className="icon-button"
-              aria-label="로그아웃"
-              onClick={() => void signOut()}
-            >
-              <LogOut size={17} />
-            </button>
-          )}
-        </div>}
-      </header>}
+      <header className={marketHeader.header} aria-label="시장 지수와 종목 검색">
+        <div className={marketHeader.ticker}><MarketTicker /></div>
+        <div className={marketHeader.search}>
+          <StockDiscovery key={pathname} />
+          {configured && !user && <Link href="/portfolio" className={marketHeader.login}>로그인</Link>}
+        </div>
+      </header>
       <nav className="mobile-nav" aria-label="모바일 메뉴">
         {links.map(({ href, label, area: linkArea, icon: Icon }) => (
           <Link

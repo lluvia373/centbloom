@@ -6,7 +6,7 @@
 
 장 일정: schedule/priority.ts는 시간별 우선순위, presentation.ts는 예외 알림 묶음·고정 주요 6개국 선택·M/D HH:mm 형식의 다음 일정 문구, timeline.ts는 거래소 시간→KST 하루 구간 절단을 소유한다. MarketSessions.tsx는 지역 선택·별도 알림 띠 없이 단일 시계/미국 요약·기본 접힘/주요 6개국 시간축, MarketSessionCard.tsx는 상태·막대·다음 일정 한 행을 담당한다. 순수 계산은 market-timeline/market-schedule 테스트로 검증한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에서 수정하고 index 공개 창구로 소비한다.
 
-홈 배치: app/page.tsx가 지수 띠 아래 검색·최근 검색 → 순위 → 본문 광고·뉴스/일정을 조립하며, 일정 열은 이번 주 일정 → 접힌 장 시간표 → 내 투자 순서로 배치한다. 시간표는 자체 컨테이너 폭으로 반응형 배치를 적용한다. HomeSection.tsx는 순위·뉴스·일정·내 투자의 카드 밖 제목/행동과 공통 내용 카드를 소유한다. WeekCalendar는 날짜 선택과 목록만 담당하며 제목/KST는 MarketCalendar에서 전달한다.
+홈 배치: Header는 모든 일반 페이지의 지수·검색을 한 sticky 상단으로 조립하고 app/page.tsx는 최근 검색 → 순위 → 뉴스/일정을 조립하며, 일정 열은 이번 주 일정 → 접힌 장 시간표 → 내 투자 순서로 배치한다. 시간표는 자체 컨테이너 폭으로 반응형 배치를 적용한다. HomeSection.tsx는 순위·뉴스·일정·내 투자의 카드 밖 제목/행동과 공통 내용 카드를 소유한다. WeekCalendar는 날짜 선택과 목록만 담당하며 제목/KST는 MarketCalendar에서 전달한다.
 
 종목 탐색: `StockDiscovery.tsx`는 입력/검색 결과/선택, `DiscoveryShortcuts.tsx`는 로그인한 계정의 최근 검색만 표시하며 순위 데이터를 구독하지 않는다. `market/recent-searches.ts`는 React 없는 검증·계정별 저장, `use-recent-searches.ts`는 저장소 구독·계정 전환을 소유한다. 기록 범위를 늘릴 때 같은 훅을 사용하고 별도 저장 키/시세 조회를 추가하지 않는다. 검증은 `tests/recent-searches.test.mjs`.
 
@@ -16,7 +16,7 @@
 
 공통 본문: components/PageFrame.tsx·PageFrame.module.css가 사이드바 제외 영역의 중앙 본문과 좌우 여백을 소유한다. root layout에서 모든 일반 페이지를 감싸며 본문 상단 내 투자 탐색과 저장 알림도 같은 폭을 사용한다. 새 페이지는 바깥 margin/max-width를 따로 만들지 않는다. 폭·레일 규격은 design-tokens.css와 DESIGN_SYSTEM의 공통 본문 기준을 함께 수정한다.
 
-광고: features/ads/AdSlot은 본문 배너의 개발 미리보기, SideRailPreview는 경로에 따라 공개 화면만 렌더링하는 Google 사이드 레일 배치 미리보기다. PageFrame이 가용 폭/포인터/높이에 따라 레일을 표시한다. 둘 다 preview-mode로 운영 더미 송출을 막는다. placements.ts의 home-rail은 삭제했고 홈 ReadingShelf 호출도 제거했다(별도 읽을거리 페이지 참조는 유지). 공개 화면의 실제 송출 코드/ID는 미연결이며 개인 하단 광고는 아래 PortfolioAd 책임을 따른다. SideRailPreview의 두 sticky 박스에 수동 AdSense 광고를 삽입하지 않고 공식 Auto ads 사이드 레일 설정으로 연결한다. 상세 활성화 절차는 CLOUDFLARE를 따른다.
+광고: features/ads/AdSlot은 본문 배너의 개발 미리보기, SideRailPreview는 경로에 따라 공개 화면만 렌더링하는 Google 사이드 레일 배치 미리보기다. PageFrame이 가용 폭/포인터/높이에 따라 레일을 표시한다. 둘 다 preview-mode로 운영 더미 송출을 막는다. placements.ts의 home-rail은 삭제했고 홈 ReadingShelf 호출도 제거했다(별도 읽을거리 페이지 참조는 유지). 공개 화면의 실제 송출 코드/ID는 미연결이며 개인 하단 광고는 아래 PortfolioAd 책임을 따른다. 왼쪽 레일과 홈 본문 배너(home-top·home-news)는 제거했다. SideRailPreview의 오른쪽 sticky 박스에 수동 AdSense 광고를 삽입하지 않고 공식 Auto ads 사이드 레일 설정으로 연결한다. 상세 활성화 절차는 CLOUDFLARE를 따른다.
 
 뉴스 제목 번역: server/title-translation.ts는 응답/숫자/날짜 검증·공유 요청·캐시·실패 대기, translation-provider.ts는 Cloudflare NEWS_AI 호출만 담당한다. api/news는 원문 뉴스 정렬/중복 제거 후 번역을 조합한다. 원문 title은 불변, 선택적 titleKo만 추가하며 MarketNews가 기본 한국어/원문 전환을 표시한다. 검증은 title-translation.test.mjs. worker-configuration.d.ts는 Wrangler 생성물이므로 읽거나 직접 편집하지 말고 설정 변경 후 npm exec wrangler -- types worker-configuration.d.ts --env-interface WorkerBindings로 재생성한다.
 
@@ -74,15 +74,15 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [features/ads](./src/features/ads) | PortfolioAd는 포트폴리오 하단 광고·미연결 예약 영역·지연 스크립트 로딩, adsense는 설정 검증·DOM별 1회 요청을 담당. 전용 CSS 모듈은 광고 라벨·여백·미송출 숨김을 소유 |
 | [features/auth/public-routes.ts](./src/features/auth/public-routes.ts) | AuthGate의 공개 읽기 경로 허용 목록. 새 공개 경로는 여기와 접근 경계 테스트를 함께 수정 |
 | [features/market/schedule](./src/features/market/schedule), [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) | calendars는 출처가 있는 연도별 휴일·특별시간, time은 시간대/DST, session은 상태·다음 개장 계산, index는 공개 창구. MarketSessions는 타이머·표시만 담당하며 전용 CSS 모듈 사용. 일반 공휴일과 거래소 휴일을 혼동하지 않음 |
-| [features/market/MarketHeader.module.css](./src/features/market/MarketHeader.module.css), [MarketTicker.tsx](./src/features/market/MarketTicker.tsx) | 메인 전용 60px 시세 띠, 18개 지표 공유 구독·기준 시각 안내. Header는 메인에서만 기존 경로·알림/도움말 대신 이 지수 영역을 조립한다. `/portfolio`는 상단바를 렌더링하지 않으며 그 외 페이지 상단은 유지 |
-| [features/market/movers-model.ts](./src/features/market/movers-model.ts), [movers-store.ts](./src/features/market/movers-store.ts), [use-market-movers.ts](./src/features/market/use-market-movers.ts) | 순위 검증/변환, 공유 상태·구독·폴링 해제, React 연결. server/movers는 Yahoo screener 호출. `/api/movers`는 종류 검증·서비스 호출·응답만 담당. schedule 공개 인터페이스는 거래소 일정 기반 장 상태·휴장 사유·다음 개장을 제공 |
+| [features/market/MarketHeader.module.css](./src/features/market/MarketHeader.module.css), [MarketTicker.tsx](./src/features/market/MarketTicker.tsx) | 모든 일반 페이지의 공통 sticky 지수·검색 상단. 기존 18개 지표 공유 구독을 유지하며 Header가 StockDiscovery 한 개와 조립한다. 경로·알림/도움말 도구막대는 제거한다 |
+| [features/market/movers-model.ts](./src/features/market/movers-model.ts), [movers-store.ts](./src/features/market/movers-store.ts), [use-market-movers.ts](./src/features/market/use-market-movers.ts) | 순위 검증/변환, 공유 상태·구독·폴링 해제, React 연결. mover-ranks.ts는 직전 정상 목록 대비 순위 이동·신규/비교 불가·중복/오래된 응답 보호를 담당하며 movers-store에서 기존 구독 스냅샷과 비교한다. 모델의 공통 주기로 30초 폴링·5초 요청 캐시를 맞춘다. server/movers는 Yahoo screener 호출. `/api/movers`는 종류 검증·서비스 호출·응답만 담당. schedule 공개 인터페이스는 거래소 일정 기반 장 상태·휴장 사유·다음 개장을 제공 |
 | [features/market/news-model.ts](./src/features/market/news-model.ts), [use-market-news.ts](./src/features/market/use-market-news.ts) | 뉴스 타입·링크/시각 검증과 React 요청 수명. server/news는 기존 Yahoo 클라이언트/요청 풀 사용 |
 | [WatchStockButton](./src/features/watchlist/WatchStockButton.tsx) | 종목 상세의 기존 관심종목 저장 명령 연결과 로그인 안내. 별도 저장소를 만들지 않음 |
 | [features/portfolio/model](./src/features/portfolio/model) | `types.ts`: 명령·입력·저장소 계약. `commands.ts`: 최신 거래에 명령 적용·검증/병합. `enrichment.ts`: 거래 통화/환율 보완. `summary.ts`: 현재 보유 자산 요약 |
 | [features/portfolio/data](./src/features/portfolio/data) | `ledger-store.ts`: 초기화·직렬 명령·재시도·상태 발행·폐기. `local.ts`: 로컬 revision·복구/outbox 사본. `server.ts`: RPC read/commit. `rows.ts`: DB 행↔Transaction. `preferences.ts`: 표시 설정 저장 |
 | [features/portfolio/state](./src/features/portfolio/state) | `ledger.tsx`: 계정별 저장소 수명·Web Locks·명령 훅. `preferences.tsx`: 설정 구독. `market.tsx`: 필요한 경로의 보유 시세/환율 구독과 요약 |
 | [features/portfolio/ui](./src/features/portfolio/ui) | `TradeStockPicker.tsx`: 입력 종목 선택. `TransactionEditor.tsx`: 기존 거래 편집. `BackupPreview.tsx`: 검증한 백업 미리보기 |
-| [features/market](./src/features/market) | `quote-hub.ts`: 종목별 공유 폴링·구독 해제. `use-stock-search.ts`: 취소/debounce 검색. `use-trade-market.ts`: 거래일 환율/시장 조회. `MarketNotification.tsx`: Header 시장 알림. `MarketTicker.tsx`/`MarketTicker.module.css`: 대시보드 상단 지수·환율과 전용 반응형 스타일. 기존 useLiveQuotes를 소비 |
+| [features/market](./src/features/market) | `quote-hub.ts`: 종목별 공유 폴링·구독 해제. `use-stock-search.ts`: 취소/debounce 검색. `use-trade-market.ts`: 거래일 환율/시장 조회. `MarketNotification.tsx`: Header 시장 알림. `MarketTicker.tsx`/`MarketTicker.module.css`: 일반 페이지 공통 상단 지수·환율과 전용 반응형 스타일. 기존 useLiveQuotes를 소비 |
 | [features/market/server](./src/features/market/server) | `provider.ts`: Yahoo 클라이언트·제한 큐·공급자 오류. `quote.ts`, `chart.ts`, `historical.ts`, `search.ts`: 종류별 조회/변환. `http.ts`: HTTP 오류 변환 |
 | [hooks/useLiveQuotes.ts](./src/hooks/useLiveQuotes.ts), [lib/stock-api.ts](./src/lib/stock-api.ts) | React 종목 구독; API URL·요청 키·캐시 수명·환율 조회·응답 검증 |
 | [features/performance](./src/features/performance) | `service.ts`: 저장 이력 재사용·필요 기간 조회·계산/저장 흐름. `request-plan.ts`: 기간별 필요한 종목/환율. `repository.ts`: 로컬/서버 성과 저장. `calculate.ts`: 직접/Worker 실행 선택. `performance.worker.ts`: Worker 메시지 진입점 |
@@ -93,7 +93,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [components](./src/components)의 거래 UI | `TransactionForm`: 새 거래 입력. `TransactionList`: 목록/필터·편집 연결. `HoldingManagement`: 종목별 거래 수정/개별 삭제·되돌리기·별도 전체 삭제. `TransactionBackupPanel`: 파일 읽기/검증·내보내기·복구 명령 연결 |
 | [components](./src/components)의 자산 UI | `HoldingsTable`, `PortfolioMetrics`: 보유 목록/지표. `WealthChart`, `AllocationChart`, `PerformanceAnalytics`: 자산 흐름·배분·상세 분석 조립 |
 | [components](./src/components)의 시장 UI | `StockDetail`, `StockChart`: 독립 시세/차트 상태. `LiveMarkets`: 세계 주식. `WatchlistPreview`: 관심 3개. `MarketPicker`, `QuoteStatus`, `PriceChange`: 선택·시세 상태/변동 표시 |
-| [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 상단바 또는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 샘플 미리보기 없는 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
+| [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 샘플 미리보기 없는 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
 | [lib/portfolio.ts](./src/lib/portfolio.ts), [lib/performance.ts](./src/lib/performance.ts) | 순수 보유 상태·원가·거래 이력 검증; KST 날짜·일별 성과·수익률 계산 |
 | [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 센트블룸/이전 두 브랜드 읽기·이벤트 호환과 완료한 outbox 키 정리. 이름에 stock이 남은 거래 키와 이전 탭의 거래 잠금은 유지 |
 | [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
