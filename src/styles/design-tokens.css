@@ -10,7 +10,7 @@
   --cf-color-allocation-8: #d0d8d5;
   --cf-color-market-up: #d74353;
   --cf-color-market-down: #356ed5;
-  --cf-font-ui: var(--font-geist-sans), Arial, "Malgun Gothic", sans-serif;
+  --cf-font-ui: var(--font-wanted-sans), Arial, "Malgun Gothic", sans-serif;
   --cf-font-code: var(--font-geist-mono), monospace;
   --cf-color-canvas: #f6f7f8;
   --cf-color-surface: #ffffff;

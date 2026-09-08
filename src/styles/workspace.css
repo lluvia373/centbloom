@@ -407,8 +407,8 @@
   align-items: center;
   gap: 8px;
   font-size: 25px;
-  font-weight: 650;
-  letter-spacing: -1.1px;
+  font-weight: var(--cf-weight-semibold);
+  letter-spacing: var(--cf-tracking-title);
   white-space: nowrap;
   color: #25282e;
 }

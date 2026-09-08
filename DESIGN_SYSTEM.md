@@ -1,6 +1,6 @@
 # 화면 디자인 기준
 
-최종 수정: 2026-09-07 · 새 화면과 수정하는 화면 문구·스타일의 기준. 기존 화면 전체의 준수 완료를 뜻하지 않는다. 실제 결과는 [PROJECT_STATUS](./PROJECT_STATUS.md#검증-기록).
+최종 수정: 2026-09-08 · 새 화면과 수정하는 화면 문구·스타일의 기준. 기존 화면 전체의 준수 완료를 뜻하지 않는다. 실제 결과는 [PROJECT_STATUS](./PROJECT_STATUS.md#검증-기록).
 
 역할: 화면 문구·글꼴·크기·색상·간격·이미지 사용과 검증. 로고 원본·승인 이력은 [BRAND](./BRAND.md), 코드 소유 위치는 [DEVELOPMENT](./DEVELOPMENT.md#스타일자산도구). 관리 규칙은 [AGENTS](./AGENTS.md#문서-관리-기준).
 
@@ -76,11 +76,13 @@
 
 본문은 아래 기본 글꼴, 코드·식별자만 고정폭 글꼴을 사용한다. 금액은 기본 글꼴에 `tabular-nums`를 사용한다. 화면마다 별도 서체를 선택하지 않는다.
 
-현재 Geist는 영문·숫자용이며 한글은 OS 대체 글꼴이다. Windows의 맑은 고딕과 다른 기기의 한글 모양까지 같다는 보장은 없다. 기기 간 동일 한글 서체 적용은 웹폰트 선정·용량·로딩 검증을 포함한 남은 작업이다.
+2026-09-08 사용자 선택 D 방향: 브랜드명·한글·영문·숫자·메뉴·입력·차트는 **Wanted Sans Variable v1.0.3**로 통일한다. 본문 400, 라벨 500, 제목과 브랜드명 600을 기본으로 쓴다. 금액의 기존 tabular-nums와 크기 체계는 유지한다. 코드 전용 고정폭 글꼴과 기업 로고 고유 자산은 별도다.
+
+[공식 v1.0.3](https://github.com/wanteddev/wanted-sans/tree/v1.0.3)의 원본 [WOFF2](./src/assets/fonts/WantedSansVariable.woff2) 1,289,292바이트와 [OFL 라이선스](./src/assets/fonts/OFL.txt)를 보관한다. 전체 한글·라틴 문자를 포함한 가변 파일 하나를 루트 layout의 next/font/local로 자체 제공하며, preload·파일 해시 URL·브라우저 캐시를 사용한다. display: swap으로 로딩 중 글자를 숨기지 않는다. 첫 방문에는 약 1.23MiB를 내려받고 이후 같은 파일을 재사용한다. 렌더링의 미세한 차이는 OS에 따라 남을 수 있다.
 
 | 공통값 | 값 | 용도 |
 | --- | --- | --- |
-| `--cf-font-ui` | `var(--font-geist-sans), Arial, "Malgun Gothic", sans-serif` | 기본 글꼴: 영문·숫자 Geist, 한글 OS 대체 글꼴 |
+| `--cf-font-ui` | `var(--font-wanted-sans), Arial, "Malgun Gothic", sans-serif` | 기본 글꼴: 브랜드·한글·영문·숫자 Wanted Sans |
 | `--cf-font-code` | `var(--font-geist-mono), monospace` | 코드·식별자만 |
 | `--cf-text-caption` | `0.75rem` | 12px · 날짜·보조 수치 |
 | `--cf-text-label` | `0.8125rem` | 13px · 표·짧은 라벨·버튼 |

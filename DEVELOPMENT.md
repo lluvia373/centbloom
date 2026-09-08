@@ -63,7 +63,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 
 | 위치 | 역할 |
 | --- | --- |
-| [app/layout.tsx](./src/app/layout.tsx) | 글꼴·메타데이터·Provider 순서·공통 프레임 |
+| [app/layout.tsx](./src/app/layout.tsx) | assets/fonts의 Wanted Sans 원본을 next/font/local로 제공·메타데이터·Provider 순서·공통 프레임 |
 | [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
 | [features/settings/ui](./src/features/settings/ui) | AccountSettings: 실제 계정 정보·로그인/로그아웃과 CurrencySettings 조립. CurrencySettings: 작은 통화 선택·저장 오류/재시도. settings/page.tsx는 계정과 접힌 거래 백업 패널만 조립 |
 | [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
