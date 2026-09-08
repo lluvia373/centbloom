@@ -1,8 +1,10 @@
-// Preserve the original origin so browser-only records remain accessible.
-const legacyWorker = {
-  fetch(request, env) {
-    return env.CENTBLOOM.fetch(request);
+// The previous public service is retired; keep this Worker inaccessible.
+const retiredWorker = {
+  fetch() {
+    return new Response("This service address is closed.", {
+      status: 410,
+      headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+    });
   },
 };
-
-export default legacyWorker;
+export default retiredWorker;

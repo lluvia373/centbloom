@@ -8,9 +8,12 @@
 
 ## 센트블룸 전환 — 배포 완료
 
+- 후속 요청: 이전 centifolio의 공개·미리보기 경로 비활성화, 서비스 바인딩 제거, 로그인 Redirect URL 제거 완료. 09-08 종료 Worker `80478087-8f50-4a89-9e4d-38a79aba08d3`. Cloudflare enabled/previews_enabled=false, 이전 공개 주소 HTTP 404·센트블룸 HTTP 200 확인. 기존 DB·로컬 저장 데이터는 삭제하지 않았다.
+- 글꼴 비교: Geist(현재)·Manrope·Plus Jakarta Sans를 원본 금색 장미와 함께 별도 시안으로 제공. 운영 글꼴·앱 UI는 변경하지 않았다.
+
 - 2026-09-08 사용자 요청: 명칭·코드·문서·로고 자산 경로를 센트블룸으로 변경. 기존 거래 백업·관심종목·노트·최근 검색·성과 캐시·대기 거래의 이전 브랜드 호환을 추가했다. 기존 원본 이미지 바이트와 적용된 SQL/복구 스키마는 보존한다.
-- 로컬 루트: `C:\Users\proje\Desktop\개인용\centbloom`, main. GitHub 저장소·소개·홈페이지와 Supabase 프로젝트 이름·Auth Site URL을 변경했다. 새 주소와 이전 주소 모두 같은 센트블룸 앱을 제공한다. .com은 구매·연결하지 않았다.
-- Windows 검증: 자동 테스트 161개·TypeScript·ESLint·문서 12개·Next.js/OpenNext 운영 빌드 통과. 새 디자인 위반 0, 기존 미정리 1,603개 유지. 로고 원본 8개의 Git 해시 일치. 공개 홈/포트폴리오/캘린더·이전 주소 시세 API HTTP 200, 새/이전 주소 BUILD_ID 일치. 브라우저에서 금색 로고 로딩·이전 이름 없음·가로 넘침 없음·Centbloom 로그인 화면을 확인했다. 실제 사용자 로그인 후 쓰기·기기 간 이동은 미검증이다.
+- 로컬 루트: `C:\Users\proje\Desktop\개인용\centbloom`, main. GitHub 저장소·소개·홈페이지와 Supabase 프로젝트 이름·Auth Site URL을 변경했다. 센트블룸 주소만 앱을 제공하며, 후속 사용자 요청으로 이전 주소는 종료했다. .com은 구매·연결하지 않았다.
+- 전환 당시 Windows 검증: 자동 테스트 161개·TypeScript·ESLint·문서 12개·Next.js/OpenNext 운영 빌드 통과. 새 디자인 위반 0, 기존 미정리 1,603개 유지. 로고 원본 8개의 Git 해시 일치. 공개 홈/포트폴리오/캘린더·이전 주소 시세 API HTTP 200, 새/이전 주소 BUILD_ID 일치. 브라우저에서 금색 로고 로딩·이전 이름 없음·가로 넘침 없음·Centbloom 로그인 화면을 확인했다. 실제 사용자 로그인 후 쓰기·기기 간 이동은 미검증이다.
 - 이 체크아웃에는 비공개 BUSINESS_MODEL.md가 없어 검토하지 않았다. 개인 계획은 재생성하지 않았다.
 
 ## 09-07 병합 검증
@@ -113,8 +116,8 @@
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
 | 로컬 프로젝트 | centbloom 루트 · 로컬 main에서 모든 구현·수정, 확인 주소 localhost:3000 | 시장·설정 브랜치/폴더 정리 완료, 비공개 자료는 Git 제외 work/release-archive에 보존 |
-| 공개 Cloudflare | 09-08 코드 `371cd2e`의 두 GitHub 자동 Builds 성공. [새 서비스](https://centbloom.stock-web-demo.workers.dev/) `efb3593e-314c-4bf2-b436-c6390cd1b3b5`, [이전 주소](https://centifolio.stock-web-demo.workers.dev/) 호환 Worker `f4f08256-5238-46d2-9e5c-d15e203915d2`. 양쪽 BUILD_ID `tWNtFJMPIL1uLcZEr3mM2` 일치 | 이전 앱 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`, 최초 센트블룸 수동 배포 `7e8724e0-ab5b-4549-9e2e-79ec52af9833`. 운영 DB 변경 없음 |
-| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 브랜드 코드 `371cd2e`를 main에 반영했고 로컬/원격 커밋·트리 해시 일치 확인 | 이후 이 배포 결과 문서만 갱신. 실제 로그인 후 쓰기·다중 기기는 미검증 |
+| 공개 Cloudflare | 센트블룸 코드 `371cd2e` 자동 Builds 성공 이후 문서 갱신. [공개 서비스](https://centbloom.stock-web-demo.workers.dev/) HTTP 200. 09-08 후속 요청으로 이전 centifolio 공개·미리보기 종료: `80478087-8f50-4a89-9e4d-38a79aba08d3`, HTTP 404 | 과거 복구 버전 `5cb2216e-1ba4-43fe-bbef-d76e813ae93b`과 배포 이력은 보존. DB 변경 없음 |
+| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 로컬 origin 일치. 브랜드 코드 `371cd2e`를 main에 반영했고 로컬/원격 커밋·트리 해시 일치 확인 | 후속 요청의 이전 주소 종료 설정·문서를 반영. 실제 로그인 후 쓰기·다중 기기는 미검증 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 09-07 확인: 광고 ID 미발급. `/portfolio` 하단 예약 영역 표시, 실제 광고는 기본 비활성 | 사이트 승인·광고 단위 ID·로그인 페이지 크롤러 접근·고지 준비 후 활성화/배포. 실제 송출 미확인 |
 
@@ -287,7 +290,7 @@
 - 기존 DB용 원자적 거래/성과 증분 마이그레이션은 운영 적용했고 롤백·비공개 복구 사본을 보존했다. 새 DB 전체 초기 스키마는 포함하지 않으며 staging/운영 확인은 위 절차를 따른다.
 - 09-05 내장 브라우저에서 일부 시세 실패·성과 이력 대체 표시와 환율 직접 탐색 `ERR_BLOCKED_BY_CLIENT`가 관찰됨. 같은 API의 직접 HTTP 검사는 정상. 일반 사용자 브라우저 전체 흐름 확인 필요.
 - 웹주소 변경으로 로그인 세션·브라우저 전용 관심종목/노트는 새 주소로 자동 이동하지 않는다. 계정의 서버 거래는 같은 Supabase 프로젝트에 유지한다.
-- 09-08 Cloudflare Builds를 centbloom/main에 연결하고 기존 공개 Supabase 빌드 값·Node 24.19.0·검증 후 배포 명령을 유지했다. 이전 centifolio의 Git 연결도 유지하며 호환 Worker 배포 명령으로 변경했다. 실제 새 커밋의 자동 실행 결과는 배포 표를 따른다.
+- 09-08 Cloudflare Builds를 centbloom/main에 연결하고 기존 공개 Supabase 빌드 값·Node 24.19.0·검증 후 배포 명령을 유지했다. 이전 centifolio의 Git 연결은 종료 설정을 재배포하여 비공개 상태를 유지한다. 실제 새 커밋의 자동 실행 결과는 배포 표를 따른다.
 
 ## 다음 작업
 

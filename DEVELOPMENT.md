@@ -114,7 +114,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [app/auth.css](./src/app/auth.css) | AuthGate 로그인 화면. components의 Tailwind 클래스도 실제 스타일 일부 |
 | [public](./public), [BRAND.md](./BRAND.md) | 로고 원본·파생 자산은 BRAND의 경로/출처 기준. `public/companies/sources.json`은 종목 이미지 출처. app의 icon/apple-icon/favicon은 브라우저 아이콘 |
 | [tests](./tests) | `.test.mjs`: 회귀 검사. `reference`: 동등성 비교용 이전 계산. `fixtures`: 격리 입력/SQL 스키마/실측. `load-typescript.mjs`: TS 검사 로더. `prepare-browser-qa.mjs`: 별도 QA 앱. `postgres-concurrency.mjs`: 실제 두 연결 검사 |
-| [이전 주소 Worker](./legacy-worker.mjs), [호환 설정](./wrangler.legacy.jsonc) | 이전 브라우저 출처를 유지한 센트블룸 서비스 바인딩 전달. 앱 배포·검증 뒤 deploy:legacy 실행 |
+| [이전 주소 Worker](./legacy-worker.mjs), [종료 설정](./wrangler.legacy.jsonc) | 이전 공개·미리보기 주소 비활성. 서비스 바인딩 없는 410 처리와 deploy:legacy로 종료 상태 유지 |
 | [설정 파일](./package.json) | package/lock: 명령·버전. tsconfig: TS·`@/` 별칭. eslint.config: 린트. lint의 ESLint 대상은 src·tests·brand·루트 mjs/ts이며 새 코드 소유 폴더 추가 시 함께 갱신. next.config: Next 설정. open-next.config·wrangler.jsonc: Workers 빌드/배포. postcss.config: CSS 처리 |
 | [.gitignore](./.gitignore), [.env.example](./.env.example) | 비밀/생성물 제외·환경 변수 예시. work·node_modules·.next·.open-next는 구현 기준이 아니며 work는 커밋하지 않음 |
 

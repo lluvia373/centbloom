@@ -2,7 +2,7 @@
 
 최종 수정: 2026-09-08
 
-서비스명은 Centbloom(센트블룸)이다. 거래 백업은 `centbloom-transactions`로 내보내며 이전 `centifolio-transactions`·`stockfolio-transactions` v1도 읽는다. 브라우저 기록은 센트블룸 → 이전 두 브랜드 순서로 읽고 새 저장만 센트블룸 키에 쓴다. 기존 거래 저장 키 `stock-transactions`와 DB 데이터 구조는 유지한다. 주소별 로컬 저장 한계는 CLOUDFLARE의 센트블룸 주소와 이전 주소 호환을 따른다.
+서비스명은 Centbloom(센트블룸)이다. 거래 백업은 `centbloom-transactions`로 내보내며 이전 `centifolio-transactions`·`stockfolio-transactions` v1도 읽는다. 브라우저 기록은 센트블룸 → 이전 두 브랜드 순서로 읽고 새 저장만 센트블룸 키에 쓴다. 기존 거래 저장 키 `stock-transactions`와 DB 데이터 구조는 유지한다. 주소별 로컬 저장 한계는 CLOUDFLARE의 센트블룸 주소와 이전 주소 종료를 따른다.
 
 기능·저장·계산 의미의 기준. 구현·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md), 작성 규칙은 [AGENTS.md](./AGENTS.md)를 따른다.
 

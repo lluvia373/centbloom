@@ -16,18 +16,17 @@ npm run preview:cloudflare
 npm run deploy:cloudflare
 ```
 
-- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. 이 PC의 센트블룸 전용 로그인은 Git 제외 `work/cloudflare-auth`를 `XDG_CONFIG_HOME`으로 지정한다. `wrangler.jsonc`·이전 주소 설정의 account_id는 실제 stock-web-demo 운영 계정으로 고정했다.
+- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. 이 PC의 센트블룸 전용 로그인은 Git 제외 `work/cloudflare-auth`를 `XDG_CONFIG_HOME`으로 지정한다. `wrangler.jsonc`·종료 주소 설정의 account_id는 실제 stock-web-demo 운영 계정으로 고정했다.
 - preview는 빌드 후 로컬 Workers 실행, deploy는 빌드 후 [wrangler.jsonc](./wrangler.jsonc)의 Worker에 배포한다. 업로드 전에 대상 계정·Worker를 확인한다.
 - 명령·의존성 기준은 [package.json](./package.json)·[package-lock.json](./package-lock.json). 검증 기록은 [PROJECT_STATUS.md](./PROJECT_STATUS.md#검증-기록).
 
-## 센트블룸 주소와 이전 주소 호환
+## 센트블룸 주소와 이전 주소 종료
 
-- 새 Worker는 `centbloom`, 공개 주소는 https://centbloom.stock-web-demo.workers.dev 이다. 기존 계정의 `stock-web-demo` 하위 도메인을 사용하며 .com은 구매·연결하지 않았다.
-- 새 앱 검증 후 `npm run deploy:legacy`로 [이전 주소 설정](./wrangler.legacy.jsonc)·[호환 Worker](./legacy-worker.mjs)를 배포한다. 이전 `centifolio` Worker는 같은 센트블룸 앱을 서비스 바인딩으로 전달한다. 강제 리디렉션 없이 기존 브라우저 출처를 유지하므로 로컬 노트·관심종목을 기존 주소에서 계속 열 수 있다.
-- 두 주소의 브라우저 저장·로그인 세션은 서로 별개다. 계정 거래는 같은 Supabase 프로젝트에 저장한다. 기존 주소의 노트·관심종목을 새 주소로 자동 복사하거나 서버 동기화하지 않는다.
-- Auth Site URL은 새 주소로 설정하고 Redirect URLs에는 새 주소·이전 주소·기존 localhost 개발 주소를 유지한다. 기존 주소는 호환 서비스가 운영되는 동안 유효하다.
-- Git Builds: centbloom은 `npm run lint && node --test tests/*.test.mjs && npm run build:cloudflare` 후 `npx opennextjs-cloudflare deploy --keep-vars`, 이전 centifolio는 `npm run check:docs` 후 `npm run deploy:legacy`를 실행한다. 두 연결 모두 동일 저장소 main을 사용하고 미리보기 브랜치는 비활성이다. 빌드 환경은 기존 공개 Supabase URL/키와 NODE_VERSION=24.19.0이다.
-- 배포 전 두 Worker의 현재 버전을 기록한다. 새 앱 실패 시 이전 Worker를 덮어쓰지 않는다. 호환 Worker 문제는 기록한 이전 앱 버전으로 롤백한다. DB 스키마·원본 기록은 변경하지 않는다.
+- 공개 주소는 https://centbloom.stock-web-demo.workers.dev 이다. .com은 구매·연결하지 않았다.
+- 2026-09-08 사용자 요청으로 이전 centifolio 주소를 종료했다. [종료 설정](./wrangler.legacy.jsonc)의 workers_dev·preview_urls는 모두 false이며, [종료 Worker](./legacy-worker.mjs)는 서비스 바인딩 없이 410 응답만 정의한다. 공개 접속은 Cloudflare에서 404로 차단된다. Git Builds의 deploy:legacy도 같은 종료 설정을 적용하므로 재배포가 이전 주소를 다시 열지 않는다.
+- 이전 Worker와 배포 이력은 복구용으로 보관한다. 서비스 바인딩으로 새 앱을 전달하던 동작은 종료했다. 계정 거래와 DB·브라우저 저장 데이터를 삭제하지 않는다. 이전 주소에만 남은 로컬 노트·관심종목은 새 주소로 자동 이전되지 않았다.
+- Auth Site URL과 공개 Redirect URL은 센트블룸만 사용한다. 이전 공개 주소를 허용 목록에서 제거했으며 localhost:3000·127.0.0.1:3000 개발 주소는 유지한다.
+- Git Builds: centbloom은 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. centifolio는 check:docs 후 deploy:legacy로 비공개 종료 상태를 유지한다. 두 연결은 같은 저장소 main을 사용한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
 
 ## 뉴스 제목 자동 번역
 
@@ -59,7 +58,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 ```
 
 - 브라우저 공개 값이므로 publishable 키만 사용한다. `service_role`·비밀 키 금지. 값 변경 후 재빌드·재배포한다. 미설정 시 로컬 저장 모드다.
-- Google 로그인: Supabase Google 제공자를 활성화한다. Auth Site URL은 `https://centbloom.stock-web-demo.workers.dev`, Redirect URLs는 이 공개 주소, 호환 주소 `https://centifolio.stock-web-demo.workers.dev`, `http://localhost:3000`, `http://127.0.0.1:3000`을 사용한다.
+- Google 로그인: Supabase Google 제공자를 활성화한다. Auth Site URL은 `https://centbloom.stock-web-demo.workers.dev`, Redirect URLs는 이 공개 주소, `http://localhost:3000`, `http://127.0.0.1:3000`을 사용한다.
 - Google OAuth 리디렉션 URI는 앱 주소가 아니라 Supabase 대시보드의 `/auth/v1/callback` 주소다.
 
 ## AdSense 연결
