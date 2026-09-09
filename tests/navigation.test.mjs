@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { loadTypescript } from "./load-typescript.mjs";
-const { navigationArea, investmentTab } = loadTypescript("src/features/navigation/model.ts");
+const { navigationArea, investmentTab, navigationPageName } = loadTypescript("src/features/navigation/model.ts");
 
 test("public detail pages stay in market; each private page and trade entry select the correct investment tab", () => {
-  for (const path of ["/", "/discover", "/stock/AAPL", "/calendar", "/calendar/release", "/read/example", "/community"]) {
+  for (const path of ["/", "/discover", "/rankings/volume", "/rankings/gainers", "/rankings/losers", "/stock/AAPL", "/calendar", "/calendar/release", "/read/example", "/community"]) {
     assert.equal(navigationArea(path), "market");
     assert.equal(investmentTab(path), undefined);
   }
@@ -67,4 +67,10 @@ test("transaction history preserves actual records and edit/delete commands, inc
     assert.equal(received.onUpdate, commands.updateTransaction);
     assert.equal(typeof received.onDeleted, "function");
   }
+});
+
+test("ranking routes retain their category page labels", () => {
+  assert.equal(navigationPageName("/rankings/volume"), "거래량 상위");
+  assert.equal(navigationPageName("/rankings/gainers"), "상승 종목");
+  assert.equal(navigationPageName("/rankings/losers"), "하락 종목");
 });

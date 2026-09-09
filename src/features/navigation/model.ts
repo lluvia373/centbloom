@@ -1,3 +1,5 @@
+import { rankingPages } from "@/features/market/ranking-pages";
+
 export const primaryNavigation = [
   { href: "/", label: "시장", area: "market" },
   { href: "/portfolio", label: "내 투자", area: "investment" },
@@ -23,6 +25,7 @@ export function navigationArea(path: string) {
 export function navigationPageName(path: string) {
   if (path === "/search") return "거래 기록";
   return investmentTab(path)?.label
+    ?? Object.values(rankingPages).find(({ href }) => href === path)?.title
     ?? (path.startsWith("/calendar") ? "증시 캘린더"
       : path === "/community" ? "리서치 가이드"
       : path === "/discover" ? "종목 탐색"

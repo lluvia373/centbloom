@@ -17,7 +17,7 @@ test("side rail previews remain absent from personal and authentication routes",
   for (const path of ["/portfolio", "/insights", "/transactions", "/journal", "/watchlist", "/settings", "/search", "/login"]) {
     assert.equal(renderRail(path, true), "", path);
   }
-  for (const path of ["/", "/discover", "/stock/AAPL", "/calendar", "/calendar/cpi", "/read/read-the-index"]) {
+  for (const path of ["/", "/discover", "/rankings/volume", "/rankings/gainers", "/rankings/losers", "/stock/AAPL", "/calendar", "/calendar/cpi", "/read/read-the-index"]) {
     assert.match(renderRail(path, true), /data-ad-side="right"/, path);
   }
 });

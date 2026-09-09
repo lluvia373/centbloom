@@ -5,21 +5,15 @@ import {renderToStaticMarkup} from "react-dom/server";
 import {loadTypescript} from "./load-typescript.mjs";
 const styles={default:new Proxy({}, {get:(_,key)=>String(key)})};
 const rows=Array.from({length:10},(_,i)=>({symbol:"TEST"+i,name:"Company "+i,price:100,currency:"USD",volume:100,changePercent:1,quotedAt:"2026-09-06T00:00:00Z"}));
-function renderTable({expanded=false,data={quotes:rows},failed=false}={}){
- data=data?{kind:"active",fetchedAt:"2026-09-08T12:00:00Z",rankChanges:{},...data}:null;
+function renderTable({kind="active",full=false,data={quotes:rows},failed=false}={}){
+ data=data?{kind,fetchedAt:"2026-09-08T12:00:00Z",rankChanges:{},...data}:null;
  const {MoverTable}=loadTypescript("src/features/home/MoverTable.tsx",{
-  react:{...React,useState:()=>[expanded,()=>{}]},
   "./home.module.css":styles,
   "@/components/AssetAvatar":{AssetAvatar:()=>null},
   "@/features/market/use-market-movers":{useMarketMovers:()=>({data,failed,loading:false,refresh:()=>{}})},
  });
- return renderToStaticMarkup(React.createElement(MoverTable,{kind:"active"}));
+ return renderToStaticMarkup(React.createElement(MoverTable,{kind,full}));
 }
-test("rankings show five rows initially and ten when expanded, with an accessible control",()=>{
- const collapsed=renderTable();assert.equal((collapsed.match(/<li>/g)||[]).length,5);assert.match(collapsed,/aria-expanded="false"/);assert.match(collapsed,/<h3><button[^>]*aria-expanded="false"/);assert.doesNotMatch(collapsed,/더 보기/);assert.doesNotMatch(collapsed,/TEST5/);
- const expanded=renderTable({expanded:true});assert.equal((expanded.match(/<li>/g)||[]).length,10);assert.match(expanded,/aria-expanded="true"/);assert.doesNotMatch(expanded,/더 보기|접기/);
- assert.doesNotMatch(collapsed.replace(/<[^>]*>/g,""),/TOP 10|조회/);assert.match(collapsed,/정규장 기준 · 지연 가능/);
-});
 test("short and failed lists retain honest states and no unnecessary expand control",()=>{
  const html=renderTable({data:{quotes:rows.slice(0,3)},failed:true});assert.doesNotMatch(html,/더 보기/);assert.match(html,/갱신 실패 · 이전 목록 표시 중/);assert.match(html,/다시 시도/);
  const empty=renderTable({data:null,failed:true});assert.match(empty,/종목을 가져오지 못/);assert.doesNotMatch(empty,/더 보기/);
@@ -37,3 +31,41 @@ test("rank movement remains accessible without displaying internal refresh metad
  assert.match(html,/lucide-flame/);
  assert.doesNotMatch(html,/<time|2026-09-08T12:00:00Z|마지막 확인|30초|갱신 주기/);
 });
+
+const rankingCases = [
+ ["active", "volume", "거래량 상위"],
+ ["gainers", "gainers", "상승 종목"],
+ ["losers", "losers", "하락 종목"],
+];
+for (const [kind, route, title] of rankingCases) {
+ test(kind+" preview links to its full ranking even while loading, short or failed",()=>{
+  const preview=renderTable({kind});
+  assert.equal((preview.match(/<li>/g)||[]).length,5);
+  assert.match(preview,new RegExp('<h3><a[^>]*href="/rankings/'+route+'"'));
+  assert.doesNotMatch(preview,/aria-expanded|aria-controls|TEST5|더 보기/);
+  assert.doesNotMatch(preview.replace(/<[^>]*>/g,""),/TOP 10|조회/);
+  assert.match(preview,/정규장 기준 · 지연 가능/);
+  const full=renderTable({kind,full:true});
+  assert.equal((full.match(/<li>/g)||[]).length,10);
+  assert.doesNotMatch(full,/aria-expanded|<h3/);
+  assert.ok(!full.includes('href="/rankings/'+route+'"'));
+  for (const state of [{data:null},{data:null,failed:true},{data:{quotes:rows.slice(0,3)}}]) {
+   const html=renderTable({kind,...state});
+   assert.ok(html.includes('href="/rankings/'+route+'"'));
+   if(state.failed) assert.match(html,/다시 시도/);
+  }
+ });
+ test(route+" page shows the matching full ranking, followed by major news, with a home link",()=>{
+  const {default:Page,metadata}=loadTypescript("src/app/rankings/"+route+"/page.tsx",{
+   "./home.module.css":styles,
+   "./MoverTable":{MoverTable:({kind,full})=>React.createElement("p",null,kind+":"+full)},
+   "./MarketNews":{MarketNews:()=>React.createElement("h2",null,"주요뉴스")},
+  });
+  const html=renderToStaticMarkup(React.createElement(Page));
+  assert.ok(html.includes("<h1>"+title+"</h1>"));
+  assert.ok(html.includes('href="/"'));
+  assert.ok(html.includes(kind+":true"));
+  assert.ok(html.indexOf(kind+":true")<html.indexOf("주요뉴스"));
+  assert.equal(metadata.title,title+" | Centbloom");
+ });
+}

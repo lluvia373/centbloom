@@ -547,10 +547,10 @@
   .rankingGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .moverPanel:last-child {
+  .rankingGrid > .moverPanel:last-child {
     grid-column: 1 / -1;
   }
-  .moverPanel:last-child .movers {
+  .rankingGrid > .moverPanel:last-child .movers {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: var(--cf-space-6);
@@ -571,10 +571,10 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--cf-space-4);
   }
-  .moverPanel:last-child {
+  .rankingGrid > .moverPanel:last-child {
     grid-column: auto;
   }
-  .moverPanel:last-child .movers {
+  .rankingGrid > .moverPanel:last-child .movers {
     display: block;
   }
   .researchRail {
@@ -669,7 +669,7 @@
 }
 .rankChange:not(.up):not(.down) { color: var(--cf-color-muted); }
 
-.headingToggle {
+.headingToggle, .headingLink {
   display: inline-flex;
   align-items: center;
   gap: var(--cf-space-2);
@@ -685,10 +685,13 @@
   text-align: left;
   cursor: pointer;
 }
-.headingToggle:hover { color: var(--cf-color-muted); }
-.headingToggle:focus-visible {
+.headingToggle:hover, .headingLink:hover { color: var(--cf-color-muted); }
+.headingToggle:focus-visible, .headingLink:focus-visible {
   outline: 2px solid var(--cf-color-focus);
   outline-offset: 2px;
 }
 .headingChevron { flex-shrink: 0; color: var(--cf-color-muted); }
 .headingToggle[aria-expanded="true"] .headingChevron { transform: rotate(180deg); }
+
+.rankingPage { display: grid; gap: var(--cf-space-8); }
+.rankingPage .intro { margin: 0; flex-direction: row; align-items: center; gap: var(--cf-space-4); }

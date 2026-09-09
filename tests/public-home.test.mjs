@@ -8,6 +8,9 @@ test("public read pages render during auth loading while private pages keep the 
   for (const pathname of [
     "/",
     "/discover",
+    "/rankings/volume",
+    "/rankings/gainers",
+    "/rankings/losers",
     "/community",
     "/stock/AAPL",
     "/read/read-the-index",
@@ -31,6 +34,9 @@ test("public read pages render during auth loading while private pages keep the 
       [
         "/",
         "/discover",
+        "/rankings/volume",
+        "/rankings/gainers",
+        "/rankings/losers",
         "/community",
         "/stock/AAPL",
         "/read/read-the-index",
@@ -42,6 +48,10 @@ test("public read pages render during auth loading while private pages keep the 
     "src/features/auth/public-routes.ts",
   );
   for (const path of [
+    "/rankings/volume/private",
+    "/rankings/gainers/private",
+    "/rankings/losers/private",
+    "/rankings/unknown",
     "/portfolio/anything",
     "/stock/AAPL/edit",
     "/read/slug/private",

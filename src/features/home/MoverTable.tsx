@@ -1,7 +1,6 @@
 "use client";
-import { useId, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Flame } from "lucide-react";
+import { ChevronRight, Flame } from "lucide-react";
 import { AssetAvatar } from "@/components/AssetAvatar";
 import {
   formatCurrency,
@@ -11,12 +10,8 @@ import {
 import { useMarketMovers } from "@/features/market/use-market-movers";
 import { describeRankChange, type RankChange } from "@/features/market/mover-ranks";
 import type { MoverKind } from "@/features/market/movers-model";
+import { rankingPages } from "@/features/market/ranking-pages";
 import styles from "./home.module.css";
-const titles = {
-  gainers: "상승 종목",
-  losers: "하락 종목",
-  active: "거래량 상위",
-};
 function RankMovement({ change }: { change: RankChange | undefined }) {
   const delta = typeof change === "number" ? change : 0;
   const color = delta > 0 ? styles.up : delta < 0 ? styles.down : "";
@@ -28,32 +23,27 @@ function RankMovement({ change }: { change: RankChange | undefined }) {
   );
 }
 
-export function MoverTable({ kind }: { kind: MoverKind }) {
+export function MoverTable({ kind, full = false }: { kind: MoverKind; full?: boolean }) {
   const { data, failed, refresh } = useMarketMovers(kind);
-  const [expanded, setExpanded] = useState(false);
-  const listId = useId();
+  const page = rankingPages[kind];
   const heading = (
     <>
       <span aria-hidden="true" className={kind === "gainers" ? styles.up : kind === "losers" ? styles.down : styles.note}>
         {kind === "gainers" ? "↗" : kind === "losers" ? "↘" : <Flame size={16} className={styles.volumeIcon} aria-hidden="true" />}
       </span>{" "}
-      {titles[kind]}
+      {page.title}
     </>
   );
   return (
-    <section className={styles.moverPanel} aria-label={titles[kind]}>
-      <div className={styles.moverHeading}>
+    <section className={styles.moverPanel} aria-label={page.title}>
+      {!full && <div className={styles.moverHeading}>
         <h3>
-          {data && data.quotes.length > 5 ? (
-            <button type="button" className={styles.headingToggle}
-              aria-expanded={expanded} aria-controls={listId}
-              onClick={() => setExpanded((value) => !value)}>
-              {heading}
-              <ChevronDown size={16} className={styles.headingChevron} aria-hidden="true" />
-            </button>
-          ) : heading}
+          <Link href={page.href} className={styles.headingLink}>
+            {heading}
+            <ChevronRight size={16} className={styles.headingChevron} aria-hidden="true" />
+          </Link>
         </h3>
-      </div>
+      </div>}
       <div className={styles.tableLegend}>
         <span title="순위 변동은 직전 정상 조회 목록과 비교합니다">순위 · 종목</span>
         <span>{kind === "active" ? "현재가 · 거래량" : "현재가 · 등락률"}</span>
@@ -63,8 +53,8 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
           {failed ? "종목을 가져오지 못했어요." : "시세를 확인하고 있어요."}
         </p>
       )}
-      <ol id={listId} className={styles.movers}>
-        {data?.quotes.slice(0, expanded ? 10 : 5).map((q, i) => (
+      <ol className={styles.movers}>
+        {data?.quotes.slice(0, full ? 10 : 5).map((q, i) => (
           <li key={q.symbol}>
             <Link
               href={"/stock/" + encodeURIComponent(q.symbol)}

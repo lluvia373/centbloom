@@ -2,6 +2,8 @@
 
 최종 확인: 2026-09-06 · main + codex/market-index-strip의 로컬 공개 홈 개편 기준. 파일 역할·확장 위치는 이 문서, 제품 의미는 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md), 실제 검증·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)가 기준이다. 설치 버전과 실행 명령은 package.json·lockfile을 확인한다.
 
+사용성 검토(D015): 자연스러움과 사용감을 핵심 품질 기준으로 삼는다. 요청받은 요소와 같은 역할의 다른 요소, 전후 이동, 모바일·키보드 사용을 함께 확인한다. 요청이 흐름을 해칠 수 있으면 이유와 대안을 제안하고 사용자의 최종 결정을 따른다.
+
 상단 시세: `MarketTicker.tsx`는 공유 시세와 표시를 연결하고, `ticker-instruments.ts`는 목록/금리 단위, `use-ticker-motion.ts`는 프레임·가시성·포커스·움직임 줄이기 수명을 소유한다. 항목 추가는 목록과 market-ticker 검증을 함께 갱신하며 복제 목록에 새 구독을 붙이지 않는다.
 
 장 일정: schedule/priority.ts는 시간별 우선순위, presentation.ts는 예외 알림 묶음·고정 주요 6개국 선택·M/D HH:mm 형식의 다음 일정 문구, timeline.ts는 거래소 시간→KST 하루 구간 절단을 소유한다. MarketSessions.tsx는 지역 선택·별도 알림 띠 없이 단일 시계/미국 요약·기본 접힘/주요 6개국 시간축, MarketSessionCard.tsx는 상태·막대·다음 일정 한 행을 담당한다. 순수 계산은 market-timeline/market-schedule 테스트로 검증한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에서 수정하고 index 공개 창구로 소비한다.
@@ -10,7 +12,7 @@
 
 종목 탐색: `StockDiscovery.tsx`는 입력/검색 결과/선택, `DiscoveryShortcuts.tsx`는 로그인한 계정의 최근 검색만 표시하며 순위 데이터를 구독하지 않는다. `market/recent-searches.ts`는 React 없는 검증·계정별 저장, `use-recent-searches.ts`는 저장소 구독·계정 전환을 소유한다. 기록 범위를 늘릴 때 같은 훅을 사용하고 별도 저장 키/시세 조회를 추가하지 않는다. 검증은 `tests/recent-searches.test.mjs`.
 
-주요뉴스: `server/trending-news.ts`는 기존 순위/뉴스 서버 조회를 조합하고, `trending-news.ts`는 대상 선택·최신성/관련성 정렬·중복 제거를 담당한다. `server/news.ts`는 단일 종목 공급자 변환, `use-market-news.ts`는 구독/가시성 연결, `MarketNews.tsx`는 목록·번역 전환·펼침 상태를 소유한다. HomeSection의 선택적 제목 버튼과 MoverTable의 목록 제목은 같은 펼침/접기 스타일을 사용한다. 순위와 뉴스는 `shared/async/polling-store.ts`의 동일한 폴링/해제/실패 규칙을 사용한다(`movers-store.ts`는 기존 공개 인터페이스 어댑터). API 응답은 `{stories, partial}`, 검증은 `trending-news.test.mjs`와 `market-workspace.test.mjs`. 조합 요청은 하위 조회와 같은 공급자 풀 슬롯을 점유하지 않는다.
+주요뉴스: `server/trending-news.ts`는 기존 순위/뉴스 서버 조회를 조합하고, `trending-news.ts`는 대상 선택·최신성/관련성 정렬·중복 제거를 담당한다. `server/news.ts`는 단일 종목 공급자 변환, `use-market-news.ts`는 구독/가시성 연결, `MarketNews.tsx`는 목록·번역 전환·펼침 상태를 소유한다. HomeSection의 선택적 제목 버튼은 뉴스 펼침/접기에 사용한다. MoverTable의 세 제목은 모두 전용 페이지 링크다. `market/ranking-pages.ts`가 제목·경로·설명을 공유하고 공개 경로/탐색 이름도 이를 참조한다. 세 전용 page.tsx는 `RankingPage.tsx`로 해당 MoverTable의 full 표시와 기존 MarketNews를 조합한다. 순위와 뉴스는 `shared/async/polling-store.ts`의 동일한 폴링/해제/실패 규칙을 사용한다(`movers-store.ts`는 기존 공개 인터페이스 어댑터). API 응답은 `{stories, partial}`, 검증은 `trending-news.test.mjs`와 `market-workspace.test.mjs`. 조합 요청은 하위 조회와 같은 공급자 풀 슬롯을 점유하지 않는다.
 
 증시 캘린더: features/calendar의 model.ts·month-grid.ts는 날짜 그룹/달력 칸, navigation.ts는 주간·필터·안전한 복귀 URL, release.ts는 경제지표/실적 수치·상태·추이 계산을 담당한다. WeekCalendar.tsx는 홈 7일 선택, CalendarBrowser.tsx는 월간/종류 필터를 조립하고 EventList.tsx는 공통 일정 링크다. use-calendar-selection.ts는 URL과 선택 상태를 연결해 브라우저 뒤로 가기 복원을 유지한다. ReleasePage.tsx는 단건 조회, ReleaseDetails.tsx는 발표 수치, ReleaseHistory.tsx는 공유 이력 조회/표, ReleaseTrend.tsx는 단위별 차트를 담당한다. app/calendar/[id]/page.tsx는 공개 상세 진입점이며 팝업 구현은 제거했다. use-calendar-feed.ts는 공유 폴링/가시성, server/query.ts는 월·주·단건·이력 입력 검증, provider.ts는 경제지표 공급 변환, repository.ts는 저장소 접근을 소유한다. 실적 모델/UI는 준비 상태이며 실적 공급자/저장 실행은 미연결이다. 신규 공급자 연결은 수치 단위·기간·컨센서스·부분 수신 의미를 유지하고 earningsConnected를 실제 공급 상태와 함께 제공해야 한다. data.ts는 미연결 상태의 검증된 경제 일정만 제공한다. 기존 SQL/수집 스크립트와 활성화 절차는 CLOUDFLARE 문서, 검증은 calendar-releases·economic-calendar·sql-economic-calendar 테스트를 따른다.
 
@@ -64,7 +66,7 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | 위치 | 역할 |
 | --- | --- |
 | [app/layout.tsx](./src/app/layout.tsx) | assets/fonts의 Wanted Sans 원본을 next/font/local로 제공·메타데이터·Provider 순서·공통 프레임 |
-| [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
+| [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/rankings/volume`·`/rankings/gainers`·`/rankings/losers` 각 순위/주요뉴스, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
 | [features/settings/ui](./src/features/settings/ui) | AccountSettings: 실제 계정 정보·로그인/로그아웃과 CurrencySettings 조립. CurrencySettings: 작은 통화 선택·저장 오류/재시도. settings/page.tsx는 계정과 접힌 거래 백업 패널만 조립 |
 | [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
 | [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
