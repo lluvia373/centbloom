@@ -38,7 +38,7 @@
 | 시세·검색·국가/통화 지원 | [클라이언트 API](./src/lib/stock-api.ts), [시장 분류](./src/lib/markets.ts), [서버 서비스](./src/features/market/server) | market-api, market-data, enrichment, requests |
 | 관심종목·노트 | [useWatchlist](./src/hooks/useWatchlist.ts), [useJournal](./src/hooks/useJournal.ts), 각각의 features UI | 격리 브라우저 CRUD, branded-storage |
 | 디자인·배치·로고 | [디자인 기준](./DESIGN_SYSTEM.md) → 공통값 → 해당 페이지·UI·아래 스타일 소유 위치 | check:design, design-system; 격리 브라우저 데스크톱·모바일 비교 |
-| 로그인·공개 페이지 | [useAuth](./src/hooks/useAuth.tsx), [AuthGate](./src/components/AuthGate.tsx), [layout](./src/app/layout.tsx) | 계정 전환·공개/개인 접근 분리, 아래 배포 절차 |
+| 로그인·공개 페이지 | [세션 요청/복구](./src/features/auth/session-request.ts), [useAuth](./src/hooks/useAuth.tsx), [AuthGate](./src/components/AuthGate.tsx), [layout](./src/app/layout.tsx) | session-request, public-home; 계정 전환·공개/개인 접근 분리 |
 | 내 포트폴리오 광고 | [PortfolioAd](./src/features/ads/PortfolioAd.tsx), [설정·중복 요청 방지](./src/features/ads/adsense.ts) | adsense; 격리 브라우저 광고 차단·미송출·재진입 |
 | 새 독립 기능 | 아래 확장 절차; 같은 성격의 기존 feature와 해당 PRODUCT_SPEC 절 | 기능의 순수 로직·실패·권한·UI 흐름 |
 
@@ -68,7 +68,8 @@ UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/
 | [features/settings/ui](./src/features/settings/ui) | AccountSettings: 실제 계정 정보·로그인/로그아웃과 CurrencySettings 조립. CurrencySettings: 작은 통화 선택·저장 오류/재시도. settings/page.tsx는 계정과 접힌 거래 백업 패널만 조립 |
 | [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
 | [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
-| [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | 로그인 세션과 Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
+| [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | INITIAL_SESSION 이후 인증 이벤트로 로그인 상태 관리; Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
+| [features/auth/session-request.ts](./src/features/auth/session-request.ts) | 거래·설정·성과 서버 요청의 계정/토큰 고정, JWT 오류 복구·동시 갱신 공유·요청 기한. 요청 생성 함수는 전달된 AbortSignal과 기존 저장 ID/본문을 유지 |
 | [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 실제 기록의 표시 요약 |
 | [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`: 증시 캘린더 기능의 주간 선택 연결. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
 | [features/ads](./src/features/ads) | PortfolioAd는 포트폴리오 하단 광고·미연결 예약 영역·지연 스크립트 로딩, adsense는 설정 검증·DOM별 1회 요청을 담당. 전용 CSS 모듈은 광고 라벨·여백·미송출 숨김을 소유 |

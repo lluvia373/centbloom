@@ -3,7 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {loadTypescript} from './load-typescript.mjs';
 
-const {serverRepository}=loadTypescript('src/features/portfolio/data/server.ts');
+// Test error presentation separately; session-request.test.mjs covers real SDK recovery.
+const {serverRepository}=loadTypescript('src/features/portfolio/data/server.ts',{
+ '@/features/auth/session-request':{runSupabaseRequest:(_client,_userId,request)=>request(AbortSignal.timeout(20_000))},
+});
 test('ledger read distinguishes auth, permission, timeout and network errors without leaking server details',async()=>{
  for (const [code,status,message,pattern] of [
   ['PGRST301',401,'sensitive token',/다시 로그인.*PGRST301/],

@@ -26,7 +26,7 @@
 
 ## 로컬 실행
 
-모든 구현·수정은 `C:\Users\Siyun\Desktop\works\centbloom`의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
+모든 구현·수정은 각 PC의 centbloom 원본 저장소의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
 
 ```sh
 npm ci

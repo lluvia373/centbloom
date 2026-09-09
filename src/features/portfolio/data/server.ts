@@ -1,3 +1,4 @@
+import { runSupabaseRequest } from "@/features/auth/session-request";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Repository, Snapshot } from "../model/types";
 import {
@@ -37,22 +38,26 @@ export function serverRepository(
 ): Repository {
   return {
     async read() {
-      const { data, error, status } = await client
-        .rpc("read_portfolio_ledger")
-        .abortSignal(AbortSignal.timeout(20_000));
+      const { data, error, status } = await runSupabaseRequest(client, userId, (signal) =>
+        client.rpc("read_portfolio_ledger").abortSignal(signal),
+      );
       if (!error) return snapshot(data);
       if (!["PGRST202", "42883"].includes(error.code))
         throw readFailure(error, status);
       // Safe read-only compatibility before the atomic-write migration is applied.
       const records: PortfolioTransactionRow[] = [];
       for (let offset = 0; ; offset += 1000) {
-        const result = await client
-          .from("portfolio_transactions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("id")
-          .range(offset, offset + 999)
-          .abortSignal(AbortSignal.timeout(20_000));
+        const result = await runSupabaseRequest(
+          client,
+          userId,
+          (signal) =>
+            client
+              .from("portfolio_transactions")
+              .select("*")
+              .eq("user_id", userId)
+              .order("id")
+              .range(offset, offset + 999).abortSignal(signal),
+        );
         if (result.error) throw readFailure(result.error, result.status);
         records.push(...result.data);
         if (result.data.length < 1000) break;
@@ -66,15 +71,19 @@ export function serverRepository(
     async commit(change) {
       if (change.revision.startsWith("migration-required"))
         throw new Error(MIGRATION_REQUIRED);
-      const { data, error } = await client
-        .rpc("commit_portfolio_ledger", {
-          expected_revision: change.revision,
-          request_id: change.id,
-          next_transactions: change.transactions.map((tx) =>
-            transactionToRow(userId, tx),
-          ),
-        })
-        .abortSignal(AbortSignal.timeout(20_000));
+      const { data, error } = await runSupabaseRequest(
+        client,
+        userId,
+        (signal) =>
+          client
+            .rpc("commit_portfolio_ledger", {
+              expected_revision: change.revision,
+              request_id: change.id,
+              next_transactions: change.transactions.map((tx) =>
+                transactionToRow(userId, tx),
+              ),
+            }).abortSignal(signal),
+      );
       if (error) {
         if (["PGRST202", "42883"].includes(error.code))
           throw new Error(MIGRATION_REQUIRED);

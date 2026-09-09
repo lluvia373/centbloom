@@ -1,3 +1,4 @@
+import { runSupabaseRequest } from "@/features/auth/session-request";
 import { readBrandedStorage } from "@/lib/branded-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { PortfolioPerformancePoint } from "@/lib/types";
@@ -44,23 +45,34 @@ export async function readHistory(
   }
   const client = getSupabaseBrowserClient();
   if (!client || !userId) return { saved, startedAt: saved?.startedAt ?? null };
-  const preference = client
-    .from("portfolio_preferences")
-    .select("portfolio_started_at")
-    .eq("user_id", userId)
-    .abortSignal(signal)
-    .maybeSingle();
+  const preference = runSupabaseRequest(
+    client,
+    userId,
+    (requestSignal) =>
+      client
+        .from("portfolio_preferences")
+        .select("portfolio_started_at")
+        .eq("user_id", userId)
+        .abortSignal(requestSignal)
+        .maybeSingle(),
+    signal,
+  );
   const snapshots = (async () => {
     const points: PortfolioPerformancePoint[] = [];
     for (let offset = 0; ; offset += 1000) {
-      const { data, error } = await client
-        .from("portfolio_snapshots")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("ledger_revision", revision)
-        .order("snapshot_date")
-        .range(offset, offset + 999)
-        .abortSignal(signal);
+      const { data, error } = await runSupabaseRequest(
+        client,
+        userId,
+        (requestSignal) =>
+          client
+            .from("portfolio_snapshots")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("ledger_revision", revision)
+            .order("snapshot_date")
+            .range(offset, offset + 999).abortSignal(requestSignal),
+        signal,
+      );
       if (error) {
         if (error.code === "42703") return null;
         throw new Error("저장된 성과를 불러오지 못했습니다.");
@@ -107,18 +119,27 @@ export async function saveHistory(
   const client = getSupabaseBrowserClient();
   let warning: string | null = null;
   if (client && userId && changed.length) {
-    const { error } = await client
-      .rpc("save_portfolio_performance", {
-        expected_revision: history.revision,
-        started_at: history.startedAt,
-        points: changed,
-      })
-      .abortSignal(signal);
-    if (error)
-      warning =
-        error.code === "PGRST202"
-          ? "성과는 계산됐지만 서버 저장 업데이트가 필요합니다."
-          : "성과는 계산됐지만 서버 저장에 실패했습니다. 다음 갱신 때 재시도합니다.";
+    try {
+      const { error } = await runSupabaseRequest(
+        client,
+        userId,
+        (requestSignal) =>
+          client
+            .rpc("save_portfolio_performance", {
+              expected_revision: history.revision,
+              started_at: history.startedAt,
+              points: changed,
+            }).abortSignal(requestSignal),
+        signal,
+      );
+      if (error)
+        warning =
+          error.code === "PGRST202"
+            ? "성과는 계산됐지만 서버 저장 업데이트가 필요합니다."
+            : "성과는 계산됐지만 서버 저장에 실패했습니다. 다음 갱신 때 재시도합니다.";
+    } catch {
+      warning = "성과는 계산됐지만 서버 저장에 실패했습니다. 다음 갱신 때 재시도합니다.";
+    }
   }
   signal.throwIfAborted();
   try {
