@@ -6,12 +6,14 @@
 
 작업 시작 시 [환경별 진행 상태](#환경별-진행-상태)·[현재 제약](#현재-제약)·[다음 작업](#다음-작업)을 확인한다. 코드 위치와 추가 방법은 [DEVELOPMENT.md](./DEVELOPMENT.md), 과거 검증은 관련 변경일 때만 아래 기록을 읽는다.
 
-## 순위·뉴스 제목으로 목록 펼치기 — 배포 진행
+## 순위·뉴스 제목으로 목록 펼치기 — 배포 완료
 
 - 2026-09-09 회사 PC 원본 main, GitHub `faaae86`와 동기화 확인 후 수정. 순위별 더 보기/접기 버튼을 제거하고 거래량 상위·상승 종목·하락 종목 제목으로 5↔최대 10개를 전환한다. 홈·종목 상세 뉴스 제목을 주요뉴스로 통일하고 제목으로 기본 8개/4개↔받아온 전체 기사를 전환한다.
 - 추가 항목이 있을 때만 제목 버튼·펼침 표시를 제공한다. 44px 터치 영역, aria-expanded/controls, Enter/Space 동작을 확인했다. 조회·갱신·순위 이동·원문 전환·기사 출처와 데이터 공급 범위는 유지한다. PRODUCT_SPEC의 중복된 구형 홈 뉴스 공급 설명을 실제 72시간/최대 40개 기준으로 통합했다.
 - 기존 관련 테스트 30개·TypeScript·ESLint·문서·Next.js 운영 빌드 통과. 디자인 새 위반 0, 기존 미정리 1,601개. 숨김 Chrome 390/1440px에서 세 순위 5→10→5, 합성 뉴스의 홈 8→12→8·상세 4→12→4, 번역 전환, 짧은 목록의 불필요한 버튼 없음, 가로 넘침·JS 오류 0 확인. 자료: Git 제외 `work/headings-browser-qa.cjs`·`work/headings-browser-results.json`·`work/headings-*.png`.
-- 사용자 후속 지시로 main에 푸시하고 연결된 Cloudflare Builds의 전체 검사·배포를 진행한다. 배포 전 복구 버전은 `9bd6434d-6754-4b7a-8fa4-7a0238d365ab`다. 비공개 BUSINESS_MODEL.md는 회사 PC에 없어 미검토이며 제품의 수익 가설·출시 범위·SEO 경로 변경은 없다.
+- 코드 `ad6fb69`를 main에 푸시했고 연결된 Cloudflare Builds의 전체 검사·Next.js/OpenNext 빌드·배포가 성공했다. 검증한 공개 버전은 `2768be33-4205-43a5-8e47-9eb3cf3349c9` 100%다. 배포 전 복구 버전은 `9bd6434d-6754-4b7a-8fa4-7a0238d365ab`다. 비공개 BUSINESS_MODEL.md는 회사 PC에 없어 미검토이며 제품의 수익 가설·출시 범위·SEO 경로 변경은 없다.
+
+- 공개 홈·탐색·캘린더·AAPL·보유자산·시세 API HTTP 200, 주요뉴스 제목과 기존 인증 복구 코드·투명 로고 반영, 이전 주소 HTTP 404를 확인했다. 실제 배포 화면의 숨김 Chrome 390/1440px에서도 합성 목록으로 제목 클릭/Enter/Space, 순위 5↔10개·홈 뉴스 8↔12개·상세 뉴스 4↔12개, 원문 전환과 짧은 목록을 재검증했다. 가로 넘침·JS 오류 0, DB 변경 없음. 자료는 Git 제외 `work/headings-public-browser-results.json`·`work/headings-public-*.png`다. 후속 문서 푸시도 동일 앱 코드로 자동 재배포될 수 있다.
 
 ## 로그인 직후 거래 저장 경고 — 배포 완료
 
@@ -187,8 +189,8 @@
 | 대상 | 마지막 확인 | 남은 작업 |
 | --- | --- | --- |
 | 로컬 프로젝트 | 09-09 순위·주요뉴스의 제목 펼침/접기 로컬 구현·검증 완료. centbloom 원본 main, 확인 주소 localhost:3000 | 시장·설정 브랜치/폴더 정리 완료, 비공개 자료는 Git 제외 work/release-archive에 보존 |
-| 공개 Cloudflare | 09-09 인증 복구 코드 `b10f189`의 자동 Builds·공개 화면/API 검증 완료. 검증 버전 `12ec09aa-2838-48e1-91f8-a7b1782343bd` 100%, [공개 서비스](https://centbloom.stock-web-demo.workers.dev/) HTTP 200. 이전 centifolio HTTP 404 유지 | 직전 복구 버전 `2966edb4-0921-42db-8cc7-f149e9c7f6bf` 및 과거 이력 보존. 후속 문서 커밋은 동일 앱 코드로 자동 재배포될 수 있다. DB 변경 없음 |
-| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 회사 PC 원본 main에 GitHub 최신 `a76ff34`를 통합하고 인증 복구 `b10f189` 푸시·공개 배포 확인 | 집 PC의 투명 마크·공통 지수/검색·홈 광고·순위 이동·인증/시세 로딩·D014 보존. 실제 로그인 후 쓰기·다중 기기는 미검증 |
+| 공개 Cloudflare | 09-09 제목으로 순위·주요뉴스 펼침 코드 `ad6fb69` 자동 Builds·공개 브라우저 검증 완료. 검증 버전 `2768be33-4205-43a5-8e47-9eb3cf3349c9` 100%, [공개 서비스](https://centbloom.stock-web-demo.workers.dev/) HTTP 200, 이전 centifolio HTTP 404 | 직전 복구 버전 `9bd6434d-6754-4b7a-8fa4-7a0238d365ab` 보존. 후속 문서 커밋은 같은 앱 코드로 자동 재배포될 수 있다. DB 변경 없음 |
+| GitHub·로컬 | 저장소 [lluvia373/centbloom](https://github.com/lluvia373/centbloom), 회사 PC 원본 main에서 최신 `faaae86` 위에 제목 펼침/접기 `ad6fb69` 푸시·공개 배포 확인 | 집 PC 변경과 인증 복구 보존. 이번 변경은 공개 목록 UI이며 실제 계정 쓰기·다중 기기는 재검증하지 않음 |
 | 로그인·동기화 | 09-06 원자적 저장 migration `20260905225656` 적용. 기존 거래 18건·설정 1건·성과 30건 원본/사본 내용 일치. RPC authenticated 허용·anon 차단, 백업 스키마 일반 역할 접근 차단 확인 | 실제 로그인 후 쓰기·다중 기기 미검증. 합성 auth 계정 운영 쓰기 검사는 자동 승인 검토가 잠재적 부작용으로 거부하여 격리 DB에서만 검증 |
 | AdSense | 09-07 확인: 광고 ID 미발급. `/portfolio` 하단 예약 영역 표시, 실제 광고는 기본 비활성 | 사이트 승인·광고 단위 ID·로그인 페이지 크롤러 접근·고지 준비 후 활성화/배포. 실제 송출 미확인 |
 
