@@ -16,8 +16,8 @@ function renderTable({expanded=false,data={quotes:rows},failed=false}={}){
  return renderToStaticMarkup(React.createElement(MoverTable,{kind:"active"}));
 }
 test("rankings show five rows initially and ten when expanded, with an accessible control",()=>{
- const collapsed=renderTable();assert.equal((collapsed.match(/<li>/g)||[]).length,5);assert.match(collapsed,/aria-expanded="false"/);assert.match(collapsed,/더 보기/);assert.doesNotMatch(collapsed,/TEST5/);
- const expanded=renderTable({expanded:true});assert.equal((expanded.match(/<li>/g)||[]).length,10);assert.match(expanded,/aria-expanded="true"/);assert.match(expanded,/접기/);
+ const collapsed=renderTable();assert.equal((collapsed.match(/<li>/g)||[]).length,5);assert.match(collapsed,/aria-expanded="false"/);assert.match(collapsed,/<h3><button[^>]*aria-expanded="false"/);assert.doesNotMatch(collapsed,/더 보기/);assert.doesNotMatch(collapsed,/TEST5/);
+ const expanded=renderTable({expanded:true});assert.equal((expanded.match(/<li>/g)||[]).length,10);assert.match(expanded,/aria-expanded="true"/);assert.doesNotMatch(expanded,/더 보기|접기/);
  assert.doesNotMatch(collapsed.replace(/<[^>]*>/g,""),/TOP 10|조회/);assert.match(collapsed,/정규장 기준 · 지연 가능/);
 });
 test("short and failed lists retain honest states and no unnecessary expand control",()=>{

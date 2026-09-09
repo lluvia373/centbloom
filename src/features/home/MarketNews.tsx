@@ -1,17 +1,21 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useMarketNews } from "@/features/market/use-market-news";
 import { HomeSection } from "./HomeSection";
 import styles from "./home.module.css";
 export function MarketNews({ symbol }: { symbol?: string }) {
   const { stories, loading, error, partial, retry } = useMarketNews(symbol);
-  const [visible, setVisible] = useState(8);
+  const [expanded, setExpanded] = useState(false);
+  const listId = useId();
+  const initialCount = symbol ? 4 : 8;
   const [original, setOriginal] = useState(false);
   const hasTranslation = stories.some((story) => story.titleKo);
   return (
-    <HomeSection title="종목 뉴스" actions={hasTranslation ? <div className={styles.newsLanguage}>
+    <HomeSection title="주요뉴스" toggle={!loading && stories.length > initialCount ? {
+      expanded, controls: listId, onClick: () => setExpanded((value) => !value),
+    } : undefined} actions={hasTranslation ? <div className={styles.newsLanguage}>
           {!original && <span>자동 번역</span>}
           <button type="button" onClick={() => setOriginal((value) => !value)}
             aria-label={original ? "뉴스 제목 한국어로 보기" : "뉴스 제목 원문으로 보기"}>
@@ -38,8 +42,8 @@ export function MarketNews({ symbol }: { symbol?: string }) {
       ) : !stories.length ? (
         <p className={styles.empty}>{symbol ? "최근 7일 내 관련 뉴스가 없어요." : "최근 72시간 내 관련 뉴스가 없어요."}</p>
       ) : (
-        <ol className={styles.newsList}>
-          {stories.slice(0, symbol ? 4 : visible).map((story) => (
+        <ol id={listId} className={styles.newsList}>
+          {stories.slice(0, expanded ? stories.length : initialCount).map((story) => (
             <li key={story.id}>
               <div>
                 <a
@@ -78,14 +82,6 @@ export function MarketNews({ symbol }: { symbol?: string }) {
             </li>
           ))}
         </ol>
-      )}
-      {!symbol && stories.length > visible && (
-        <button
-          className={styles.moreNews}
-          onClick={() => setVisible((n) => n + 8)}
-        >
-          뉴스 더 보기 · {stories.length - visible}개
-        </button>
       )}
     </HomeSection>
   );

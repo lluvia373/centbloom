@@ -1,7 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { ChevronDown, Flame } from "lucide-react";
 import { AssetAvatar } from "@/components/AssetAvatar";
 import {
   formatCurrency,
@@ -32,23 +32,26 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
   const { data, failed, refresh } = useMarketMovers(kind);
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
+  const heading = (
+    <>
+      <span aria-hidden="true" className={kind === "gainers" ? styles.up : kind === "losers" ? styles.down : styles.note}>
+        {kind === "gainers" ? "↗" : kind === "losers" ? "↘" : <Flame size={16} className={styles.volumeIcon} aria-hidden="true" />}
+      </span>{" "}
+      {titles[kind]}
+    </>
+  );
   return (
     <section className={styles.moverPanel} aria-label={titles[kind]}>
       <div className={styles.moverHeading}>
         <h3>
-          <span
-            aria-hidden="true"
-            className={
-              kind === "gainers"
-                ? styles.up
-                : kind === "losers"
-                  ? styles.down
-                  : styles.note
-            }
-          >
-            {kind === "gainers" ? "↗" : kind === "losers" ? "↘" : <Flame size={16} className={styles.volumeIcon} aria-hidden="true" />}
-          </span>{" "}
-          {titles[kind]}
+          {data && data.quotes.length > 5 ? (
+            <button type="button" className={styles.headingToggle}
+              aria-expanded={expanded} aria-controls={listId}
+              onClick={() => setExpanded((value) => !value)}>
+              {heading}
+              <ChevronDown size={16} className={styles.headingChevron} aria-hidden="true" />
+            </button>
+          ) : heading}
         </h3>
       </div>
       <div className={styles.tableLegend}>
@@ -96,11 +99,6 @@ export function MoverTable({ kind }: { kind: MoverKind }) {
           </li>
         ))}
       </ol>
-      {data && data.quotes.length > 5 && (
-        <button className={styles.moreMovers} aria-expanded={expanded} aria-controls={listId} onClick={() => setExpanded(!expanded)}>
-          {expanded ? "접기" : "더 보기"}
-        </button>
-      )}
       {data && data.quotes.length < 5 && (
         <p className={styles.note}>
           현재 제공된 유효 종목 {data.quotes.length}개

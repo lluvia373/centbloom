@@ -60,6 +60,6 @@ test("news heading removes provider banner and descriptive slogans but preserves
   "./home.module.css":{default:new Proxy({},{get:(_,key)=>String(key)})}
  });
  const html=renderToStaticMarkup(React.createElement(MarketNews));
- assert.doesNotMatch(html,/newsNumber|>01</);assert.match(html,/>종목 뉴스</);assert.match(html,/Source/);assert.match(html,/갱신 실패/);assert.match(html,/Headline/);
+ assert.doesNotMatch(html,/newsNumber|>01</);assert.match(html,/>주요뉴스</);assert.match(html,/Source/);assert.match(html,/갱신 실패/);assert.match(html,/Headline/);
  assert.doesNotMatch(html,/Yahoo Finance|영문 원문|미국 시장 · 기업 이슈|주요 소식과 시장 이슈/);
 });
