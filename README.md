@@ -48,7 +48,7 @@ http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](.
 
 **개발 중에는 검사를 기본 실행하지 않고, 푸시 직전에 모아서 실행한다.** 오류 해결에 필요한 최소 확인이나 사용자가 요청한 검사만 개발 중에 수행한다. 문서·테스트 수정은 구현과 함께 하며 아직 실행하지 않은 검사는 푸시 검증 대기로 기록한다. 파일 저장·개발 서버 시작·커밋에는 검사 훅을 두지 않는다.
 
-각 PC에서 `npm ci`의 prepare가 [푸시 훅](./.githooks/pre-push)을 자동 등록한다. 현재 체크아웃에서 수동 등록하려면 `npm run hooks:install` 또는 `node tests/install-git-hooks.mjs`를 실행한다. 기존 다른 훅 설정이 있으면 덮어쓰지 않고 안내한다. CI와 Git 없는 배포 소스에서는 등록을 건너뛴다.
+각 PC에서 Git clone/pull로 최신 main을 받은 뒤 `npm ci`를 실행하면 prepare가 [푸시 훅](./.githooks/pre-push)을 자동 등록한다. ZIP 다운로드에는 Git 정보가 없어 훅을 등록할 수 없다. 현재 체크아웃에서 수동 등록하려면 `npm run hooks:install` 또는 `node tests/install-git-hooks.mjs`를 실행한다. 기존 다른 훅 설정이 있으면 덮어쓰지 않고 안내한다. CI와 Git 없는 배포 소스에서는 등록을 건너뛴다.
 
 | 시점 | 실행 내용 |
 | --- | --- |
