@@ -1,5 +1,6 @@
 "use client";
 
+import type { NewsFeed } from "@/features/market/trending-news";
 import { AssetAvatar } from "@/components/AssetAvatar";
 import { PriceChange } from "@/components/PriceChange";
 import { QuoteStatus } from "@/components/QuoteStatus";
@@ -17,9 +18,9 @@ RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 
-export function StockDetail({ symbol }: { symbol: string }) {
+export function StockDetail({ symbol, initialNews }: { symbol: string; initialNews?: NewsFeed | null }) {
   const live=useLiveQuotes([symbol]);const quote=live.quotes[symbol];
-  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}<MarketNews key={symbol} symbol={symbol}/></div>;
+  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}<MarketNews key={symbol} symbol={symbol} initialData={initialNews}/></div>;
 }
 function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof useLiveQuotes> }) {
   const { quotes, loading, refreshing, failedSymbols, refresh } = live;

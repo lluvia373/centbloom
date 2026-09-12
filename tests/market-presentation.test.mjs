@@ -10,6 +10,7 @@ function renderTable({kind="active",full=false,data={quotes:rows},failed=false}=
  const {MoverTable}=loadTypescript("src/features/home/MoverTable.tsx",{
   "./home.module.css":styles,
   "@/components/AssetAvatar":{AssetAvatar:()=>null},
+  "@/features/watchlist/WatchStockButton":{WatchStockButton:({symbol})=>React.createElement("button",{"aria-label":symbol+" 관심종목에 담기"},"☆")},
   "@/features/market/use-market-movers":{useMarketMovers:()=>({data,failed,loading:false,refresh:()=>{}})},
  });
  return renderToStaticMarkup(React.createElement(MoverTable,{kind,full}));
@@ -55,13 +56,15 @@ for (const [kind, route, title] of rankingCases) {
    if(state.failed) assert.match(html,/다시 시도/);
   }
  });
- test(route+" page shows the matching full ranking, followed by major news, with a home link",()=>{
+ test(route+" page shows the matching full ranking, followed by major news, with a home link",async()=>{
   const {default:Page,metadata}=loadTypescript("src/app/rankings/"+route+"/page.tsx",{
+   "@/features/market/server/news-response":{initialNews:async()=>null},
    "./home.module.css":styles,
    "./MoverTable":{MoverTable:({kind,full})=>React.createElement("p",null,kind+":"+full)},
    "./MarketNews":{MarketNews:()=>React.createElement("h2",null,"주요뉴스")},
   });
-  const html=renderToStaticMarkup(React.createElement(Page));
+  const element=Page();
+  const html=renderToStaticMarkup(await element.type(element.props));
   assert.ok(html.includes("<h1>"+title+"</h1>"));
   assert.ok(html.includes('href="/"'));
   assert.ok(html.includes(kind+":true"));

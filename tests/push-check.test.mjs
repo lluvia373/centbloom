@@ -95,7 +95,9 @@ test("hook repository environment does not leak into tests or their temporary Gi
   checkPush({ cwd: root, env, updates: update(), execute: fake.execute, log: () => {} });
   for (const [, , options] of fake.checks()) {
     for (const key of ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_CONFIG_COUNT"]) assert.equal(options.env[key], undefined);
-    assert.equal(options.env.PATH, process.env.PATH);
+    const pathKey = Object.keys(env).find((key) => key.toUpperCase() === "PATH");
+    assert.ok(pathKey);
+    assert.equal(options.env[pathKey], env[pathKey]);
   }
   assert.equal(env.GIT_DIR, "original/.git");
 });

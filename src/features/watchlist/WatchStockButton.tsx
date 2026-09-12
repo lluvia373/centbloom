@@ -7,13 +7,38 @@ import { useWatchlist } from "@/hooks/useWatchlist";
 export function WatchStockButton({
   symbol,
   name,
+  compact = false,
+  className,
 }: {
   symbol: string;
   name: string;
+  compact?: boolean;
+  className?: string;
 }) {
   const { user, configured, loading } = useAuth();
   const { items, ready, addItem } = useWatchlist({ loadQuotes: false });
   const [error, setError] = useState<string | null>(null);
+  const saved = items.some((item) => item.symbol === symbol);
+  if (compact) {
+    const needsLogin = configured && !user;
+    const label = name + (saved ? " · 저장됨, 관심목록 보기" : needsLogin ? " · 로그인하고 관심종목 저장" : " · 관심종목에 담기");
+    return (
+      <div className={className}>
+        {!loading && (needsLogin || saved) ? (
+          <Link href="/watchlist" aria-label={label} title={label}>
+            <Star size={18} fill={saved ? "currentColor" : "none"} aria-hidden="true" />
+          </Link>
+        ) : (
+          <button aria-label={label} title={label} disabled={loading || !ready}
+            onClick={() => setError(addItem({ symbol, name, exchange: "", type: "EQUITY" }))}>
+            <Star size={18} aria-hidden="true" />
+          </button>
+        )}
+        <span className="sr-only" role="status">{saved ? name + " 관심종목에 저장됨" : ""}</span>
+        {error && <p role="alert">{error}</p>}
+      </div>
+    );
+  }
   if (configured && !user)
     return (
       <Link className="button-secondary" href="/watchlist">
@@ -21,7 +46,6 @@ export function WatchStockButton({
         로그인하고 관심종목 저장
       </Link>
     );
-  const saved = items.some((item) => item.symbol === symbol);
   return (
     <div>
       <button

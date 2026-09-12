@@ -4,6 +4,7 @@ import type { MarketStory } from "./news-model";
 export interface NewsFeed {
   stories: MarketStory[];
   partial: boolean;
+  stale?: boolean;
 }
 export function selectNewsSymbols(lists: MoversResult[]): string[] {
   return [...new Set(lists.flatMap((list) => list.quotes.slice(0, 3).map((quote) => quote.symbol)))];

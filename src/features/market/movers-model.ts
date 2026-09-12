@@ -3,19 +3,22 @@ export const MOVERS_REFRESH_MS = 30_000;
 export const MOVERS_CACHE_MS = 5_000;
 export const moverKinds = ["active", "gainers", "losers"] as const;
 export type MoverKind = (typeof moverKinds)[number];
+export interface MoverQuote extends StockQuote {
+  averageDailyVolume3Month?: number;
+}
 export interface MoversResult {
   kind: MoverKind;
-  quotes: StockQuote[];
+  quotes: MoverQuote[];
   fetchedAt: string;
   total: number;
 }
 export function normalizeMovers(
   items: unknown[],
   kind: MoverKind,
-): StockQuote[] {
+): MoverQuote[] {
   const seen = new Set<string>();
   return items
-    .flatMap((item): StockQuote[] => {
+    .flatMap((item): MoverQuote[] => {
       if (!item || typeof item !== "object") return [];
       const q = item as Record<string, unknown>;
       if (
@@ -71,6 +74,9 @@ export function normalizeMovers(
           currency: "USD",
           logoUrl: typeof q.logoUrl === "string" ? q.logoUrl : undefined,
           volume,
+          averageDailyVolume3Month:
+            typeof q.averageDailyVolume3Month === "number" && Number.isFinite(q.averageDailyVolume3Month) && q.averageDailyVolume3Month > 0
+              ? q.averageDailyVolume3Month : undefined,
           quotedAt: new Date(time).toISOString(),
           marketState:
             typeof q.marketState === "string" ? q.marketState : undefined,

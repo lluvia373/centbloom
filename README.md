@@ -33,7 +33,7 @@ npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
 
 ## 로컬 실행
 
-모든 구현·수정은 각 PC의 centbloom 원본 저장소의 로컬 `main`에서 진행한다. 실행 전 `git rev-parse --show-toplevel`과 `git branch --show-current`로 확인한다. 작업 위치·충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
+기본 작업 위치는 각 PC의 centbloom 원본 저장소의 로컬 `main`이다. 사용자가 해당 작업에 브랜치를 명시하면 같은 원본의 로컬 브랜치를 사용한다. 시작·수정·최종 보고 전에 실제 경로와 브랜치가 요청에 맞는지 확인하고 보고 첫 줄에 작업 브랜치를 표시한다. 명령·불일치/충돌 처리 기준은 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 커밋·푸시·배포는 사용자 지시 범위에서 진행한다.
 
 ```sh
 npm ci

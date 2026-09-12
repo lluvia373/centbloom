@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "account_id": "87cf0ec0e51a40a26fe9b98266a8ef16",
   "name": "centbloom",
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.ts",
   "compatibility_date": "2026-09-05",
   "compatibility_flags": [
     "nodejs_compat"
@@ -23,5 +23,16 @@
   "ai": {
     "binding": "NEWS_AI",
     "remote": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "NEWS_CACHE",
+      "id": "9121d2f0a84c41c9bbb405e1d71c55fd"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
   }
 }

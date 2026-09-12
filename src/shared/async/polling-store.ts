@@ -52,10 +52,10 @@ export function createPollingStore<K extends string, T>(
     empty,
     refresh,
     snapshot: (kind: K) => entries.get(kind)?.view ?? empty,
-    subscribe(kind: K, listener: () => void) {
+    subscribe(kind: K, listener: () => void, initialData?: T) {
       let entry = entries.get(kind);
       if (!entry) {
-        entry = { view: empty, listeners: new Set() };
+        entry = { view: initialData === undefined ? empty : { data: initialData, loading: false, failed: false }, listeners: new Set() };
         entries.set(kind, entry);
       }
       entry.listeners.add(listener);

@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
+import type { NewsFeed } from "@/features/market/trending-news";
 import { useId, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { useMarketNews } from "@/features/market/use-market-news";
 import { HomeSection } from "./HomeSection";
 import styles from "./home.module.css";
-export function MarketNews({ symbol }: { symbol?: string }) {
-  const { stories, loading, error, partial, retry } = useMarketNews(symbol);
+export function MarketNews({ symbol, initialData }: { symbol?: string; initialData?: NewsFeed | null }) {
+  const { stories, loading, error, partial, retry } = useMarketNews(symbol, initialData);
   const [expanded, setExpanded] = useState(false);
   const listId = useId();
   const initialCount = symbol ? 4 : 8;

@@ -1,21 +1,22 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { createPool } from "@/shared/async/pool";
-import { createTitleTranslator, TITLE_MODEL } from "./title-translation";
+import { createTitleTranslator, TITLE_MODEL, translatedTitle } from "./title-translation";
 
-declare global {
-  interface CloudflareEnv { NEWS_AI?: WorkerBindings["NEWS_AI"] }
-}
 
 // Keep actual inference concurrency bounded even if an HTTP consumer times out.
 // The binding cannot cancel inference already sent to Cloudflare.
 const run = createPool(4);
-export const translateNewsTitles = createTitleTranslator((title, signal) =>
+export function createNewsTitleTranslator(ai: WorkerBindings["NEWS_AI"], storage: WorkerBindings["NEWS_CACHE"]) {
+return createTitleTranslator((title, signal) =>
   run(async () => {
     signal.throwIfAborted();
-    const { env } = await getCloudflareContext({ async: true });
-    if (!env.NEWS_AI) throw new Error("News translation unavailable");
+    if (!ai) throw new Error("News translation unavailable");
     signal.throwIfAborted();
-    return env.NEWS_AI.run(TITLE_MODEL, {
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(title))))
+      .map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    const key = "news-title:v5:" + TITLE_MODEL + ":" + hash;
+    const cached = await storage.get(key);
+    if (cached) return { choices: [{ finish_reason: "stop", message: { content: cached } }] };
+    const result = await ai.run(TITLE_MODEL, {
       messages: [
         {
           role: "system",
@@ -27,5 +28,11 @@ export const translateNewsTitles = createTitleTranslator((title, signal) =>
       temperature: 0.1,
       reasoning_effort: "low",
     });
+    const titleKo = translatedTitle(title, result);
+    signal.throwIfAborted();
+    await storage.put(key, titleKo, { expirationTtl: 7 * 86400 });
+    return result;
   }, signal),
 );
+
+}

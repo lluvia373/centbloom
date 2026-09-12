@@ -11,13 +11,13 @@ import { useMarketMovers } from "@/features/market/use-market-movers";
 import { describeRankChange, type RankChange } from "@/features/market/mover-ranks";
 import type { MoverKind } from "@/features/market/movers-model";
 import { rankingPages } from "@/features/market/ranking-pages";
+import { WatchStockButton } from "@/features/watchlist/WatchStockButton";
 import styles from "./home.module.css";
 function RankMovement({ change }: { change: RankChange | undefined }) {
   const delta = typeof change === "number" ? change : 0;
-  const color = delta > 0 ? styles.up : delta < 0 ? styles.down : "";
   const label = describeRankChange(change);
   return (
-    <span className={[styles.rankChange, color].filter(Boolean).join(" ")} title={label} aria-label={label}>
+    <span className={styles.rankChange} title={label} aria-label={label}>
       {change === "new" ? "신규" : delta ? (delta > 0 ? "▲" : "▼") + Math.abs(delta) : "—"}
     </span>
   );
@@ -35,7 +35,7 @@ export function MoverTable({ kind, full = false }: { kind: MoverKind; full?: boo
     </>
   );
   return (
-    <section className={styles.moverPanel} aria-label={page.title}>
+    <section className={[styles.moverPanel, full ? styles.fullRanking : ""].join(" ")} aria-label={page.title}>
       {!full && <div className={styles.moverHeading}>
         <h3>
           <Link href={page.href} className={styles.headingLink}>
@@ -46,7 +46,12 @@ export function MoverTable({ kind, full = false }: { kind: MoverKind; full?: boo
       </div>}
       <div className={styles.tableLegend}>
         <span title="순위 변동은 직전 정상 조회 목록과 비교합니다">순위 · 종목</span>
-        <span>{kind === "active" ? "현재가 · 거래량" : "현재가 · 등락률"}</span>
+        <span>{full ? "현재가" : "현재가 · 등락률"}</span>
+        {full && <>
+          <span className={styles.fullChange}>등락률</span>
+          <span className={styles.fullVolume}>거래량</span>
+          <span className={styles.watchHeading}>관심</span>
+        </>}
       </div>
       {!data && (
         <p className={styles.empty} role="status">
@@ -57,6 +62,7 @@ export function MoverTable({ kind, full = false }: { kind: MoverKind; full?: boo
         {data?.quotes.slice(0, full ? 10 : 5).map((q, i) => (
           <li key={q.symbol}>
             <Link
+              className={styles.moverLink}
               href={"/stock/" + encodeURIComponent(q.symbol)}
               title={q.name + " · 미국 정규장 기준 · 지연 가능"}
             >
@@ -66,26 +72,23 @@ export function MoverTable({ kind, full = false }: { kind: MoverKind; full?: boo
               </span>
               <AssetAvatar symbol={q.symbol} logoUrl={q.logoUrl} small />
               <span className={styles.stockName}>
-                <strong>{q.symbol}</strong>
-                <small>{q.name}</small>
+                <strong>{q.name}</strong>
+                <small>{q.symbol}{(kind === "active" || full) && <span className={styles.inlineVolume}> · {q.volume == null ? "거래량 —" : formatCompactNumber(q.volume) + "주"}</span>}</small>
               </span>
               <span className={styles.stockValue}>
                 <strong>{formatCurrency(q.price, q.currency)}</strong>
                 <small
-                  className={
-                    kind === "active"
-                      ? styles.volume
-                      : q.changePercent > 0
-                        ? styles.up
-                        : styles.down
-                  }
+                  className={[styles.inlineChange, q.changePercent > 0 ? styles.up : q.changePercent < 0 ? styles.down : styles.volume].join(" ")}
                 >
-                  {kind === "active"
-                    ? formatCompactNumber(q.volume ?? 0) + "주"
-                    : formatPercent(q.changePercent)}
+                  {formatPercent(q.changePercent)}
                 </small>
               </span>
+              {full && <>
+                <span className={[styles.fullChange, q.changePercent > 0 ? styles.up : q.changePercent < 0 ? styles.down : styles.volume].join(" ")}>{formatPercent(q.changePercent)}</span>
+                <span className={styles.fullVolume}>{q.volume == null ? "—" : formatCompactNumber(q.volume) + "주"}</span>
+              </>}
             </Link>
+            {full && <WatchStockButton symbol={q.symbol} name={q.name} compact className={styles.rankingWatch} />}
           </li>
         ))}
       </ol>

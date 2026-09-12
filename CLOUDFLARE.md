@@ -33,9 +33,9 @@ npm run deploy:cloudflare
 
 - wrangler.jsonc의 NEWS_AI 바인딩을 사용한다. 모델은 [Cloudflare GPT OSS 120B](https://developers.cloudflare.com/workers-ai/models/gpt-oss-120b/)이며 공개 기사 제목만 전송한다. 개인 거래/계정 정보·기사 본문은 전송하지 않는다. 별도 OpenAI API 키는 사용하지 않는다.
 - 로컬 next dev는 OpenNext의 개발 프록시를 초기화한다. Wrangler 로그인에 AI 권한이 필요하고 remote 바인딩이므로 **로컬 번역도 실제 Cloudflare AI 사용량**에 포함된다. 생산 빌드는 이 개발 프록시를 시작하지 않는다. 공급 오류/사용량 한도/바인딩 미설정 시 원문 뉴스는 유지한다.
-- 4개 동시 추론, 번역 대기 최대 8초, 모델 출력 최대 600토큰, 성공 결과 7일/1000개까지 인스턴스 메모리 공유, 실패 5분 대기. 대기 기한/소비자 취소로 이미 서버에 전송된 추론까지 중단되지는 않는다. 공유 요청의 한 소비자 해제는 다른 소비자를 취소하지 않는다.
-- 캐시는 영구/전 세계 공유 저장소가 아니다. 재시작·다른 Worker 인스턴스에서는 다시 번역될 수 있다. 실제 사용량 확인 후 필요하면 영구 캐시와 수집 작업으로 이전한다. [Workers AI 요금](https://developers.cloudflare.com/workers-ai/platform/pricing/) 기준으로 계정 대시보드 사용량을 확인하며 무제한 무료로 표현하지 않는다.
-- 09-07 main `be42761` 배포에 NEWS_AI 바인딩과 번역 호출을 포함했다. 실제 번역 품질·사용량은 별도 확인 대상이며 공급 실패 시 원문을 유지한다. 배포 버전·복구 버전은 PROJECT_STATUS의 환경별 상태를 따른다. 롤백은 API의 번역 호출을 제거해 기존 원문 응답으로 되돌리고 NEWS_AI 바인딩/개발 초기화를 제거한다. 원문 데이터나 운영 DB를 수정하지 않는다.
+- 4개 동시 추론, 번역 대기 최대 8초, 모델 출력 최대 600토큰, 성공 결과는 제목별 KV에 최대 7일 보관하고 번역 실행 내부에서 중복 요청을 공유한다. 대기 기한/소비자 취소로 이미 서버에 전송된 추론까지 중단되지는 않는다. 공유 요청의 한 소비자 해제는 다른 소비자를 취소하지 않는다.
+- 성공한 제목 번역은 KV로 인스턴스 간 공유한다. 지역별 전파 지연·동시 미수집 제목의 중복 추론 가능성은 남는다. [Workers AI 요금](https://developers.cloudflare.com/workers-ai/platform/pricing/) 기준으로 계정 대시보드 사용량을 확인하며 무제한 무료로 표현하지 않는다.
+- 09-07 main `be42761` 배포에 NEWS_AI 바인딩과 번역 호출을 포함했다. 실제 번역 품질·사용량은 별도 확인 대상이며 공급 실패 시 원문을 유지한다. 배포 버전·복구 버전은 PROJECT_STATUS의 환경별 상태를 따른다. 롤백은 이전 정상 Worker 버전으로 복귀하고 정기 수집 트리거도 비활성화한다. 뉴스 KV는 보존한다. 원문 데이터나 운영 DB를 수정하지 않는다.
 
 ## AdSense 연결 준비
 
@@ -119,3 +119,11 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 원자적 배치 저장, 발표 ID 중복 제거, 공급자 갱신 시각이 오래된 응답 차단, 숫자 0 보존을 적용한다. 최신 값과 수정 원문은 별도 테이블에 보관한다. 동일한 공급자 갱신 시각에 내용만 달라지면 버전 원문은 추가 보관하되 기존 최신 값을 자동 교체하지 않는다. Forecast와 TEForecast를 섞지 않는다. 과거 화면의 예상치는 공급자가 반환해 저장한 컨센서스이며 실제 발표 직전의 수치를 포착했다고 보장하지 않는다.
 
 문제 발생 시 수집 프로세스를 먼저 종료하고 CALENDAR_ARCHIVE_ENABLED를 끈다. [복구 SQL](./supabase/rollback/economic_calendar.sql)은 읽기/수집 권한만 회수하고 이미 쌓인 기록을 삭제하지 않는다. 서비스 재개는 데이터 검증 뒤 권한을 복구해 진행한다. 공급자 취소/철회가 실제치 없는 응답만으로 표현되면 기존 완료 값을 지우지 않으므로 명시적인 취소 상태 제공 여부를 계약 검증에서 확인한다.
+
+## 뉴스 미리 준비
+
+- `wrangler.jsonc`의 `NEWS_CACHE` KV와 `custom-worker.ts`의 5분 Scheduled Handler를 사용한다. 기존 OpenNext fetch 처리는 유지한다. 09-12 사용자 main 배포 승인으로 운영 namespace를 생성하고 ID를 설정에 고정했다. 실제 활성 버전과 수집 검증은 PROJECT_STATUS를 따른다. 로컬은 계속 로컬 저장소를 사용한다.
+- 개발 서버가 실행된 상태에서 `npm run news:prepare -- AAPL`로 홈과 지정 종목을 준비한다. `npm run news:prepare -- --watch AAPL`은 브라우저 방문 없이 로컬 3000에 5분마다 준비 요청을 보낸다. 개발 서버가 닫히면 연결 실패 시 종료한다. 운영에서는 이 PC 프로세스가 아니라 Scheduled Handler를 사용한다.
+- 첫 수집·번역이 끝나야 빠른 최초 표시가 가능하다. 운영 전 홈과 주요 종목을 준비한 후 확인한다. KV 지역별 갱신 전파·최초 읽기 지연이 있어 0.5초를 저장소 설정만으로 보장하지 않는다. 모은 목록 6시간·성공 제목 7일 보존, 실제 수집 5분/화면 확인 1분을 구분한다. KV 읽기/쓰기·AI 사용량은 운영 활성화 전에 요금과 한도를 확인한다.
+- 09-12 사용자 요청 검증에서 Next 독립 실행 빌드·OpenNext 변환과 로컬 Worker 실행을 통과했다. `/__scheduled` 호출 후 실제 KV 준비 시각 증가까지 확인했다. Windows에서는 일반 Next 빌드에 `--skipNextBuild`를 바로 적용하면 standalone 산출물이 없어 실패하므로 OpenNext 전체 빌드 또는 OpenNext와 같은 `NEXT_PRIVATE_STANDALONE=true` 빌드를 사용한다.
+- 응답 후 작업은 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)에 맞춰 25초, 정기 수집은 홈 90초·종목 2개씩 70초로 제한한다. 운영 배포·정기 실행·지역별 속도는 아직 미검증이며 로컬 성능과 장애 복구 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.
