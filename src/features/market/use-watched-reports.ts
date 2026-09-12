@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { createPollingStore, type PollingView } from "@/shared/async/polling-store";
 import { createRequestCache } from "@/shared/async/request-cache";
 import { fetchPreparedFeed } from "@/shared/async/prepared-feed";
@@ -26,48 +26,59 @@ const emptyViews: PollingView<WatchedStockReport | null>[] = [];
 let consumers = 0;
 const visibility = () => store.setVisible(document.visibilityState === "visible");
 
-/** Subscribe to stock data once even when multiple home sections use it. */
-export function useWatchedReports(symbols: string[]) {
-  const key = [...new Set(symbols)].sort().join("|");
-  const observer = useMemo(() => {
+/** Cache immutable snapshots at the external-store boundary, including report expiry. */
+export function createWatchedReportObserver(key: string, source = store, now = Date.now) {
     const names = key ? key.split("|") : [];
     let current = emptyViews;
+    let reports = emptyReports;
+    let expiresAt = Infinity;
+    const listeners = new Set<() => void>();
     return {
-      names,
       subscribe(listener: () => void) {
         if (!names.length) return () => {};
         if (consumers++ === 0) { document.addEventListener("visibilitychange", visibility); visibility(); }
-        const stops = names.map(symbol => store.subscribe(symbol, listener));
+        listeners.add(listener);
+        const stops = names.map(symbol => source.subscribe(symbol, listener));
         return () => {
+          listeners.delete(listener);
           stops.forEach(stop => stop());
           if (--consumers === 0) document.removeEventListener("visibilitychange", visibility);
         };
       },
       snapshot() {
-        const next = names.map(symbol => store.snapshot(symbol));
-        if (current.length !== next.length || current.some((view, index) => view !== next[index])) current = next;
-        return current;
+        const next = names.map(symbol => source.snapshot(symbol));
+        const checkedAt = now();
+        if (expiresAt > checkedAt && current.length === next.length
+          && current.every((view, index) => view === next[index])) return reports;
+        current = next;
+        reports = {};
+        expiresAt = Infinity;
+        for (let index = 0; index < next.length; index++) {
+          const report = next[index].data;
+          if (report && report.expiresAt > checkedAt) {
+            reports[names[index]] = report;
+            expiresAt = Math.min(expiresAt, report.expiresAt);
+          }
+        }
+        return reports;
+      },
+      refresh() {
+        // Expired data disappears even while hidden or an earlier request is still running.
+        listeners.forEach(listener => listener());
+        names.forEach(symbol => { void source.refresh(symbol); });
       },
     };
-  }, [key]);
-  const views = useSyncExternalStore(observer.subscribe, observer.snapshot, () => emptyViews);
-  const [expiredAt, setExpiredAt] = useState(0);
-  const reports = useMemo(() => {
-    if (!views.length) return emptyReports;
-    const next: Record<string, WatchedStockReport> = {};
-    for (let i = 0; i < views.length; i++) {
-      const report = views[i].data;
-      if (report && report.expiresAt > Math.max(expiredAt, Date.now())) next[observer.names[i]] = report;
-    }
-    return next;
-  }, [views, observer, expiredAt]);
+}
+
+/** Subscribe to stock data once even when multiple home sections use it. */
+export function useWatchedReports(symbols: string[]) {
+  const key = [...new Set(symbols)].sort().join("|");
+  const observer = useMemo(() => createWatchedReportObserver(key), [key]);
+  const reports = useSyncExternalStore(observer.subscribe, observer.snapshot, () => emptyReports);
   const expiry = Math.min(...Object.values(reports).map(report => report.expiresAt));
   useEffect(() => {
     if (!Number.isFinite(expiry)) return;
-    const timer = setTimeout(() => {
-      setExpiredAt(expiry);
-      observer.names.forEach(symbol => { void store.refresh(symbol); });
-    }, Math.max(0, expiry - Date.now()));
+    const timer = setTimeout(observer.refresh, Math.max(0, expiry - Date.now()));
     return () => clearTimeout(timer);
   }, [expiry, observer]);
   return reports;

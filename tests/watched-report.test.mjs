@@ -29,6 +29,50 @@ const fresh = () => {
 };
 const translation = { createNewsTitleTranslator: () => async stories => stories };
 
+test("watched report snapshots stay stable and hide expired reports without a provider update", () => {
+  const { createWatchedReportObserver } = loadTypescript("src/features/market/use-watched-reports.ts");
+  let clock = 100;
+  const first = { ...snapshot().report, expiresAt: 200 };
+  const second = { ...snapshot().report, quote: { ...quote(), symbol: "MSFT" }, expiresAt: 300 };
+  const views = new Map([
+    ["AAPL", { data: first, loading: false, failed: false }],
+    ["MSFT", { data: second, loading: false, failed: false }],
+  ]);
+  const refreshed = [];
+  const observer = createWatchedReportObserver("AAPL|MSFT", {
+    snapshot: symbol => views.get(symbol), refresh: symbol => refreshed.push(symbol),
+  }, () => clock);
+  const initial = observer.snapshot();
+  assert.equal(initial.AAPL, first);
+  assert.equal(initial.MSFT, second);
+  clock = 199;
+  assert.equal(observer.snapshot(), initial);
+  clock = 200;
+  const expired = observer.snapshot();
+  assert.equal(expired.AAPL, undefined);
+  assert.equal(expired.MSFT, second);
+  assert.equal(initial.AAPL, first);
+  assert.equal(observer.snapshot(), expired);
+  observer.refresh();
+  assert.deepEqual(refreshed, ["AAPL", "MSFT"]);
+  const replacement = { ...first, expiresAt: 400 };
+  views.set("AAPL", { data: replacement, loading: false, failed: false });
+  assert.equal(observer.snapshot().AAPL, replacement);
+  clock = 400;
+  const empty = observer.snapshot();
+  assert.equal(Object.keys(empty).length, 0);
+  assert.equal(observer.snapshot(), empty);
+});
+
+test("an observer never exposes already expired cached data on first subscription", () => {
+  const { createWatchedReportObserver } = loadTypescript("src/features/market/use-watched-reports.ts");
+  const view = { data: { ...snapshot().report, expiresAt: 100 }, loading: false, failed: true };
+  const observer = createWatchedReportObserver("AAPL", { snapshot: () => view }, () => 100);
+  const empty = observer.snapshot();
+  assert.equal(Object.keys(empty).length, 0);
+  assert.equal(observer.snapshot(), empty);
+});
+
 test("quiet stocks retain a useful quote and direct article without an invented abnormal signal", () => {
   const ready = usableWatchedReport(snapshot(), "AAPL", now);
   assert.equal(ready.report.change, null);

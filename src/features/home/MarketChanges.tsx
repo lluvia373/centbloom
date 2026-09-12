@@ -14,7 +14,7 @@ import { WatchStockButton } from "@/features/watchlist/WatchStockButton";
 import { HomeSection } from "./HomeSection";
 import styles from "./home.module.css";
 
-function Comparison({ signal }: { signal: ChangeSignal }) {
+function Comparison({ signal, previousMaximum }: { signal: ChangeSignal; previousMaximum?: number }) {
   if (signal.kind === "reversal") return (
     <div className={styles.changeReversal}>
       <span>{signal.baseline}거래일 연속 {signal.value > 0 ? "하락" : "상승"}</span>
@@ -23,7 +23,8 @@ function Comparison({ signal }: { signal: ChangeSignal }) {
     </div>
   );
   const current = Math.abs(signal.value);
-  const maximum = Math.max(current, signal.baseline);
+  const baseline = previousMaximum ?? signal.baseline;
+  const maximum = Math.max(current, baseline);
   const format = (value: number) => signal.kind === "volume" ? formatCompactNumber(value) + "주" : value.toFixed(2) + "%";
   return (
     <div className={styles.changeComparison}>
@@ -33,9 +34,9 @@ function Comparison({ signal }: { signal: ChangeSignal }) {
         <span className={styles.changeBar} aria-hidden="true"><i style={{ width: `${current / maximum * 100}%` }} /></span>
       </div>
       <div>
-        <span>{signal.kind === "volume" ? "3개월 하루 평균" : "20거래일 평균 등락폭"}</span>
-        <strong>{format(signal.baseline)}</strong>
-        <span className={styles.changeBar} aria-hidden="true"><i style={{ width: `${signal.baseline / maximum * 100}%` }} /></span>
+        <span>{signal.kind === "volume" ? "3개월 하루 평균" : previousMaximum !== undefined ? "직전 20거래일 최대 등락폭" : "직전 20거래일 평균 등락폭"}</span>
+        <strong>{format(baseline)}</strong>
+        <span className={styles.changeBar} aria-hidden="true"><i style={{ width: `${baseline / maximum * 100}%` }} /></span>
       </div>
     </div>
   );
@@ -46,7 +47,7 @@ function RecentMovement({ item }: { item: MarketChange }) {
   const moves = [...item.context.recentMoves, { date: item.sessionDate, percent: item.quote.changePercent }];
   const max = Math.max(...moves.map(move => Math.abs(move.percent)), 0.01);
   return <div className={styles.changeHistory}>
-    <p className={styles.changeHistoryHeading}>최근 5거래일 <span>일별 등락률</span></p>
+    <p className={styles.changeHistoryHeading}>직전 5거래일 + 이번 장 <span>주가 등락률</span></p>
     <ol aria-label={item.quote.name + " 최근 정규장 등락률"}>
       {moves.map((move, index) => <li key={move.date} className={index === moves.length - 1 ? styles.currentMove : undefined}>
         <span className={move.percent > 0 ? styles.up : move.percent < 0 ? styles.down : styles.volume}>{move.percent > 0 ? "+" : ""}{move.percent.toFixed(1)}%</span>
@@ -101,6 +102,11 @@ export function MarketChanges({ initialData }: { initialData?: ResearchedChanges
             const q = item.quote;
             const primary = item.signals[0];
             const observation = changeObservation(item);
+            const previousMaximum = primary.kind === "price" && !item.signals.some(signal => signal.kind === "volume")
+              && item.context?.previousMaxMove !== undefined && Math.abs(q.changePercent) > item.context.previousMaxMove + 0.01
+              ? item.context.previousMaxMove : undefined;
+            const metric = primary.kind === "volume" ? primary.ratio.toFixed(1) : primary.kind === "reversal" ? String(primary.baseline) : formatPercent(q.changePercent);
+            const priceSignal = item.signals.find(signal => signal.kind === "price");
             const story = item.story;
             const href = "/stock/" + encodeURIComponent(q.symbol);
             return <article className={styles.changeCard} key={q.symbol}>
@@ -111,13 +117,19 @@ export function MarketChanges({ initialData }: { initialData?: ResearchedChanges
                 </Link>
                 <WatchStockButton symbol={q.symbol} name={q.name} compact className={styles.rankingWatch} />
               </div>
-              <div className={styles.changeBadges}>
-                <span>{changeLabels[primary.kind]}</span>
-                <span className={q.changePercent > 0 ? styles.up : q.changePercent < 0 ? styles.down : styles.volume}>{formatPercent(q.changePercent)}</span>
+              <div className={styles.changeMetricRow}>
+                <div className={styles.changeMetric}>
+                  <span>{primary.kind === "volume" ? "평소 대비 거래량" : primary.kind === "price" ? "이번 장 주가 등락률" : `연속 ${q.changePercent > 0 ? "하락" : "상승"} 후 전환`}</span>
+                  <strong className={primary.kind === "price" ? (q.changePercent > 0 ? styles.up : styles.down) : undefined}>{metric}{primary.kind !== "price" && <small>{primary.kind === "volume" ? "배" : "일"}</small>}</strong>
+                </div>
+                {primary.kind !== "price" && <div className={styles.changeQuoteMove}>
+                  <span>이번 장 주가</span>
+                  <strong className={q.changePercent > 0 ? styles.up : q.changePercent < 0 ? styles.down : styles.volume}>{formatPercent(q.changePercent)}</strong>
+                </div>}
               </div>
               <h3><Link href={href}>{observation.headline}</Link></h3>
-              <p className={styles.changeEvidence}>{observation.evidence}</p>
-              <Comparison signal={primary} />
+              {primary.kind === "volume" && priceSignal && <p className={styles.changeEvidence}>가격 등락폭도 평소의 {priceSignal.ratio.toFixed(1)}배</p>}
+              <Comparison signal={primary} previousMaximum={previousMaximum} />
               <RecentMovement item={item} />
               <div className={styles.changeStory}>
                 <span>종목 뉴스</span>

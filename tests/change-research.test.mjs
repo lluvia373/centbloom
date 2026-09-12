@@ -225,12 +225,12 @@ test("history is visible without disclosure and longer card lists are paged thre
   let html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
   assert.equal((html.match(/<article/g) ?? []).length, 3);
   assert.equal((html.match(/<time /g) ?? []).length, 18);
-  assert.match(html, /최근 5거래일/);
-  assert.match(html, /일별 등락률/);
+  assert.match(html, /직전 5거래일 \+ 이번 장/);
+  assert.match(html, /주가 등락률/);
   assert.match(html, /이번 장/);
   assert.match(html, /다음 종목/);
   assert.doesNotMatch(html, /Company event 3|<details|<summary|aria-expanded|흐름 전환/);
   data = feed([{ ...data.items[0], context: undefined }]);
   html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
-  assert.doesNotMatch(html, /최근 5거래일|다음 종목/);
+  assert.doesNotMatch(html, /직전 5거래일|다음 종목/);
 });
