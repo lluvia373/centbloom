@@ -1,6 +1,6 @@
 # Cloudflare Workers 배포
 
-최종 수정: 2026-09-12 · 광고 연결 범위·로컬 검사 절차 정정, 운영 설정 재조회 아님
+최종 수정: 2026-09-12 · main c13de14 배포·뉴스 KV/정기 수집 설정 확인
 
 Next.js·API를 Workers/OpenNext에서 실행한다. 실제 배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#환경별-진행-상태).
 
@@ -126,4 +126,4 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 - 개발 서버가 실행된 상태에서 `npm run news:prepare -- AAPL`로 홈과 지정 종목을 준비한다. `npm run news:prepare -- --watch AAPL`은 브라우저 방문 없이 로컬 3000에 5분마다 준비 요청을 보낸다. 개발 서버가 닫히면 연결 실패 시 종료한다. 운영에서는 이 PC 프로세스가 아니라 Scheduled Handler를 사용한다.
 - 첫 수집·번역이 끝나야 빠른 최초 표시가 가능하다. 운영 전 홈과 주요 종목을 준비한 후 확인한다. KV 지역별 갱신 전파·최초 읽기 지연이 있어 0.5초를 저장소 설정만으로 보장하지 않는다. 모은 목록 6시간·성공 제목 7일 보존, 실제 수집 5분/화면 확인 1분을 구분한다. KV 읽기/쓰기·AI 사용량은 운영 활성화 전에 요금과 한도를 확인한다.
 - 09-12 사용자 요청 검증에서 Next 독립 실행 빌드·OpenNext 변환과 로컬 Worker 실행을 통과했다. `/__scheduled` 호출 후 실제 KV 준비 시각 증가까지 확인했다. Windows에서는 일반 Next 빌드에 `--skipNextBuild`를 바로 적용하면 standalone 산출물이 없어 실패하므로 OpenNext 전체 빌드 또는 OpenNext와 같은 `NEXT_PRIVATE_STANDALONE=true` 빌드를 사용한다.
-- 응답 후 작업은 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)에 맞춰 25초, 정기 수집은 홈 90초·종목 2개씩 70초로 제한한다. 운영 배포·정기 실행·지역별 속도는 아직 미검증이며 로컬 성능과 장애 복구 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.
+- 응답 후 작업은 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)에 맞춰 25초, 정기 수집은 홈 90초·종목 2개씩 70초로 제한한다. c13de14 운영 배포·5분 트리거 설정·실제 KV 뉴스 갱신을 확인했다. 정기 실행의 장기 안정성·여러 지역 속도는 미검증이며 로컬/운영 성능과 장애 복구 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.
