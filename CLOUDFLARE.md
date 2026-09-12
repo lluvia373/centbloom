@@ -1,6 +1,6 @@
 # Cloudflare Workers 배포
 
-최종 수정: 2026-09-08
+최종 수정: 2026-09-12 · 광고 연결 범위·로컬 검사 절차 정정, 운영 설정 재조회 아님
 
 Next.js·API를 Workers/OpenNext에서 실행한다. 실제 배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#환경별-진행-상태).
 
@@ -27,6 +27,7 @@ npm run deploy:cloudflare
 - 이전 Worker와 배포 이력은 복구용으로 보관한다. 서비스 바인딩으로 새 앱을 전달하던 동작은 종료했다. 계정 거래와 DB·브라우저 저장 데이터를 삭제하지 않는다. 이전 주소에만 남은 로컬 노트·관심종목은 새 주소로 자동 이전되지 않았다.
 - Auth Site URL과 공개 Redirect URL은 센트블룸만 사용한다. 이전 공개 주소를 허용 목록에서 제거했으며 localhost:3000·127.0.0.1:3000 개발 주소는 유지한다.
 - Git Builds: centbloom은 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. centifolio는 check:docs 후 deploy:legacy로 비공개 종료 상태를 유지한다. 두 연결은 같은 저장소 main을 사용한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
+- 로컬 검사는 [README 검증](./README.md#검증)에 따라 개발 중 실행을 최소화하고 pre-push 훅에 모은다. 배포 CI의 prepare는 로컬 Git 훅 설치를 건너뛴다. 로컬 통과와 배포 환경의 OpenNext 빌드 성공은 구분하며, 원격 Builds 설정은 이번 검사 시점 변경에서 수정하지 않았다.
 
 ## 뉴스 제목 자동 번역
 
@@ -40,8 +41,8 @@ npm run deploy:cloudflare
 
 공개 화면은 광고 위치와 개발 전용 미리보기 상태이며 운영 빌드에서는 숨긴다. `/portfolio`의 예약 영역·조건부 송출 코드는 [AdSense 연결](#adsense-연결)을 따른다. 실제 publisher/slot ID·ads.txt·송출은 미연결이다.
 
-1. AdSense 계정에서 사용할 공개 도메인의 사이트 승인 상태를 확인하고, PRODUCT_SPEC의 현재 본문 배치 3개 이름으로 디스플레이 광고 단위를 구분한다. 삭제된 home-top·home-rail·home-news를 다시 만들지 않는다.
-2. 발급받은 publisher ID와 각 단위 ID로 features/ads의 같은 AdSlot 경계에 송출을 연결한다. 계정이 제공하는 정확한 ads.txt 항목을 public/ads.txt에 등록한다. 현재는 값을 추정해 파일/환경변수를 만들지 않았다.
+1. AdSense 계정에서 사용할 공개 도메인의 사이트 승인 상태를 확인한다. [D010](./DECISIONS.md#현재-유효한-결정)에 따라 오른쪽 사이드 광고를 사용하고 추가 광고도 도입하되, 추가 페이지·위치·개수·모바일 형식은 아직 미정이다. 현재 본문 하단 3개와 포트폴리오 예약 영역을 확정 배치로 간주하지 않는다. 추가 배치는 결정 후 [광고 명세](./PRODUCT_SPEC.md#광고-배치)를 갱신하고 필요한 단위만 발급한다.
+2. 확정된 수동 배치가 있으면 발급받은 publisher ID와 단위 ID로 features/ads의 같은 AdSlot 경계에 송출을 연결한다. 계정이 제공하는 정확한 ads.txt 항목을 public/ads.txt에 등록한다. 현재는 값을 추정해 파일/환경변수를 만들지 않았다.
 3. 사이드 광고는 오른쪽만 사용하도록 자동 광고의 사이드 레일 설정을 연결한다. 왼쪽 광고는 활성화하지 않으며 SideRailPreview의 오른쪽 박스에 수동 광고를 넣지 않는다. 로컬 박스는 공식 사이드 레일의 위치 예시이며 실제 노출/크기는 Google이 결정한다. 실제 데스크톱에서 사이드바·본문·닫기 버튼을 가리지 않는지 확인하고 공간이 부족하면 사이드 광고를 숨기거나 해당 경로를 제외한다. 자동 광고의 개인 자산/거래/노트/설정 경로 제외와 SPA 경로 이동 시 해제도 검증한다. 자동 본문/앵커/전면 광고가 기존 배치 외에 중복 추가되지 않게 설정한다. 개인정보 고지·필요한 동의 설정과 광고의 공개 표시 조건을 실제 배포 대상 기준으로 확인한다.
 4. 로컬/테스트 트래픽은 계속 미리보기만 사용한다. 실제 슬롯은 공유 스크립트 1회 로드·가시 영역/유효 너비 확인·단위당 1회 초기화·미충전/오류 처리를 검증한 뒤 사용자 배포 지시에 따라 공개한다.
 5. 실제 서비스의 단위별 노출·뷰어빌리티·RPM과 콘텐츠 사용/로딩 성능을 비교한다. 배치만으로 수익이 발생했다고 기록하지 않는다.
@@ -63,7 +64,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 
 ## AdSense 연결
 
-`/portfolio`는 기본적으로 광고 예약 영역을 표시하며 실제 광고 요청은 비활성이다. 연결하려면 아래 공개 변수를 **빌드 시점**에 설정한다.
+`/portfolio`는 기본적으로 광고 예약 영역을 표시하며 실제 광고 요청은 비활성이다. 아래는 기존 코드의 연결 방법이며 이 위치의 최종 채택은 미정이다. 배치가 확정되면 아래 공개 변수를 **빌드 시점**에 설정한다.
 
 ```dotenv
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=

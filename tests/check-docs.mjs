@@ -2,8 +2,33 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
+import { inspectDocumentationMap, lookupDocumentationGuide } from "./documentation-map.mjs";
 
-const root = resolve(process.argv[2] ?? process.cwd());
+const args = process.argv.slice(2);
+let rootArgument;
+let guideQuery;
+for (let index = 0; index < args.length; index++) {
+  if (args[index] === "--guide" && guideQuery === undefined && args[index + 1] && !args[index + 1].startsWith("--")) {
+    guideQuery = args[++index];
+  } else if (!args[index].startsWith("--") && rootArgument === undefined) {
+    rootArgument = args[index];
+  } else {
+    console.error("Usage: node tests/check-docs.mjs [root] [--guide <feature or src path>]");
+    process.exit(1);
+  }
+}
+const root = resolve(rootArgument ?? process.cwd());
+if (guideQuery !== undefined) {
+  const mapPath = resolve(root, "DEVELOPMENT.md");
+  if (!existsSync(mapPath)) {
+    console.error("DEVELOPMENT.md의 작업별 시작점 표가 있어야 기능 안내를 조회할 수 있습니다.");
+    process.exit(1);
+  }
+  const guide = lookupDocumentationGuide(root, withoutCode(readFileSync(mapPath, "utf8")), guideQuery);
+  if (guide.error) console.error(guide.error);
+  else console.log(guide.text);
+  process.exit(guide.error ? 1 : 0);
+}
 const errors = [];
 const privateDoc = "BUSINESS_MODEL.md";
 function gitFiles(...flags) {
@@ -118,9 +143,16 @@ for (const file of documents) {
     }
   }
 }
+let mapSize;
+if (existsSync(resolve(root, "src")) && existsSync(resolve(root, "DEVELOPMENT.md"))) {
+  const map = inspectDocumentationMap(root, withoutCode(read("DEVELOPMENT.md")));
+  errors.push(...map.errors);
+  mapSize = map.rows.length;
+}
 if (errors.length) {
   console.error("Documentation check failed:\n" + [...new Set(errors)].map((error) => "- " + error).join("\n"));
   process.exitCode = 1;
 } else {
-  console.log("Documentation check passed: " + documents.size + " documents, registries, inline local links/anchors and local business decision review.");
+  console.log("Documentation check passed: " + documents.size + " documents, registries, inline local links/anchors and local business decision review"
+    + (mapSize === undefined ? "." : "; " + mapSize + " feature guides with source coverage."));
 }

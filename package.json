@@ -7,13 +7,17 @@
     "build": "next build",
     "start": "next start",
     "check:docs": "node tests/check-docs.mjs",
+    "docs:guide": "node tests/check-docs.mjs --guide",
     "check:design": "node tests/check-design.mjs",
     "audit:design": "node tests/check-design.mjs --strict",
     "lint": "node tests/check-docs.mjs && node tests/check-design.mjs && eslint src tests brand *.mjs *.ts",
     "build:cloudflare": "opennextjs-cloudflare build",
     "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "deploy:legacy": "wrangler deploy --config wrangler.legacy.jsonc"
+    "deploy:legacy": "wrangler deploy --config wrangler.legacy.jsonc",
+    "prepare": "node tests/install-git-hooks.mjs",
+    "hooks:install": "node tests/install-git-hooks.mjs",
+    "check:push": "node tests/check-push.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.6",

@@ -1,150 +1,113 @@
 # 코드 지도와 변경 방법
 
-최종 확인: 2026-09-06 · main + codex/market-index-strip의 로컬 공개 홈 개편 기준. 파일 역할·확장 위치는 이 문서, 제품 의미는 [PRODUCT_SPEC.md](./PRODUCT_SPEC.md), 실제 검증·배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)가 기준이다. 설치 버전과 실행 명령은 package.json·lockfile을 확인한다.
-
-사용성 검토(D015): 자연스러움과 사용감을 핵심 품질 기준으로 삼는다. 요청받은 요소와 같은 역할의 다른 요소, 전후 이동, 모바일·키보드 사용을 함께 확인한다. 요청이 흐름을 해칠 수 있으면 이유와 대안을 제안하고 사용자의 최종 결정을 따른다.
-
-상단 시세: `MarketTicker.tsx`는 공유 시세와 표시를 연결하고, `ticker-instruments.ts`는 목록/금리 단위, `use-ticker-motion.ts`는 프레임·가시성·포커스·움직임 줄이기 수명을 소유한다. 항목 추가는 목록과 market-ticker 검증을 함께 갱신하며 복제 목록에 새 구독을 붙이지 않는다.
-
-장 일정: schedule/priority.ts는 시간별 우선순위, presentation.ts는 예외 알림 묶음·고정 주요 6개국 선택·M/D HH:mm 형식의 다음 일정 문구, timeline.ts는 거래소 시간→KST 하루 구간 절단을 소유한다. MarketSessions.tsx는 지역 선택·별도 알림 띠 없이 단일 시계/미국 요약·기본 접힘/주요 6개국 시간축, MarketSessionCard.tsx는 상태·막대·다음 일정 한 행을 담당한다. 순수 계산은 market-timeline/market-schedule 테스트로 검증한다. 연도·출처·범위는 [MARKET_CALENDARS](./MARKET_CALENDARS.md), 지역별 데이터는 schedule의 *-calendars.ts에서 수정하고 index 공개 창구로 소비한다.
-
-홈 배치: Header는 모든 일반 페이지의 지수·검색을 한 sticky 상단으로 조립하고 app/page.tsx는 최근 검색 → 순위 → 뉴스/일정을 조립하며, 일정 열은 이번 주 일정 → 접힌 장 시간표 → 내 투자 순서로 배치한다. 시간표는 자체 컨테이너 폭으로 반응형 배치를 적용한다. HomeSection.tsx는 순위·뉴스·일정·내 투자의 카드 밖 제목/행동과 공통 내용 카드를 소유한다. WeekCalendar는 날짜 선택과 목록만 담당하며 제목/KST는 MarketCalendar에서 전달한다.
-
-종목 탐색: `StockDiscovery.tsx`는 입력/검색 결과/선택, `DiscoveryShortcuts.tsx`는 로그인한 계정의 최근 검색만 표시하며 순위 데이터를 구독하지 않는다. `market/recent-searches.ts`는 React 없는 검증·계정별 저장, `use-recent-searches.ts`는 저장소 구독·계정 전환을 소유한다. 기록 범위를 늘릴 때 같은 훅을 사용하고 별도 저장 키/시세 조회를 추가하지 않는다. 검증은 `tests/recent-searches.test.mjs`.
-
-주요뉴스: `server/trending-news.ts`는 기존 순위/뉴스 서버 조회를 조합하고, `trending-news.ts`는 대상 선택·최신성/관련성 정렬·중복 제거를 담당한다. `server/news.ts`는 단일 종목 공급자 변환, `use-market-news.ts`는 구독/가시성 연결, `MarketNews.tsx`는 목록·번역 전환·펼침 상태를 소유한다. HomeSection의 선택적 제목 버튼은 뉴스 펼침/접기에 사용한다. MoverTable의 세 제목은 모두 전용 페이지 링크다. `market/ranking-pages.ts`가 제목·경로·설명을 공유하고 공개 경로/탐색 이름도 이를 참조한다. 세 전용 page.tsx는 `RankingPage.tsx`로 해당 MoverTable의 full 표시와 기존 MarketNews를 조합한다. 순위와 뉴스는 `shared/async/polling-store.ts`의 동일한 폴링/해제/실패 규칙을 사용한다(`movers-store.ts`는 기존 공개 인터페이스 어댑터). API 응답은 `{stories, partial}`, 검증은 `trending-news.test.mjs`와 `market-workspace.test.mjs`. 조합 요청은 하위 조회와 같은 공급자 풀 슬롯을 점유하지 않는다.
-
-증시 캘린더: features/calendar의 model.ts·month-grid.ts는 날짜 그룹/달력 칸, navigation.ts는 주간·필터·안전한 복귀 URL, release.ts는 경제지표/실적 수치·상태·추이 계산을 담당한다. WeekCalendar.tsx는 홈 7일 선택, CalendarBrowser.tsx는 월간/종류 필터를 조립하고 EventList.tsx는 공통 일정 링크다. use-calendar-selection.ts는 URL과 선택 상태를 연결해 브라우저 뒤로 가기 복원을 유지한다. ReleasePage.tsx는 단건 조회, ReleaseDetails.tsx는 발표 수치, ReleaseHistory.tsx는 공유 이력 조회/표, ReleaseTrend.tsx는 단위별 차트를 담당한다. app/calendar/[id]/page.tsx는 공개 상세 진입점이며 팝업 구현은 제거했다. use-calendar-feed.ts는 공유 폴링/가시성, server/query.ts는 월·주·단건·이력 입력 검증, provider.ts는 경제지표 공급 변환, repository.ts는 저장소 접근을 소유한다. 실적 모델/UI는 준비 상태이며 실적 공급자/저장 실행은 미연결이다. 신규 공급자 연결은 수치 단위·기간·컨센서스·부분 수신 의미를 유지하고 earningsConnected를 실제 공급 상태와 함께 제공해야 한다. data.ts는 미연결 상태의 검증된 경제 일정만 제공한다. 기존 SQL/수집 스크립트와 활성화 절차는 CLOUDFLARE 문서, 검증은 calendar-releases·economic-calendar·sql-economic-calendar 테스트를 따른다.
-
-공통 본문: components/PageFrame.tsx·PageFrame.module.css가 사이드바 제외 영역의 중앙 본문과 좌우 여백을 소유한다. root layout에서 모든 일반 페이지를 감싸며 본문 상단 내 투자 탐색과 저장 알림도 같은 폭을 사용한다. 새 페이지는 바깥 margin/max-width를 따로 만들지 않는다. 폭·레일 규격은 design-tokens.css와 DESIGN_SYSTEM의 공통 본문 기준을 함께 수정한다.
-
-광고: features/ads/AdSlot은 본문 배너의 개발 미리보기, SideRailPreview는 경로에 따라 공개 화면만 렌더링하는 Google 사이드 레일 배치 미리보기다. PageFrame이 가용 폭/포인터/높이에 따라 레일을 표시한다. 둘 다 preview-mode로 운영 더미 송출을 막는다. placements.ts의 home-rail은 삭제했고 홈 ReadingShelf 호출도 제거했다(별도 읽을거리 페이지 참조는 유지). 공개 화면의 실제 송출 코드/ID는 미연결이며 개인 하단 광고는 아래 PortfolioAd 책임을 따른다. 왼쪽 레일과 홈 본문 배너(home-top·home-news)는 제거했다. SideRailPreview의 오른쪽 sticky 박스에 수동 AdSense 광고를 삽입하지 않고 공식 Auto ads 사이드 레일 설정으로 연결한다. 상세 활성화 절차는 CLOUDFLARE를 따른다.
-
-뉴스 제목 번역: server/title-translation.ts는 응답/숫자/날짜 검증·공유 요청·캐시·실패 대기, translation-provider.ts는 Cloudflare NEWS_AI 호출만 담당한다. api/news는 원문 뉴스 정렬/중복 제거 후 번역을 조합한다. 원문 title은 불변, 선택적 titleKo만 추가하며 MarketNews가 기본 한국어/원문 전환을 표시한다. 검증은 title-translation.test.mjs. worker-configuration.d.ts는 Wrangler 생성물이므로 읽거나 직접 편집하지 말고 설정 변경 후 npm exec wrangler -- types worker-configuration.d.ts --env-interface WorkerBindings로 재생성한다.
-
-메뉴: features/navigation/model.ts가 주요 3구역·내 투자 5개 경로·선택/제목 매핑의 단일 기준이다. Header는 데스크톱/모바일 주요 링크, InvestmentNavigation은 main 본문 상단의 가로 링크만 렌더링한다. 기존 경로를 유지하고 거래내역은 app/transactions에서 조립한다. portfolio/ui/TransactionHistory는 기존 목록·삭제 복구 상태를 옮긴 단일 구현이며 계정 전환 때 상태를 초기화한다. /portfolio는 보유자산 표시와 CSV만 담당한다. 거래내역 화면은 보유자산 시세 구독을 시작하지 않는다. 확장 시 모델·navigation.test.mjs·PRODUCT_SPEC의 주요 메뉴와 내 투자를 함께 갱신한다.
-
-배분 차트 색상은 design-tokens.css의 allocation-1~8에 둔다. 샘플 자료 모듈에 의존하지 않는다.
+코드 대조: 2026-09-12 · main `0983225`. 현재 구현·검증·배포는 [PROJECT_STATUS](./PROJECT_STATUS.md#환경별-진행-상태), 기능 의미는 [PRODUCT_SPEC](./PRODUCT_SPEC.md), 화면 기준은 [DESIGN_SYSTEM](./DESIGN_SYSTEM.md)이 소유한다. 이 문서는 **어떤 기능을 고칠 때 무엇부터 읽고 어디를 수정할지**만 관리한다.
 
 ## 작업별 시작점
 
-해당 행의 파일과 테스트부터 읽고 실제 호출 관계를 따라 범위를 넓힌다. 모든 소스·과거 검증 기록을 매번 읽을 필요는 없다.
+기능 추가·수정 시 해당 행의 **기능 명세 → 디자인 기준 → 구현 → 검증**만 먼저 읽는다. 모든 문서·과거 검증을 매번 읽지 않는다. 공통 디자인의 [기본 방향](./DESIGN_SYSTEM.md#기본-방향)·[화면 문구](./DESIGN_SYSTEM.md#화면-문구)는 화면 작업 전체에 적용한다. 세부 기준은 아래 링크를 따른다.
 
-| 변경할 내용 | 먼저 볼 구현 | 확인할 테스트 |
-| --- | --- | --- |
-| 공개 시장 홈·뉴스·일정 | [home UI/자료](./src/features/home), [뉴스](./src/features/market/server/news.ts), [공개 경로](./src/features/auth/public-routes.ts) | public-home, market-ticker, market-workspace, requests |
-| 거래 추가·수정·삭제·복구 | [명령](./src/features/portfolio/model/commands.ts) → [저장 큐](./src/features/portfolio/data/ledger-store.ts) → [거래 상태 연결](./src/features/portfolio/state/ledger.tsx) | ledger-store, backup-commands, sql-ledger |
-| 거래 입력 항목·날짜 | [TransactionForm](./src/components/TransactionForm.tsx), [TransactionEditor](./src/features/portfolio/ui/TransactionEditor.tsx), [거래 시장 조회](./src/features/market/use-trade-market.ts) | transaction-date, enrichment, backup-commands |
-| 보유량·원가·수익률 | [portfolio](./src/lib/portfolio.ts), [performance](./src/lib/performance.ts), [요약](./src/features/portfolio/model/summary.ts) | performance, market-data |
-| 성과 이력 조회·저장 | [공유 훅](./src/hooks/usePerformanceHistory.ts) → [실행 서비스](./src/features/performance/service.ts) → [저장소](./src/features/performance/repository.ts) | performance-service, requests, sql-ledger |
-| 시세·검색·국가/통화 지원 | [클라이언트 API](./src/lib/stock-api.ts), [시장 분류](./src/lib/markets.ts), [서버 서비스](./src/features/market/server) | market-api, market-data, enrichment, requests |
-| 관심종목·노트 | [useWatchlist](./src/hooks/useWatchlist.ts), [useJournal](./src/hooks/useJournal.ts), 각각의 features UI | 격리 브라우저 CRUD, branded-storage |
-| 디자인·배치·로고 | [디자인 기준](./DESIGN_SYSTEM.md) → 공통값 → 해당 페이지·UI·아래 스타일 소유 위치 | check:design, design-system; 격리 브라우저 데스크톱·모바일 비교 |
-| 로그인·공개 페이지 | [세션 요청/복구](./src/features/auth/session-request.ts), [useAuth](./src/hooks/useAuth.tsx), [AuthGate](./src/components/AuthGate.tsx), [layout](./src/app/layout.tsx) | session-request, public-home; 계정 전환·공개/개인 접근 분리 |
-| 내 포트폴리오 광고 | [PortfolioAd](./src/features/ads/PortfolioAd.tsx), [설정·중복 요청 방지](./src/features/ads/adsense.ts) | adsense; 격리 브라우저 광고 차단·미송출·재진입 |
-| 새 독립 기능 | 아래 확장 절차; 같은 성격의 기존 feature와 해당 PRODUCT_SPEC 절 | 기능의 순수 로직·실패·권한·UI 흐름 |
+```sh
+npm run docs:guide -- 관심종목
+npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
+```
 
-테스트 이름은 `tests/<이름>.test.mjs`다. 실행 방법·브라우저 준비는 [README 검증](./README.md#검증). 구조 점검은 `node tests/check-import-cycles.mjs`. 문서 검사는 [check-docs.mjs](./tests/check-docs.mjs), 누락·끊어진 링크·비공개 문서 추적·제품 결정 변경 후 사업 문서 검토 누락 재현은 [documentation.test.mjs](./tests/documentation.test.mjs)에서 관리한다.
+아래 표가 안내 명령과 문서 연결 검사의 **단일 원본**이다. 새 기능은 기존 행에 통합하거나 한 행을 추가하고, 새 page.tsx·route.ts는 정확한 파일 링크로 등록한다. 기능 폴더는 `src/features/<기능>` 자체를 등록한다. 이름만 있는 미구현 계획은 PRODUCT_SPEC에 남기고 존재하지 않는 코드 링크를 만들지 않는다.
+
+| 기능 | 기능 명세 | 디자인 기준 | 구현·확장 시작점 | 검증 |
+| --- | --- | --- | --- | --- |
+| 공통 탐색·본문·메뉴 | [주요 메뉴](./PRODUCT_SPEC.md#주요-메뉴와-내-투자) | [공통 본문](./DESIGN_SYSTEM.md#공통-본문과-좌우-여백), [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [navigation](./src/features/navigation), [layout](./src/app/layout.tsx), [Header](./src/components/Header.tsx), [PageFrame](./src/components/PageFrame.tsx) | [메뉴](./tests/navigation.test.mjs), [본문](./tests/page-frame.test.mjs) |
+| 시장 홈 | [공개 홈](./PRODUCT_SPEC.md#공개-홈과-로그인-경계) | [홈 섹션](./DESIGN_SYSTEM.md#홈-섹션-통일) | [home](./src/features/home), [홈 진입](./src/app/page.tsx), [HomeSection](./src/features/home/HomeSection.tsx) | [공개 경계](./tests/public-home.test.mjs), [홈](./tests/market-workspace.test.mjs) |
+| 거래량·상승·하락 순위 | [순위 의미](./PRODUCT_SPEC.md#종목-순위) | [제목·목록](./DESIGN_SYSTEM.md#홈-섹션-통일) | [volume](./src/app/rankings/volume/page.tsx), [gainers](./src/app/rankings/gainers/page.tsx), [losers](./src/app/rankings/losers/page.tsx), [RankingPage](./src/features/home/RankingPage.tsx), [순위 API](./src/app/api/movers/route.ts), [순위 공유](./src/features/market/movers-store.ts) | [순위 표현](./tests/market-presentation.test.mjs), [홈 연결](./tests/market-workspace.test.mjs) |
+| 주요뉴스·번역 | [뉴스·번역](./PRODUCT_SPEC.md#주요뉴스와-번역) | [제목·목록](./DESIGN_SYSTEM.md#홈-섹션-통일), [문구](./DESIGN_SYSTEM.md#화면-문구) | [MarketNews](./src/features/home/MarketNews.tsx), [뉴스 API](./src/app/api/news/route.ts), [수집](./src/features/market/server/trending-news.ts), [번역](./src/features/market/server/title-translation.ts) | [선정](./tests/trending-news.test.mjs), [번역](./tests/title-translation.test.mjs) |
+| 증시 캘린더·발표 상세 | [달력·수치 의미](./PRODUCT_SPEC.md#증시-캘린더와-발표-상세) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [calendar](./src/features/calendar), [달력](./src/app/calendar/page.tsx), [발표 상세](./src/app/calendar/[id]/page.tsx), [조회 API](./src/app/api/calendar/route.ts), [수집 API](./src/app/api/calendar/sync/route.ts) | [달력](./tests/economic-calendar.test.mjs), [발표](./tests/calendar-releases.test.mjs), [저장](./tests/sql-economic-calendar.test.mjs) |
+| 지수 띠·장 시간표 | [지수·6개국 시간표](./PRODUCT_SPEC.md#시장-홈-상단-지수) | [장 시간표](./DESIGN_SYSTEM.md#장-일정-시간표) | [MarketTicker](./src/features/market/MarketTicker.tsx), [지표 목록](./src/features/market/ticker-instruments.ts), [장 일정](./src/features/market/schedule), [MarketSessions](./src/features/home/MarketSessions.tsx) | [지수](./tests/market-ticker.test.mjs), [시간표](./tests/market-timeline.test.mjs), [일정](./tests/market-schedule.test.mjs) |
+| 시세·종목 상세·차트 | [시세·목표가](./PRODUCT_SPEC.md#시세와-목표가) | [색상](./DESIGN_SYSTEM.md#색상), [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [market](./src/features/market), [종목 진입](./src/app/stock/[symbol]/page.tsx), [StockDetail](./src/components/StockDetail.tsx), [공유 시세](./src/features/market/quote-hub.ts), [quote API](./src/app/api/quote/[symbol]/route.ts), [chart API](./src/app/api/chart/[symbol]/route.ts), [historical API](./src/app/api/historical/[symbol]/route.ts) | [API](./tests/market-api.test.mjs), [시장 자료](./tests/market-data.test.mjs), [요청](./tests/requests.test.mjs) |
+| 종목 탐색·검색·최근 검색 | [검색·기록](./PRODUCT_SPEC.md#종목-탐색과-최근-검색) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [탐색](./src/app/discover/page.tsx), [StockDiscovery](./src/features/home/StockDiscovery.tsx), [최근 검색](./src/features/market/recent-searches.ts), [검색 API](./src/app/api/search/route.ts) | [최근 검색](./tests/recent-searches.test.mjs), [검색](./tests/market-data.test.mjs) |
+| 로그인·계정 요청 | [로그인 경계](./PRODUCT_SPEC.md#공개-홈과-로그인-경계), [저장 복구](./PRODUCT_SPEC.md#거래-저장동기화복구) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [auth](./src/features/auth), [useAuth](./src/hooks/useAuth.tsx), [AuthGate](./src/components/AuthGate.tsx), [세션 요청](./src/features/auth/session-request.ts) | [인증](./tests/auth-loading.test.mjs), [계정 요청](./tests/session-request.test.mjs), [접근 경계](./tests/public-home.test.mjs) |
+| 보유자산·거래 저장 | [자산 배치](./PRODUCT_SPEC.md#내-포트폴리오-배치), [저장·복구](./PRODUCT_SPEC.md#거래-저장동기화복구) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [portfolio](./src/features/portfolio), [보유자산](./src/app/portfolio/page.tsx), [공개 훅](./src/hooks/usePortfolio.tsx), [명령](./src/features/portfolio/model/commands.ts), [저장 큐](./src/features/portfolio/data/ledger-store.ts) | [저장](./tests/ledger-store.test.mjs), [SQL](./tests/sql-ledger.test.mjs), [백업](./tests/backup-commands.test.mjs) |
+| 거래 입력·내역·수정·삭제 | [입력·날짜](./PRODUCT_SPEC.md#거래-입력과-날짜), [수정·삭제](./PRODUCT_SPEC.md#보유종목-수정과-삭제) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [입력 진입](./src/app/search/page.tsx), [내역 진입](./src/app/transactions/page.tsx), [TransactionForm](./src/components/TransactionForm.tsx), [TransactionHistory](./src/features/portfolio/ui/TransactionHistory.tsx), [TransactionEditor](./src/features/portfolio/ui/TransactionEditor.tsx) | [날짜](./tests/transaction-date.test.mjs), [보유 수정](./tests/holding-management.test.mjs), [환율 보완](./tests/enrichment.test.mjs) |
+| 성과 분석·계산 | [계산 의미](./PRODUCT_SPEC.md#자산통화성과의-의미) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준), [색상](./DESIGN_SYSTEM.md#색상) | [performance](./src/features/performance), [분석 진입](./src/app/insights/page.tsx), [usePerformanceHistory](./src/hooks/usePerformanceHistory.ts), [순수 계산](./src/lib/performance.ts), [자산 계산](./src/lib/portfolio.ts) | [동등성·실측](./tests/performance.test.mjs), [서비스](./tests/performance-service.test.mjs) |
+| 관심종목 | [관심종목](./PRODUCT_SPEC.md#관심종목), [개인 데이터](./PRODUCT_SPEC.md#개인-데이터) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준), [색상](./DESIGN_SYSTEM.md#색상) | [watchlist](./src/features/watchlist), [관심 진입](./src/app/watchlist/page.tsx), [useWatchlist](./src/hooks/useWatchlist.ts) | [저장 호환](./tests/branded-storage.test.mjs), [문구·실패](./tests/screen-copy.test.mjs), [격리 화면 준비](./tests/prepare-browser-qa.mjs) |
+| 투자 노트 | [투자 노트](./PRODUCT_SPEC.md#투자-노트), [개인 데이터](./PRODUCT_SPEC.md#개인-데이터) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준), [문구](./DESIGN_SYSTEM.md#화면-문구) | [journal](./src/features/journal), [노트 진입](./src/app/journal/page.tsx), [useJournal](./src/hooks/useJournal.ts) | [저장 호환](./tests/branded-storage.test.mjs), [격리 화면 준비](./tests/prepare-browser-qa.mjs) |
+| 계정 설정·통화·백업 | [계정 설정](./PRODUCT_SPEC.md#계정-설정), [개인 데이터](./PRODUCT_SPEC.md#개인-데이터) | [간격·공통 요소](./DESIGN_SYSTEM.md#간격과-공통-요소) | [settings](./src/features/settings), [설정 진입](./src/app/settings/page.tsx), [백업 패널](./src/components/TransactionBackupPanel.tsx) | [백업](./tests/backup-commands.test.mjs), [설정·탐색](./tests/navigation.test.mjs), [문구](./tests/screen-copy.test.mjs) |
+| 공개 읽을거리 | [읽을거리](./PRODUCT_SPEC.md#공개-읽을거리) | [유형별 화면](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [목록](./src/app/community/page.tsx), [본문](./src/app/read/[slug]/page.tsx), [글 자료](./src/features/home/reading.ts), [ReadingShelf](./src/features/home/ReadingShelf.tsx) | [공개 경계](./tests/public-home.test.mjs), [본문 배치](./tests/page-frame.test.mjs) |
+| 광고 | [공개 광고](./PRODUCT_SPEC.md#광고-배치), [개인 광고](./PRODUCT_SPEC.md#내-포트폴리오-광고) | [광고 영역](./DESIGN_SYSTEM.md#광고-영역) | [ads](./src/features/ads), [SideRailPreview](./src/features/ads/SideRailPreview.tsx), [PortfolioAd](./src/features/ads/PortfolioAd.tsx), [PageFrame](./src/components/PageFrame.tsx) | [광고](./tests/adsense.test.mjs), [공통 배치](./tests/page-frame.test.mjs) |
+
+표의 검증 링크는 테스트 작성·수정과 푸시 검사 시의 시작점이다. 개발 중 기본 실행하지 않으며 자동 테스트만으로 사용자 흐름 전체를 검증했다는 뜻은 아니다. 실행 환경·범위·결과·한계는 PROJECT_STATUS에 기록한다. 준비 스크립트는 테스트 통과 근거가 아니다.
+
+## 코드 추가·수정 절차
+
+1. 저장소 루트·로컬 main·변경 상태를 확인한다. PC가 바뀌면 원격 main과 로컬 변경을 먼저 통합한다. [현재 상태](./PROJECT_STATUS.md#환경별-진행-상태)·[제약](./PROJECT_STATUS.md#현재-제약)·[다음 작업](./PROJECT_STATUS.md#다음-작업)을 읽고 `docs:guide` 또는 위 표에서 작업 행을 고른다.
+2. **구현 전 문서 위치를 정한다.** PRODUCT_SPEC의 기존 기능 절에 사용자 흐름·화면 동작·데이터 의미·실패/빈 상태를 정리한다. 새 기능은 아래 형식의 절과 위 표 한 행을 추가한다. 제품 방향 선택은 DECISIONS, 개별 실행 범위/완료 조건은 해당 GitHub 이슈에 둔다. 기존 승인 안의 구현 선택은 직접 하고, 실제 사용자 선택이 필요한 부분만 질문한다. 이슈 등록·다른 작업 전달은 해당 승인 범위를 따른다.
+3. **디자인을 먼저 연결한다.** 새 화면도 DESIGN_SYSTEM의 공통 방향과 가장 가까운 유형을 적용한다. 사용자가 다른 디자인을 확정하면 기준을 먼저 갱신하고 같은 역할의 기존 화면 영향도 확인한다. 개별 화면 설명에 글꼴·색상 값을 복사하지 않는다.
+4. **기존 구조에서 구현한다.** 아래 책임과 사용 창구를 재사용하고 대체한 코드·스타일은 같은 작업에서 정리한다. 독립 기능만 `src/features/<기능>`으로 만들며 빈 계층·무의미한 전체 export를 생성하지 않는다. Next.js 작업 전에 설치된 관련 가이드를 읽는다.
+5. **필요한 검증을 준비한다.** 변경에 맞는 테스트와 전후 이동·실패·모바일/키보드 확인 범위를 정리한다. 개발 중에는 오류 해결에 필요한 최소 확인만 하고 정기 검사는 푸시 직전에 모은다. 실제 사용자 자료로 CRUD 실험하지 않는다. 실행 시점·명령은 [README 검증](./README.md#검증).
+6. **문서를 구현 상태로 맞춘다.** 아래 변경별 담당 문서를 갱신한다. 아직 실행하지 않은 검사는 PROJECT_STATUS에 푸시 검증 대기로 기록하고 과거 성공을 재사용하지 않는다. 문서·디자인·코드·테스트·빌드 검사는 pre-push 훅에서 실행하며, 실제 브라우저/운영 계정 검증은 별도 범위다. 커밋·푸시·배포는 해당 사용자 지시 범위에서 수행한다.
+
+### 기능 명세 작성 형식
+
+PRODUCT_SPEC의 기존 절을 먼저 보완한다. 새 독립 기능만 다음 구조로 추가하고 같은 설명을 다른 문서에 복제하지 않는다.
+
+- **상태·결정:** 현재 구현 / 승인된 목표·미구현 / 제안·미확정을 구분하고 관련 결정 ID를 연결.
+- **사용 흐름:** 어디서 들어와 무엇을 완료하고 어디로 돌아가는지. 공개/로그인 경계 포함.
+- **화면·동작:** 목록·상세·입력·탭 등 의미와 행동. 디자인은 DESIGN_SYSTEM의 해당 유형 링크.
+- **데이터 의미:** 단위·계산·저장 위치·권한·호환·갱신 조건 중 필요한 것만.
+- **실패·범위:** 로딩·빈 값·부분 실패·취소·복구와 제공하지 않는 범위. 구현 결과는 PROJECT_STATUS에 연결.
+
+모든 작은 버튼에 다섯 항목을 복제하지 않는다. 기존 절로 설명 가능한 변경은 해당 문장만 수정한다.
+
+### 변경 유형별 연결 지점
+
+| 바뀐 내용 | 갱신할 문서 |
+| --- | --- |
+| 기능·저장·계산·접근 범위 | PRODUCT_SPEC의 담당 절. 제품 방향 변경이면 DECISIONS와 사업/SEO 영향도 함께 검토 |
+| 디자인 공통 규칙·문구·색상 의미 | DESIGN_SYSTEM. 수치 변경은 design-tokens.css와 함께 수정 |
+| 파일 책임·사용 창구·새 페이지/API/기능 폴더 | 이 문서의 작업별 시작점·관련 책임 |
+| 배포·환경 변수·운영 데이터 절차 | CLOUDFLARE. 실제 적용/검증 여부는 PROJECT_STATUS |
+| 완료·미구현·미확인·검증 결과 | PROJECT_STATUS의 현재 표/제약을 직접 갱신. 날짜별 전체 보고서 추가 금지 |
+| 개별 실행 범위·완료 조건·진행 | 해당 GitHub 이슈에 기준 문서 링크. 본문 전체 복제·미승인 타 작업 전달 금지 |
+
+문서 담당 전체 목록은 [AGENTS 문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다. 새 문서는 기존 담당 파일에 담을 수 없을 때만 만든다.
 
 ## 실행 흐름과 외부 사용 창구
 
 ```text
-app/layout.tsx → AuthProvider → AuthGate → PortfolioProvider → 페이지
-거래 UI → useTransactionCommands → ledger-store → commands/enrichment → local 또는 server 저장소
-시장 UI → useLiveQuotes / useStockSearch → stock-api → app/api → market/server → Yahoo
-성과 UI → usePerformanceHistory → service → repository + request-plan + calculate → performance
+app/layout.tsx → AuthProvider → AuthGate → PortfolioProvider → Header/PageFrame/페이지
+거래 UI → useTransactionCommands → ledger-store → commands/enrichment → local 또는 server
+시장 UI → useLiveQuotes / useStockSearch → stock-api → app/api → market/server → 공급원
+성과 UI → usePerformanceHistory → service → repository + request-plan + calculate/Worker
 ```
 
-UI에서 거래를 읽고 쓰는 창구는 [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx)의 `useTransactions`, `useTransactionCommands`, `usePreferences`, `usePortfolioMarket`다. 필요한 구독만 선택한다. 자산 요약은 `usePortfolioMarket`의 실제 기록만 사용하며 샘플 Provider는 없다. 실시간 시세는 `useLiveQuotes`, 종목 검색은 `features/market/use-stock-search.ts`의 `useStockSearch`, 성과는 `usePerformanceHistory`를 사용한다.
-
-새 UI에서 repository·컨텍스트 내부를 직접 가져오거나 별도 거래 배열을 저장하지 않는다. 여러 기능이 쓰는 순수 타입·계산·API는 현재 `lib`의 명시적 export를 사용한다. 같은 기능 내부의 상대 import와 페이지의 기능 UI import는 허용한다. 서버 공급자 모듈을 클라이언트 UI에 import하지 않는다. 이 경계는 현재 작성 규칙이며 ESLint가 전부 강제하는 것은 아니다.
+- 거래·설정·시장 데이터의 공개 창구는 [usePortfolio](./src/hooks/usePortfolio.tsx)의 useTransactions/useTransactionCommands/usePreferences/usePortfolioMarket다. UI에서 저장소에 직접 쓰거나 별도 거래 배열을 만들지 않는다. 보유 시세는 portfolio·insights 경로에서만 구독한다.
+- 시세는 [useLiveQuotes](./src/hooks/useLiveQuotes.ts), 검색은 [useStockSearch](./src/features/market/use-stock-search.ts), 성과는 [usePerformanceHistory](./src/hooks/usePerformanceHistory.ts)를 재사용한다. 새 페이지별 폴링·캐시·저장 경로를 덧붙이지 않는다.
+- 공용 계산은 `lib`의 명시적 함수로, 기능 간 연결은 공개 훅/명시적 입력·결과로 한다. state→data/model 방향을 지키고 data/model에서 React UI를 import하지 않는다. 기능 내부의 상대 import는 허용한다.
+- 거래 순차 저장·revision·동일 요청 ID 재시도·계정 경계는 보존한다. 옛 브랜드 키·Web Lock·SQL migration은 호환/복구 장치이므로 미사용 UI처럼 삭제하지 않는다.
 
 ## 파일 역할
 
-아래는 수정 단위를 찾기 위한 지도다. 개별 함수의 계약·인자는 해당 export/type을 확인하며 문서에 구현 전체를 복제하지 않는다.
-
-| 위치 | 역할 |
+| 책임 | 소유 위치·확장 방법 |
 | --- | --- |
-| [app/layout.tsx](./src/app/layout.tsx) | assets/fonts의 Wanted Sans 원본을 next/font/local로 제공·메타데이터·Provider 순서·공통 프레임 |
-| [app](./src/app)의 page.tsx | `/` 공개 시장 홈, `/portfolio` 개인 자산/차트/보유/거래, `/insights` 분석, `/watchlist` 관심, `/journal` 노트, `/settings` 설정의 배치·연결. `/search` 거래 입력, `/discover` 공개 검색, `/rankings/volume`·`/rankings/gainers`·`/rankings/losers` 각 순위/주요뉴스, `/stock/[symbol]` 공개 상세, `/read/[slug]` 읽을거리 진입점 |
-| [features/settings/ui](./src/features/settings/ui) | AccountSettings: 실제 계정 정보·로그인/로그아웃과 CurrencySettings 조립. CurrencySettings: 작은 통화 선택·저장 오류/재시도. settings/page.tsx는 계정과 접힌 거래 백업 패널만 조립 |
-| [app/community/page.tsx](./src/app/community/page.tsx) | 기존 주소를 유지하는 공개 리서치 가이드. 첫 버전 토론 제외, 준비 홍보 제거 |
-| [app/api](./src/app/api)의 route.ts | quote/chart/historical/search/news 입력 검증·서비스 호출·HTTP 응답 |
-| [hooks/useAuth.tsx](./src/hooks/useAuth.tsx), [lib/supabase.ts](./src/lib/supabase.ts) | INITIAL_SESSION 이후 인증 이벤트로 로그인 상태 관리; Google 로그인/로그아웃; 공개 설정·브라우저 클라이언트 생성 |
-| [features/auth/session-request.ts](./src/features/auth/session-request.ts) | 거래·설정·성과 서버 요청의 계정/토큰 고정, JWT 오류 복구·동시 갱신 공유·요청 기한. 요청 생성 함수는 전달된 AbortSignal과 기존 저장 ID/본문을 유지 |
-| [hooks/usePortfolio.tsx](./src/hooks/usePortfolio.tsx) | 거래/설정/시장 Provider 조립·공개 훅; 실제 기록의 표시 요약 |
-| [features/home](./src/features/home) | `StockDiscovery`: 공유 검색 훅으로 결과/상세 연결. `MarketMovers`/`MoverTable`: 미국 세 종류 순위·모바일 탭. `MarketSessions`: 대표 지수별 공급원 장 상태. `ResearchDesk`: 비공개 관심/노트/자산 진입. `MarketNews`: 뉴스 조회 상태/원문 목록. `MarketCalendar`: 증시 캘린더 기능의 주간 선택 연결. `ReadingShelf`/`reading`: 직접 작성한 읽을거리. `HomeWatchlist`: 로그인/로컬 모드의 저장 목록만 표시. `home.module.css`: 이 기능의 전용 스타일 |
-| [features/ads](./src/features/ads) | PortfolioAd는 포트폴리오 하단 광고·미연결 예약 영역·지연 스크립트 로딩, adsense는 설정 검증·DOM별 1회 요청을 담당. 전용 CSS 모듈은 광고 라벨·여백·미송출 숨김을 소유 |
-| [features/auth/public-routes.ts](./src/features/auth/public-routes.ts) | AuthGate의 공개 읽기 경로 허용 목록. 새 공개 경로는 여기와 접근 경계 테스트를 함께 수정 |
-| [features/market/schedule](./src/features/market/schedule), [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) | calendars는 출처가 있는 연도별 휴일·특별시간, time은 시간대/DST, session은 상태·다음 개장 계산, index는 공개 창구. MarketSessions는 타이머·표시만 담당하며 전용 CSS 모듈 사용. 일반 공휴일과 거래소 휴일을 혼동하지 않음 |
-| [features/market/MarketHeader.module.css](./src/features/market/MarketHeader.module.css), [MarketTicker.tsx](./src/features/market/MarketTicker.tsx) | 모든 일반 페이지의 공통 sticky 지수·검색 상단. 기존 18개 지표 공유 구독을 유지하며 Header가 StockDiscovery 한 개와 조립한다. 경로·알림/도움말 도구막대는 제거한다 |
-| [features/market/movers-model.ts](./src/features/market/movers-model.ts), [movers-store.ts](./src/features/market/movers-store.ts), [use-market-movers.ts](./src/features/market/use-market-movers.ts) | 순위 검증/변환, 공유 상태·구독·폴링 해제, React 연결. mover-ranks.ts는 직전 정상 목록 대비 순위 이동·신규/비교 불가·중복/오래된 응답 보호를 담당하며 movers-store에서 기존 구독 스냅샷과 비교한다. 모델의 공통 주기로 30초 폴링·5초 요청 캐시를 맞춘다. server/movers는 Yahoo screener 호출. `/api/movers`는 종류 검증·서비스 호출·응답만 담당. schedule 공개 인터페이스는 거래소 일정 기반 장 상태·휴장 사유·다음 개장을 제공 |
-| [features/market/news-model.ts](./src/features/market/news-model.ts), [use-market-news.ts](./src/features/market/use-market-news.ts) | 뉴스 타입·링크/시각 검증과 React 요청 수명. server/news는 기존 Yahoo 클라이언트/요청 풀 사용 |
-| [WatchStockButton](./src/features/watchlist/WatchStockButton.tsx) | 종목 상세의 기존 관심종목 저장 명령 연결과 로그인 안내. 별도 저장소를 만들지 않음 |
-| [features/portfolio/model](./src/features/portfolio/model) | `types.ts`: 명령·입력·저장소 계약. `commands.ts`: 최신 거래에 명령 적용·검증/병합. `enrichment.ts`: 거래 통화/환율 보완. `summary.ts`: 현재 보유 자산 요약 |
-| [features/portfolio/data](./src/features/portfolio/data) | `ledger-store.ts`: 초기화·직렬 명령·재시도·상태 발행·폐기. `local.ts`: 로컬 revision·복구/outbox 사본. `server.ts`: RPC read/commit. `rows.ts`: DB 행↔Transaction. `preferences.ts`: 표시 설정 저장 |
-| [features/portfolio/state](./src/features/portfolio/state) | `ledger.tsx`: 계정별 저장소 수명·Web Locks·명령 훅. `preferences.tsx`: 설정 구독. `market.tsx`: 필요한 경로의 보유 시세/환율 구독과 요약 |
-| [features/portfolio/ui](./src/features/portfolio/ui) | `TradeStockPicker.tsx`: 입력 종목 선택. `TransactionEditor.tsx`: 기존 거래 편집. `BackupPreview.tsx`: 검증한 백업 미리보기 |
-| [features/market](./src/features/market) | `quote-hub.ts`: 종목별 공유 폴링·구독 해제. `use-stock-search.ts`: 취소/debounce 검색. `use-trade-market.ts`: 거래일 환율/시장 조회. `MarketNotification.tsx`: Header 시장 알림. `MarketTicker.tsx`/`MarketTicker.module.css`: 일반 페이지 공통 상단 지수·환율과 전용 반응형 스타일. 기존 useLiveQuotes를 소비 |
-| [features/market/server](./src/features/market/server) | `provider.ts`: Yahoo 클라이언트·제한 큐·공급자 오류. `quote.ts`, `chart.ts`, `historical.ts`, `search.ts`: 종류별 조회/변환. `http.ts`: HTTP 오류 변환 |
-| [hooks/useLiveQuotes.ts](./src/hooks/useLiveQuotes.ts), [lib/stock-api.ts](./src/lib/stock-api.ts) | React 종목 구독; API URL·요청 키·캐시 수명·환율 조회·응답 검증 |
-| [features/performance](./src/features/performance) | `service.ts`: 저장 이력 재사용·필요 기간 조회·계산/저장 흐름. `request-plan.ts`: 기간별 필요한 종목/환율. `repository.ts`: 로컬/서버 성과 저장. `calculate.ts`: 직접/Worker 실행 선택. `performance.worker.ts`: Worker 메시지 진입점 |
-| [hooks/usePerformanceHistory.ts](./src/hooks/usePerformanceHistory.ts) | 사용자·거래 revision·KST 날짜별 공유 결과 구독. 화면마다 서비스 인스턴스를 만들지 않음 |
-| [features/performance](./src/features/performance)의 UI/훅 | `Charts.tsx`, `Controls.tsx`: 분석 차트/선택 UI. `use-performance-range.ts`: 표시 기간. `use-benchmark-series.ts`: 벤치마크 조회 |
-| [features/journal](./src/features/journal), [hooks/useJournal.ts](./src/hooks/useJournal.ts) | controller: 검색·필터·편집 상태, Editor/Card: UI. useJournal: 계정별 로컬 CRUD·저장 오류 |
-| [features/watchlist](./src/features/watchlist), [hooks/useWatchlist.ts](./src/hooks/useWatchlist.ts) | Search/Row/TargetEditor: 검색·행·목표가 UI. useWatchlist: 계정별 로컬 CRUD·시세 구독, quoteLimit으로 미리보기 조회 제한 |
-| [components](./src/components)의 거래 UI | `TransactionForm`: 새 거래 입력. `TransactionList`: 목록/필터·편집 연결. `HoldingManagement`: 종목별 거래 수정/개별 삭제·되돌리기·별도 전체 삭제. `TransactionBackupPanel`: 파일 읽기/검증·내보내기·복구 명령 연결 |
-| [components](./src/components)의 자산 UI | `HoldingsTable`, `PortfolioMetrics`: 보유 목록/지표. `WealthChart`, `AllocationChart`, `PerformanceAnalytics`: 자산 흐름·배분·상세 분석 조립 |
-| [components](./src/components)의 시장 UI | `StockDetail`, `StockChart`: 독립 시세/차트 상태. `LiveMarkets`: 세계 주식. `WatchlistPreview`: 관심 3개. `MarketPicker`, `QuoteStatus`, `PriceChange`: 선택·시세 상태/변동 표시 |
-| [components](./src/components)의 공통 UI | `Header`: 탐색/검색. 공통 `CurrencySwitch`는 포트폴리오 제목 행동 영역에서 통화 전환. `AuthGate`: 샘플 미리보기 없는 로그인 진입. `StorageNotice`: 저장 오류/재시도. `WorkspaceDate`: 날짜. `BrandMark`: 앱 로고. `AssetAvatar`: 종목 마크/실패 대체 |
-| [lib/portfolio.ts](./src/lib/portfolio.ts), [lib/performance.ts](./src/lib/performance.ts) | 순수 보유 상태·원가·거래 이력 검증; KST 날짜·일별 성과·수익률 계산 |
-| [lib/transaction-backup.ts](./src/lib/transaction-backup.ts), [lib/portfolio-storage.ts](./src/lib/portfolio-storage.ts), [lib/branded-storage.ts](./src/lib/branded-storage.ts) | 백업 형식/검증/직렬화; 기존 거래 저장 키·이전 보유 데이터 보완; 센트블룸/이전 두 브랜드 읽기·이벤트 호환과 완료한 outbox 키 정리. 이름에 stock이 남은 거래 키와 이전 탭의 거래 잠금은 유지 |
-| [lib](./src/lib)의 공통 자료 | `types.ts`: 거래/시세/차트 계약. `currency.ts`: 통화 정규화/환산. `markets.ts`: 시장·코드·별칭. `format.ts`: 표시 포맷. `utils.ts`: class 조합. `company-logos.ts`: 검증 원본/Yahoo/Elbstream 이미지 후보·URL 검증(거래소 접미사 유지). `AssetAvatar`는 실패 시 다음 후보와 공통 아이콘, layout 하단은 필수 공급원 출처 표시. 신규 종목에 별도 quote 호출을 추가하지 않음 |
-| [shared/async](./src/shared/async), [shared/react/use-operation-scope.ts](./src/shared/react/use-operation-scope.ts) | `pool.ts`: 동시 실행 제한. `request-cache.ts`: 공유 요청·취소/TTL/timeout. `shared-resource.ts`: 공유 결과·수명/폴링. operation scope: 화면/계정 해제 후 UI 반영 차단 |
-| [supabase/migrations](./supabase/migrations), [supabase/rollback](./supabase/rollback) | 기존 DB의 거래 CAS·원자적 교체/성과 저장 증분 SQL과 복구 SQL. 새 DB의 전체 초기 스키마는 아님 |
+| 화면 조립 | `app/**/page.tsx`는 배치·연결, `route.ts`는 입력 검증·응답. 계산/저장/공급자 변환을 페이지에 넣지 않음 |
+| React 구독·수명 | hooks와 feature의 use-*·state. 계정 변경/해제/늦은 응답을 관리하고 필요한 데이터만 구독 |
+| 순수 계산·검증 | lib와 feature의 model. 거래 필드는 타입→명령/검증→enrichment→저장 변환/백업→공개 훅→UI 순으로 영향 확인 |
+| 저장·외부 요청 | feature data/repository/server. 세션 요청은 auth/session-request, 시장 공급 제한은 market/server/provider, 브라우저 요청은 lib/stock-api의 공통 경계 사용 |
+| 순위·뉴스 | ranking-pages는 제목/경로, mover-ranks는 직전 정상 순위 비교, movers-store는 공유 스냅샷. trending-news는 선정, server/news는 공급 변환, title-translation은 검증/캐시, translation-provider는 AI 호출 |
+| 캘린더·장 일정 | calendar의 model/navigation/release와 server가 날짜·수치·수집/저장을 분리. market/schedule이 거래소별 근거와 시간 계산을 소유. [MARKET_CALENDARS](./MARKET_CALENDARS.md)와 [CLOUDFLARE](./CLOUDFLARE.md)의 준비/운영 상태 구분 |
+| 성과 계산 | performance/service·request-plan·repository·calculate·Worker. 계산 변경 시 [기준 구현](./tests/reference)과 동등성을 확인하고 기준 구현을 새 알고리즘에 맞춰 덮어쓰지 않음 |
+| 미사용 UI | [WorkspaceDate](./src/components/WorkspaceDate.tsx), [MarketNotification](./src/features/market/MarketNotification.tsx)는 현재 src 소비자가 없음. 새 작업 시작점으로 사용하지 않으며 삭제 전 동적/스타일/테스트 참조 확인 |
 
 ### 스타일·자산·도구
 
-화면 문구 공통 요소: `Header.tsx`의 `PageHeading`은 제목과 선택 행동만 받는다. [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의이며 스타일은 `workspace.css`가 소유한다. 상태/기준 조건은 해당 수치 곁에 둔다. [조건부 문구 검사](./tests/screen-copy.test.mjs)는 오류를 빈 상태로 축약하거나 접근성 설명 참조가 끊기는 회귀를 확인한다. 구현·수정은 로컬 main 원본에서 진행하며 [AGENTS 작업 원칙](./AGENTS.md#작업응답-원칙)을 따른다. 격리 검증용 생성물을 별도 구현 원본으로 사용하지 않는다.
-
-| 위치 | 소유 범위 |
-| --- | --- |
-| [styles/design-tokens.css](./src/styles/design-tokens.css) | 디자인 수치·서체·색상 원본과 Tailwind 연결. [기준 문서](./DESIGN_SYSTEM.md)의 표와 검사로 일치 확인 |
-| [app/globals.css](./src/app/globals.css) | 공통값 import·기존 변수 연결·기본 요소·접근성 |
-| [check-design.mjs](./tests/check-design.mjs), [design-system.test.mjs](./tests/design-system.test.mjs) | 스타일 검사·회귀. [기존 미정리](./tests/fixtures/design-baseline.json)는 감소만, [공식 이미지 예외](./tests/fixtures/design-exceptions.json)는 위치·값·사유 제한 |
-| [styles/workspace.css](./src/styles/workspace.css) | 공통 프레임·탐색·화면/패널/모달·반응형 |
-| [styles/portfolio.css](./src/styles/portfolio.css), [styles/charts.css](./src/styles/charts.css) | 자산/거래 UI; 차트/분석 UI |
-| [app/auth.css](./src/app/auth.css) | AuthGate 로그인 화면. components의 Tailwind 클래스도 실제 스타일 일부 |
-| [public](./public), [BRAND.md](./BRAND.md) | 로고 원본·파생 자산은 BRAND의 경로/출처 기준. `public/companies/sources.json`은 종목 이미지 출처. app의 icon/apple-icon/favicon은 브라우저 아이콘 |
-| [tests](./tests) | `.test.mjs`: 회귀 검사. `reference`: 동등성 비교용 이전 계산. `fixtures`: 격리 입력/SQL 스키마/실측. `load-typescript.mjs`: TS 검사 로더. `prepare-browser-qa.mjs`: 별도 QA 앱. `postgres-concurrency.mjs`: 실제 두 연결 검사 |
-| [이전 주소 Worker](./legacy-worker.mjs), [종료 설정](./wrangler.legacy.jsonc) | 이전 공개·미리보기 주소 비활성. 서비스 바인딩 없는 410 처리와 deploy:legacy로 종료 상태 유지 |
-| [설정 파일](./package.json) | package/lock: 명령·버전. tsconfig: TS·`@/` 별칭. eslint.config: 린트. lint의 ESLint 대상은 src·tests·brand·루트 mjs/ts이며 새 코드 소유 폴더 추가 시 함께 갱신. next.config: Next 설정. open-next.config·wrangler.jsonc: Workers 빌드/배포. postcss.config: CSS 처리 |
-| [.gitignore](./.gitignore), [.env.example](./.env.example) | 비밀/생성물 제외·환경 변수 예시. work·node_modules·.next·.open-next는 구현 기준이 아니며 work는 커밋하지 않음 |
-
-## 코드 추가·수정 절차
-
-1. `git status --short`로 다른 변경을 확인하고, README → PROJECT_STATUS의 현재 상태/제약 → 위 작업별 시작점 → 해당 PRODUCT_SPEC 절 순으로 읽는다. 승인 없는 명세 변경은 구현 완료로 간주하지 않는다.
-2. 기존 기능이면 해당 소유 모듈을 수정한다. 독립 기능은 `src/features/<기능>/`에 두되 실제 필요한 UI·state·data·model만 만든다. 빈 계층·모든 것을 모으는 service·전체 export를 다시 내보내는 index는 일괄 생성하지 않는다. 공통화는 실제 두 소비자의 같은 책임을 확인한 뒤 한다.
-3. 페이지는 UI 배치·기능 연결, 훅은 React 구독/수명, model/lib는 순수 계산, repository는 저장/변환을 맡긴다. state→data/model 방향을 유지하고 data/model에서 페이지·React UI를 import하지 않는다. 기능 간에는 위 사용 창구 또는 명시적 입력/결과 타입으로 연결한다.
-4. Next.js 파일을 수정하기 전 설치된 `node_modules/next/dist/docs/`의 관련 항목을 읽는다. 구조는 `01-app/01-getting-started/02-project-structure.md`, 서버/클라이언트 경계는 `05-server-and-client-components.md`, API는 `15-route-handlers.md`가 시작점이다. 상태/이벤트가 필요한 경계에만 `use client`를 둔다. 현재 Next/OpenNext 버전을 자동 업그레이드하지 않는다.
-5. 아래 변경 유형의 연결 지점을 확인하고 기존 구현을 직접 수정한다. 대체된 함수·export·스타일을 제거하고 소비자를 찾아 이관한다. 재현 가능한 실패 검사를 붙인 뒤 영향 범위 테스트를 실행한다.
-6. README의 린트·TS·관련 테스트와 필요 시 전체/Workers 빌드를 실행한다. UI는 격리 QA에서 해당 흐름·데스크톱/모바일, 저장 변경은 실패·겹침·계정 전환을 확인한다. 실제 사용자 기록으로 CRUD 검증하지 않는다.
-7. 파일 책임/경로/사용 창구가 바뀌면 이 문서의 해당 행, 기능 의미는 PRODUCT_SPEC, 결과/제약은 PROJECT_STATUS를 갱신한다. 커밋·main 병합·공개 반영은 사용자의 해당 지시와 [CLOUDFLARE](./CLOUDFLARE.md) 순서를 따른다.
-
-### 변경 유형별 연결 지점
-
-- **거래 필드/명령**: lib/types와 model/types → commands/검증 → 필요한 enrichment → rows·local/server·백업 호환 → 공개 명령 훅 → 입력/편집 UI 순서로 확인한다. 모든 변경이 모든 파일의 수정을 뜻하지 않는다. UI에서 직접 upsert/delete를 추가하지 않는다. 명령의 오류 반환 규약을 읽고 성공 문구를 표시한다.
-- **저장 형식/DB**: 기존 데이터·이전 키·백업 호환과 원자적 RPC·RLS·revision을 함께 확인한다. 마이그레이션은 현재 운영 이력을 대조해 준비하고, 파일 생성/로컬 테스트를 운영 적용으로 표시하지 않는다. DB 적용 여부는 PROJECT_STATUS를 확인한다.
-- **시세/API**: stock-api의 요청 키에 결과를 바꾸는 모든 인자를 넣고 기존 캐시/취소 정책을 사용한다. route는 검증/응답, 시장별 변환은 server 서비스에 둔다. 새 화면 폴링은 useLiveQuotes로 필요한 종목만 구독한다. 보유 요약이 필요한 새 경로는 state/market.tsx의 활성 경로도 확인한다.
-- **성과 계산**: lib 계산의 고정 입력 동등성, service의 필요한 기간, 저장 revision과 Worker 직렬화 계약을 확인한다. 단순 표시 기간 변경은 range 훅부터 시작한다. 기존 의미 유지 리팩터링에서는 reference를 새 알고리즘에 맞춰 덮어쓰지 않는다.
-- **CSS**: DESIGN_SYSTEM을 먼저 읽고 공통값을 사용한다. check:design과 관련 화면 검증을 실행한다. 클래스 사용처와 기존 소유 파일을 `rg`로 찾고 해당 선언을 수정한다. layout의 import 순서와 Tailwind까지 확인한다. 파일 말미 override 추가만으로 해결하지 않는다.
-- **공개 커뮤니티**: 현재 redirect와 루트 AuthGate가 출발점이다. PRODUCT_SPEC의 비로그인 공개 읽기와 개인 영역 보호가 함께 작동하도록 접근 경계를 설계한다. 기존 투자 노트의 로컬 저장을 공개 글 저장소로 재사용하지 않는다.
+- [design-tokens.css](./src/styles/design-tokens.css)는 공통 수치 원본, [globals.css](./src/app/globals.css)는 기본 요소/변수 연결. 전용 CSS module은 해당 기능이 소유한다. 공통 화면/모달은 [workspace.css](./src/styles/workspace.css), 개인 자산은 [portfolio.css](./src/styles/portfolio.css), 차트는 [charts.css](./src/styles/charts.css), 로그인은 [auth.css](./src/app/auth.css). 기존 선언과 소비자를 찾아 수정하고 파일 말미 덮어쓰기로 해결하지 않는다.
+- PageHeading은 제목·선택 행동, [CalculationHelp](./src/components/CalculationHelp.tsx)는 사용자가 여는 계산 정의다. 가격/계산 의미·실패 조건은 관련 수치 곁에 유지한다.
+- 로고·파생 자산은 [BRAND](./BRAND.md), 기업 이미지 출처는 [sources.json](./public/companies/sources.json). `public`의 모든 파일을 실제 화면 사용 자산으로 간주하지 않는다.
+- 푸시 검사 실행기는 [check-push](./tests/check-push.mjs), Git 연결은 [pre-push](./.githooks/pre-push)와 [설치 명령](./tests/install-git-hooks.mjs)이 소유한다. [동작 회귀](./tests/push-check.test.mjs)는 모의 명령·임시 Git으로 중단/설치 경계를 확인한다. 설치는 검사 실행이나 푸시를 하지 않는다.
+- [문서 검사](./tests/check-docs.mjs)와 [문서 회귀](./tests/documentation.test.mjs), [디자인 검사](./tests/check-design.mjs)와 [디자인 회귀](./tests/design-system.test.mjs)는 현재 명령에 연결한다. 기존 디자인 미정리 목록은 늘려 통과시키지 않는다.
+- [package.json](./package.json)·lockfile이 명령/버전, [wrangler.jsonc](./wrangler.jsonc)가 배포 설정 원본이다. worker-configuration.d.ts는 직접 편집하지 않고 `npm exec wrangler -- types worker-configuration.d.ts --env-interface WorkerBindings`로 재생성한다. 이전 주소는 [legacy-worker](./legacy-worker.mjs)·[종료 설정](./wrangler.legacy.jsonc)으로 닫힌 상태를 유지한다.
+- work·node_modules·.next·.open-next는 구현 원본이 아니다. 격리 검증은 원본 코드를 복사한 테스트 환경이며 실행 방법은 README를 따른다. 비밀/복구 자료·사용자 기록은 일반 생성물 정리와 분리한다.
 
 ## 탐색 비용과 한계
 
-이 구조는 작업별 진입점·책임·검증 위치를 미리 제공해 반복 검색 범위를 좁힌다. 코드가 feature 단위로 나뉘었다는 이유만으로 실제 토큰 사용량이 감소했다고 단정할 수는 없다. 동일 작업·동일 모델의 전후 측정은 하지 않았다.
+`docs:guide`는 전체 검사를 실행하지 않고 표에서 이름·코드 경로에 맞는 링크만 출력한다. 작업 중 문서 연결이나 사업 검토값이 미완성이어도 안내를 조회할 수 있다. `check:docs`는 링크/앵커, 기능별 명세·디자인·코드·검증 연결, 기능 폴더·페이지/API 누락을 검사한다. **기존 파일 안에 추가한 기능의 의미, 디자인 품질, 모든 문장과 코드의 일치까지 자동 판정하지 않는다.** 이를 에이전트의 완료 절차와 실제 검증으로 보완한다. 자동 검사가 문서를 대신 작성하거나 제품 방향을 임의 결정하지 않는다.
 
-- 빠른 탐색: `rg --files src/features/portfolio`, `rg -n 'useTransactionCommands' src`, `rg -n 'selector-name' src/styles src/components`처럼 관련 경로에 한정하고 import를 따라 확장한다. 생성물·이미지·원시 fixture는 해당 문제일 때만 읽는다.
-- 현재 `components`, `hooks`, `lib`와 feature 폴더가 공존한다. 전부 기능 폴더로 이동한 상태는 아니며 기존 공개 경로를 재사용한다. 파일 지도를 위해 무의미한 이동을 추가하지 않는다.
-- TransactionForm/TransactionList/PerformanceAnalytics·일부 페이지와 workspace.css는 여전히 읽을 양이 있다. 새 책임을 붙이기 전 기존 하위 모듈로 분리할 수 있는지 확인한다. 줄 수만으로 다시 쪼개지 않는다.
-- 순환 검사 범위는 src의 정적 TS import/export다. 동적 import·CSS 연결·아키텍처 경계를 모두 보증하지 않는다. 지도는 자동 생성물이 아니므로 경로를 바꾸는 작업에서 함께 갱신한다.
+`node tests/check-import-cycles.mjs`는 정적 TS import/export의 순환을 확인하며 동적 연결·CSS·전체 아키텍처 준수를 보증하지 않는다. components/hooks/lib와 feature가 공존하는 현재 구조를 유지하고, 거래 입력·목록·분석 같은 큰 화면은 실제 책임 충돌이 있을 때 나눈다. 파일 수·줄 수만 줄이는 전면 이동은 하지 않는다. 실제 시간·토큰 절감률은 측정하지 않았다.

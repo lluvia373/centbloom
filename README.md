@@ -6,6 +6,13 @@
 
 ## 문서 안내
 
+새 기능이나 수정 작업은 [현재 상태](./PROJECT_STATUS.md#환경별-진행-상태)를 확인한 뒤 아래 안내로 시작한다. 기능명 또는 코드 경로를 넣으면 읽을 명세·디자인·수정 위치·검증이 함께 나온다. 새 기능의 기록 위치와 완료 절차도 [DEVELOPMENT](./DEVELOPMENT.md#코드-추가수정-절차)에 있다.
+
+```sh
+npm run docs:guide -- 관심종목
+npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
+```
+
 | 내용 | 파일 |
 | --- | --- |
 | 작업·문서 작성 규칙 | [AGENTS.md](./AGENTS.md) |
@@ -39,17 +46,22 @@ http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](.
 
 ## 검증
 
-문서만 변경할 때는 `npm run check:docs`로 관리 목록·상대 링크·제목 앵커·사업 문서 Git 추적 여부를 검사한다. 로컬 사업 문서가 있으면 최신 DECISIONS 검토값도 확인하며 누락·불일치 시 실패한다. `npm run lint`에도 포함된다. 실제 내용 동기화와 검토값 갱신은 [문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다. 공개 체크아웃에 없는 개인 계획은 생성하지 않는다.
+**개발 중에는 검사를 기본 실행하지 않고, 푸시 직전에 모아서 실행한다.** 오류 해결에 필요한 최소 확인이나 사용자가 요청한 검사만 개발 중에 수행한다. 문서·테스트 수정은 구현과 함께 하며 아직 실행하지 않은 검사는 푸시 검증 대기로 기록한다. 파일 저장·개발 서버 시작·커밋에는 검사 훅을 두지 않는다.
 
-화면 변경은 `npm run check:design`으로 새 스타일 위반을 확인한다(lint에도 포함). `npm run audit:design`은 기존 미정리까지 포함해 전부 검사하며, 남아 있으면 실패한다. 기준·예외·수정 방법은 [디자인 기준](./DESIGN_SYSTEM.md#작성과-검사)을 따른다.
+각 PC에서 `npm ci`의 prepare가 [푸시 훅](./.githooks/pre-push)을 자동 등록한다. 현재 체크아웃에서 수동 등록하려면 `npm run hooks:install` 또는 `node tests/install-git-hooks.mjs`를 실행한다. 기존 다른 훅 설정이 있으면 덮어쓰지 않고 안내한다. CI와 Git 없는 배포 소스에서는 등록을 건너뛴다.
 
-```sh
-npm run lint
-npx tsc --noEmit
-node --test tests/*.test.mjs
-npm run build
-npm run build:cloudflare
-```
+| 시점 | 실행 내용 |
+| --- | --- |
+| 개발 중 | 구현·문서 갱신. `docs:guide`는 검사 없이 기능 안내만 조회 |
+| `git push` 직전 | 문서 연결 → 새 디자인 위반 → ESLint → 순환 참조 → 전체 기능/DB 테스트 → Next.js 생산 빌드(타입 검사 포함) |
+| 검사 실패 | 푸시 중단. 문제를 수정·커밋하고 다시 푸시 |
+| 푸시 이후 | 기존 Cloudflare 자동 배포에서 배포 환경 검사·OpenNext 빌드 수행. 운영 계정·실제 광고·브라우저 사용성 확인은 별도 |
+
+검사 대상과 전송 코드가 같도록 현재 HEAD의 커밋만 검사한다. 커밋하지 않은 추적/미추적 파일이 있거나 다른 커밋을 전송하려 하면 중단한다(Git 제외 파일은 제외). 검사 중 코드가 바뀌어도 중단한다. 원격 참조 삭제나 보낼 변경이 없는 경우에는 검사를 생략한다. 전체 검사 명령 `npm run check:push`도 같은 조건으로 검사만 수행하며 커밋·푸시·배포를 실행하지 않는다.
+
+문서 검사는 관리 목록·상대 링크·제목 앵커·기능별 명세/디자인/코드/검증 연결과 로컬 사업 검토값을 확인한다. 새 기능 폴더·페이지·API의 안내 등록이 빠지면 실패한다. 문장 의미·기존 파일 내부 기능 추가·화면 품질까지 자동 판단하지 않으므로 담당 문서 갱신은 에이전트의 [완료 절차](./DEVELOPMENT.md#코드-추가수정-절차)에 유지한다.
+
+개별 진단이 필요하면 기존 `npm run lint`, `npm run check:docs`, `npm run check:design`, `node --test tests/*.test.mjs`를 사용할 수 있다. `npm run audit:design`은 기존 미정리까지 포함해 검사하므로 푸시 기본 검사가 아니다. 새 위반 0과 전체 준수를 구분한다. 실제 PostgreSQL 두 연결·브라우저·성능 실측은 아래 별도 절차를 필요할 때 실행한다.
 
 계산 전후 재현: `node tests/performance.test.mjs --benchmark` (실측 출력은 work/performance-benchmark.json). 고정 입력·기준 구현은 tests/reference, 이번 측정값은 [benchmark fixture](./tests/fixtures/performance-benchmark.json)에 있다.
 
