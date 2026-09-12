@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { fetchMarketChanges } from "@/features/market/server/market-changes";
+import { NextResponse } from "next/server";
+import { readPreparedChanges } from "@/features/market/server/changes-response";
 import { marketResponseError } from "@/features/market/server/http";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    return NextResponse.json(await fetchMarketChanges(request.signal), { headers: { "Cache-Control": "no-store" } });
-  } catch (error) {
-    return marketResponseError(error);
-  }
+    const feed = await readPreparedChanges();
+    if (!feed) return NextResponse.json({ pending: true }, {
+      status: 202, headers: { "Cache-Control": "no-store", "Retry-After": "2" },
+    });
+    return NextResponse.json(feed, { headers: { "Cache-Control": "public, max-age=30" } });
+  } catch (error) { return marketResponseError(error); }
 }

@@ -1,114 +1,56 @@
 "use client";
-
-import { AssetAvatar } from "@/components/AssetAvatar";
-import { formatWatchPrice,useWatchlist } from "@/hooks/useWatchlist";
-import { ChevronRight,Plus,Star } from "lucide-react";
 import Link from "next/link";
+import { ChevronRight, Plus } from "lucide-react";
+import { AssetAvatar } from "@/components/AssetAvatar";
+import { formatWatchPrice, useWatchlist } from "@/hooks/useWatchlist";
+import { formatPercent } from "@/lib/format";
+import { marketSessionDate } from "@/features/market/market-changes";
+import { useWatchedReports } from "@/features/market/use-watched-reports";
+import styles from "./WatchlistPreview.module.css";
 
 export function WatchlistPreview() {
-  const { items, quotes, ready, quotesLoading, error, failedSymbols } = useWatchlist({
-    quoteLimit: 3,
-  });
-  const rows = items
-        .slice(0, 3)
-        .map((item) => ({
-          symbol: item.symbol,
-          name: item.name,
-          price: quotes[item.symbol]?.price,
-          currency: quotes[item.symbol]?.currency,
-          change: quotes[item.symbol]?.changePercent,
-        }));
-  return (
-    <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-5 sm:p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#202329]">
-            관심종목
-          </h2>
-        </div>
-        <Link
-          href="/watchlist"
-          aria-label="관심종목 모두 보기"
-          className="rounded-lg p-1 text-[#727680] transition hover:bg-[#f6f7f8] hover:text-[#3b8879]"
-        >
-          <ChevronRight size={17} />
-        </Link>
-      </div>
-      {!ready ? (
-        <p className="py-10 text-center text-xs text-[#727680]">
-          관심종목을 불러오고 있어요.
-        </p>
-      ) : rows.length ? (
-        <div className="space-y-5">
-          {rows.map((row) => (
-            <div
-              key={row.symbol}
-              className="flex items-center justify-between gap-3"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <AssetAvatar symbol={row.symbol} logoUrl={quotes[row.symbol]?.logoUrl} />
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-semibold text-[#202329]">
-                    {row.name}
-                  </p>
-                  <p className="mt-1 text-[11px] text-[#727680]">
-                    {row.symbol}
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                {row.price !== undefined && row.currency ? (
-                  <>
-                    <p className="text-xs font-semibold tabular-nums text-[#202329]">
-                      {formatWatchPrice(row.price, row.currency)}
-                    </p>
-                    {row.change !== undefined && Number.isFinite(row.change) ? (
-                      <p
-                        className={`mt-1 text-[11px] tabular-nums ${row.change >= 0 ? "text-[#16856b]" : "text-[#d65353]"}`}
-                      >
-                        {row.change > 0 ? "+" : ""}
-                        {row.change.toFixed(2)}%
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
-                  <p className="text-[11px] text-[#727680]">
-                    {quotesLoading ? "조회 중…" : "시세 확인 불가"}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="py-5 text-center">
-          <Star
-            className="mx-auto text-[#727680]"
-            size={22}
-            strokeWidth={1.5}
-          />
-          <p className="mt-3 text-xs text-[#727680]">
-            관심종목 없음.
-          </p>
-        </div>
-      )}
-      {error ? (
-        <p role="alert" className="mt-3 text-[11px] leading-5 text-[#946a24]">
-          {error}
-        </p>
-      ) : null}
-      {failedSymbols.length > 0 ? (
-        <p role="status" className="mt-3 text-[11px] text-[#b46926]">일부 종목 갱신 실패 · 마지막 확인 가격을 표시합니다</p>
-      ) : null}
-      {items.length > 0 ? <p className="mt-3 text-[11px] text-[#727680]">30초 자동 갱신 · 지연 시세 포함</p> : null}
-      <Link
-        href="/watchlist"
-        className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#e9eaed] py-2.5 text-[11px] font-medium text-[#727680] transition hover:bg-[#f6f7f8]"
-      >
-                  <>
-            <Plus size={13} /> 관심종목 추가
-          </>
-      </Link>
-    </section>
-  );
+  const { items, quotes, ready, quotesLoading, error, failedSymbols, refresh, refreshing } = useWatchlist({ quoteLimit: 3 });
+  const rows = items.slice(0, 3);
+  const reports = useWatchedReports(rows.map(item => item.symbol));
+  return <section className={styles.preview}>
+    <div className={styles.heading}>
+      <h2>관심종목</h2>
+      <Link href="/watchlist" aria-label="관심종목 모두 보기"><ChevronRight size={18} aria-hidden="true" /></Link>
+    </div>
+    {!ready ? <p className={styles.note}>관심종목을 불러오고 있어요.</p> : rows.length ? (
+      <ul className={styles.list}>
+        {rows.map(item => {
+          const report = reports[item.symbol];
+          const quote = quotes[item.symbol] ?? report?.quote;
+          const sessionDate = marketSessionDate(quote?.quotedAt);
+          const previous = sessionDate && sessionDate === marketSessionDate(report?.quote.quotedAt) ? report?.previous : null;
+          const story = report?.story;
+          return <li key={item.symbol}>
+            <Link href={"/stock/" + encodeURIComponent(item.symbol)} className={styles.stock}>
+              <AssetAvatar symbol={item.symbol} logoUrl={quote?.logoUrl} />
+              <span className={styles.company}><strong>{item.name}</strong><small>{item.symbol}</small></span>
+              <span className={styles.price}>
+                {quote ? <><strong>{formatWatchPrice(quote.price, quote.currency)}</strong>
+                  <small className={quote.changePercent > 0 ? styles.up : quote.changePercent < 0 ? styles.down : undefined}>{formatPercent(quote.changePercent)}</small></>
+                  : <small>{quotesLoading ? "조회 중…" : "시세 확인 불가"}</small>}
+              </span>
+            </Link>
+            {previous && report && <p className={styles.previous}>
+              <span>이전 거래일 기록 <time dateTime={previous.sessionDate}>{previous.sessionDate.slice(5).replace("-", ".")}</time> {formatPercent(previous.changePercent)}</span>
+              <span aria-hidden="true">→</span>
+              <span>이번 장 <strong>{formatPercent(report.quote.changePercent)}</strong></span>
+            </p>}
+            {story && <div className={styles.story}>
+              <a href={story.url} target="_blank" rel="noopener noreferrer">{story.titleKo || story.title}</a>
+              <small>{story.publisher} · {new Intl.DateTimeFormat("ko-KR", { month: "numeric", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(story.publishedAt))} KST{story.titleKo ? " · 자동 번역" : ""}</small>
+            </div>}
+          </li>;
+        })}
+      </ul>
+    ) : error ? null : <p className={styles.note}>관심종목 없음</p>}
+    {error && <p role="alert" className={styles.error}>{error} <button onClick={() => { void refresh(); }} disabled={refreshing}>다시 시도</button></p>}
+    {failedSymbols.length > 0 && <p role="status" className={styles.error}>일부 시세를 불러오지 못했어요.</p>}
+    {rows.length > 0 && <p className={styles.meta}>시세 지연 가능</p>}
+    <Link href="/watchlist" className={styles.add}><Plus size={14} aria-hidden="true" /> 관심종목 추가</Link>
+  </section>;
 }

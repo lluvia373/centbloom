@@ -20,9 +20,10 @@ export function WatchlistRow({
   quote?: StockQuote;
   loading: boolean;
   failed: boolean;
-  onRemove: () => string | null;
-  onTarget: (price: number | null, currency: string | null) => string | null;
+  onRemove: () => string | null | Promise<string | null>;
+  onTarget: (price: number | null, currency: string | null) => string | null | Promise<string | null>;
 }) {
+  const [pending, setPending] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,7 +120,7 @@ export function WatchlistRow({
                 : "시세를 불러온 뒤 목표가를 설정할 수 있습니다"
             }
             aria-label={`${item.name} 목표가 설정`}
-            disabled={!currency}
+            disabled={!currency || pending}
             onClick={() => {
               setEditing(!editing);
               setConfirmRemove(false);
@@ -130,6 +131,7 @@ export function WatchlistRow({
           </button>
           <button
             type="button"
+            disabled={pending}
             aria-label={`${item.name} 삭제`}
             onClick={() => {
               setConfirmRemove(!confirmRemove);
@@ -165,12 +167,16 @@ export function WatchlistRow({
             <button
               type="button"
               className="rounded-lg bg-[#f7e9e9] px-3 py-2 text-xs font-semibold text-[#a73d3d]"
-              onClick={() => {
-                const failure = onRemove();
-                if (failure) setError(failure);
+              disabled={pending}
+              onClick={async () => {
+                setPending(true);
+                const failure = await onRemove();
+                setPending(false);
+                setError(failure);
+                if (!failure) setConfirmRemove(false);
               }}
             >
-              삭제
+              {pending ? "삭제 중…" : "삭제"}
             </button>
           </div>
         </div>

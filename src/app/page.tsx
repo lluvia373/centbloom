@@ -1,3 +1,4 @@
+import { initialChanges } from "@/features/market/server/changes-response";
 import { initialNews } from "@/features/market/server/news-response";
 import { connection } from "next/server";
 import { DiscoveryShortcuts } from "@/features/home/DiscoveryShortcuts";
@@ -13,12 +14,12 @@ export default async function HomePage() {
   // Request-time server clock, after connection().
   // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
-  const news = await initialNews();
+  const [news, changes] = await Promise.all([initialNews(), initialChanges()]);
   return (
     <div className={styles.home}>
       <h1 className="sr-only">시장</h1>
       <DiscoveryShortcuts />
-      <MarketChanges initialNews={news} />
+      <MarketChanges initialData={changes} />
       <MarketMovers />
       <div className={styles.workspaceGrid}>
         <div className={styles.eventColumn}>

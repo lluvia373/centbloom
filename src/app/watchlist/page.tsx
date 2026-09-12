@@ -22,6 +22,9 @@ export default function WatchlistPage() {
     items,
     ready,
     error,
+    pending,
+    refreshing,
+    refresh,
     addItem,
     removeItem,
     setTarget,
@@ -114,7 +117,7 @@ export default function WatchlistPage() {
 
       <WatchlistSearch
         items={items}
-        ready={ready}
+        ready={ready && !pending}
         addItem={addItem}
         setNotice={setNotice}
         searchInput={searchInput}
@@ -126,9 +129,11 @@ export default function WatchlistPage() {
           className="flex items-start gap-2 rounded-xl border border-[#e6e8eb] bg-[#ffffff] p-4 text-[13px] leading-6 text-[#d65353]"
         >
           <CircleAlert className="mt-1 shrink-0" size={16} />
-          {error}
+          <span>{error}</span>
+          <button type="button" className="button-secondary" disabled={pending || refreshing} onClick={() => void refresh()}>다시 불러오기</button>
         </div>
       ) : null}
+      {pending ? <p role="status" className="text-cf-caption text-cf-muted">저장 중…</p> : null}
       {notice ? (
         <div
           role="status"
@@ -192,7 +197,7 @@ export default function WatchlistPage() {
               />
             ))}
           </>
-        ) : (
+        ) : error ? null : (
           <div className="flex flex-col items-center px-4 py-8 text-center">
             <ListPlus size={24} className="text-cf-muted" aria-hidden="true" />
             <h3 className="mt-4 text-cf-body font-semibold">
@@ -203,11 +208,11 @@ export default function WatchlistPage() {
           </div>
         )}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e8eb] bg-[#ffffff] px-5 py-3.5 text-xs leading-5 text-[#727680] sm:px-6">
-          <span>이 브라우저에 저장된 나의 관심종목 · 최대 50개</span>
+          <span>최대 50개</span>
           <span>
             {failedSymbols.length
               ? `${failedSymbols.length}개 종목의 시세를 확인하지 못했어요.`
-              : "30초 자동 갱신 · 거래소별 지연 시세 · 목표가 푸시 알림 없음"}
+              : "지연 시세 가능 · 목표가 알림 없음"}
           </span>
         </div>
       </section>

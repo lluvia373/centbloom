@@ -88,3 +88,18 @@ test("deadline returns original and ignores late translation; Korean titles skip
   await delay(50);
   assert.equal(output[0].titleKo, undefined);
 });
+
+test("money units localize exactly while currencies, amounts and percentages remain protected", () => {
+  assert.equal(translatedTitle("Kraft Heinz sees gains as $700M brand builds momentum", ok("Kraft Heinz, 7억 달러 브랜드 성장에 회복 조짐")), "Kraft Heinz, 7억 달러 브랜드 성장에 회복 조짐");
+  assert.equal(translatedTitle("NuScale sees $95 million EBITDA gap", ok("NuScale, 9,500만 달러 EBITDA 격차 전망")), "NuScale, 9,500만 달러 EBITDA 격차 전망");
+  assert.equal(translatedTitle("Revenue is $1.25 billion", ok("매출 12.5억 달러")), "매출 12.5억 달러");
+  for (const text of ["매출 1.25억 달러", "매출 12.5억 원", "매출 12.5억", "매출 $12.5억 원"])
+    assert.throws(() => translatedTitle("Revenue is $1.25 billion", ok(text)));
+  assert.throws(() => translatedTitle("Shares gain 3%", ok("주가 3 상승")));
+  assert.throws(() => translatedTitle("Margin is -3%", ok("마진 3%")));
+});
+
+test("background preparation can use a longer budget without changing the response deadline", async () => {
+  const translate = createTitleTranslator(async () => { await delay(25); return ok("주가 상승"); }, { timeoutMs: 10 });
+  assert.equal((await translate([story("Shares rise")], undefined, 100))[0].titleKo, "주가 상승");
+});

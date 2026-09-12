@@ -12,23 +12,26 @@ export function TargetEditor({
 }: {
   item: WatchlistItem;
   currency: string;
-  onSave: (price: number | null, currency: string | null) => string | null;
+  onSave: (price: number | null, currency: string | null) => string | null | Promise<string | null>;
   onClose: () => void;
 }) {
   const [price, setPrice] = useState(
     item.targetCurrency === currency ? String(item.targetPrice ?? "") : "",
   );
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         const parsed = price.trim() ? Number(price) : null;
         if (parsed !== null && (!Number.isFinite(parsed) || parsed <= 0)) {
           setError("0보다 큰 가격을 입력해 주세요.");
           return;
         }
-        const failure = onSave(parsed, parsed === null ? null : currency);
+        setPending(true);
+        const failure = await onSave(parsed, parsed === null ? null : currency);
+        setPending(false);
         if (failure) setError(failure);
         else onClose();
       }}
@@ -56,13 +59,15 @@ export function TargetEditor({
         />
         <button
           type="submit"
+          disabled={pending}
           className="rounded-lg bg-[#25282e] px-3 py-2 text-xs font-semibold text-[#ffffff] hover:bg-[#25282e]"
         >
-          저장
+          {pending ? "저장 중…" : "저장"}
         </button>
         <button
           type="button"
           onClick={onClose}
+          disabled={pending}
           aria-label="목표가 편집 취소"
           className={smallButton}
         >

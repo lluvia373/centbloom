@@ -2,29 +2,14 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { createRequestCache } from "@/shared/async/request-cache";
 import { createPollingStore } from "@/shared/async/polling-store";
+import { fetchPreparedFeed } from "@/shared/async/prepared-feed";
 import type { NewsFeed } from "./trending-news";
 
 const newsRequests = createRequestCache({ concurrency: 2, maxEntries: 32 });
 const store = createPollingStore<string, NewsFeed>((key, signal) =>
-  newsRequests.request("news-feed:" + key, async (signal) => {
-    for (;;) {
-      signal.throwIfAborted();
-      const response = await fetch("/api/news" + (key === "trending" ? "" : "?symbol=" + encodeURIComponent(key)),
-        { signal, cache: "default" });
-      if (response.status === 202) {
-        await new Promise<void>((resolve, reject) => {
-          const finish = () => { signal.removeEventListener("abort", abort); resolve(); };
-          const timer = setTimeout(finish, 2_000);
-          const abort = () => { clearTimeout(timer); signal.removeEventListener("abort", abort); reject(signal.reason); };
-          signal.addEventListener("abort", abort, { once: true });
-          if (signal.aborted) abort();
-        });
-        continue;
-      }
-      if (!response.ok) throw new Error("News unavailable");
-      return response.json() as Promise<NewsFeed>;
-    }
-  }, { signal, ttlMs: 0, timeoutMs: 60_000 }),
+  newsRequests.request("news-feed:" + key, signal => fetchPreparedFeed<NewsFeed>(
+    "/api/news" + (key === "trending" ? "" : "?symbol=" + encodeURIComponent(key)), signal),
+    { signal, ttlMs: 0, timeoutMs: 60_000 }),
 );
 let consumers = 0;
 const visibility = () => store.setVisible(document.visibilityState === "visible");

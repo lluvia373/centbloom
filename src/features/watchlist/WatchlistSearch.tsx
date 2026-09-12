@@ -19,10 +19,11 @@ export function WatchlistSearch({
 }: {
   items: WatchlistItem[];
   ready: boolean;
-  addItem: (stock: StockSearchResult) => string | null;
+  addItem: (stock: StockSearchResult) => string | null | Promise<string | null>;
   setNotice: (message: string) => void;
   searchInput: RefObject<HTMLInputElement | null>;
 }) {
+  const [pending, setPending] = useState(false);
   const [query, setQuery] = useState("");
   const [searchMarket, setSearchMarket] = useState<MarketFilter>("all");
   const trimmedQuery = query.trim();
@@ -108,10 +109,12 @@ export function WatchlistSearch({
                     </div>
                     <button
                       type="button"
-                      disabled={added || !ready}
-                      aria-label={`${stock.name} 관심종목 ${added ? "추가됨" : "추가"}`}
-                      onClick={() => {
-                        const failure = addItem(stock);
+                      disabled={added || !ready || pending}
+                      aria-label={`${stock.name} 관심종목 ${pending ? "저장 중…" : added ? "추가됨" : "추가"}`}
+                      onClick={async () => {
+                        setPending(true);
+                        const failure = await addItem(stock);
+                        setPending(false);
                         setNotice(
                           failure ?? `${stock.name}을 관심종목에 추가했어요.`,
                         );
@@ -120,7 +123,7 @@ export function WatchlistSearch({
                       className={smallButton}
                     >
                       {added ? <Check size={14} /> : <Plus size={14} />}
-                      {added ? "추가됨" : "추가"}
+                      {pending ? "저장 중…" : added ? "추가됨" : "추가"}
                     </button>
                   </div>
                 );

@@ -27,7 +27,7 @@ export function refreshPreparedNews(env: NewsBindings, symbol?: string, { record
       const feed = symbol ? { stories: await fetchNews(symbol, signal), partial: false }
         : await fetchTrendingNews(signal);
       const translate = createNewsTitleTranslator(env.NEWS_AI, env.NEWS_CACHE);
-      const stories = await translate(feed.stories, signal);
+      const stories = await translate(feed.stories, signal, Math.max(1, Math.min(80_000, timeoutMs - 5_000)));
       signal.throwIfAborted();
       // A failed partial collection must not replace a healthy list with nothing.
       if (feed.partial && !stories.length && existing?.feed.stories.length) return;

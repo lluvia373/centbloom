@@ -125,12 +125,12 @@ export function changeHeadline(signal: ChangeSignal): string {
 }
 
 /** One slot per type first, then fill by magnitude. A stock appears only once. */
-export function selectMarketChanges(items: MarketChange[], kind?: ChangeKind, limit = 3) {
+export function selectMarketChanges<T extends MarketChange>(items: T[], kind?: ChangeKind, limit = 3) {
   const strength = (item: MarketChange) => Math.max(...item.signals.filter(signal => !kind || signal.kind === kind).map(signal => signal.ratio));
   const ranked = items.filter(item => item.signals.some(signal => !kind || signal.kind === kind))
     .map(item => ({ ...item, signals: [...item.signals].sort((a, b) => Number(b.kind === kind) - Number(a.kind === kind)) }))
     .sort((a, b) => strength(b) - strength(a) || a.quote.symbol.localeCompare(b.quote.symbol));
-  const chosen: MarketChange[] = [];
+  const chosen: T[] = [];
   for (const type of kind ? [kind] : changeKinds) {
     const item = ranked.find(item => !chosen.some(chosen => chosen.quote.symbol === item.quote.symbol) && item.signals.some(signal => signal.kind === type));
     if (item) chosen.push({ ...item, signals: [...item.signals].sort((a, b) => Number(b.kind === type) - Number(a.kind === type)) });

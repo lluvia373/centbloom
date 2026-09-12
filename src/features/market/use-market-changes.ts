@@ -1,32 +1,43 @@
 "use client";
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPollingStore } from "@/shared/async/polling-store";
-import { marketRequests } from "@/lib/stock-api";
-import type { MarketChangesFeed } from "./market-changes";
+import { createRequestCache } from "@/shared/async/request-cache";
+import { fetchPreparedFeed } from "@/shared/async/prepared-feed";
+import type { ResearchedChangesFeed } from "./change-research";
 
-const store = createPollingStore<string, MarketChangesFeed>((key, signal) =>
-  marketRequests.request(key, async signal => {
-    const response = await fetch("/api/market-changes", { signal, cache: "no-store" });
-    if (!response.ok) throw new Error("Changes unavailable");
-    return response.json() as Promise<MarketChangesFeed>;
-  }, { signal, ttlMs: 60_000, timeoutMs: 55_000 }),
+const requests = createRequestCache({ concurrency: 1, maxEntries: 2 });
+const store = createPollingStore<string, ResearchedChangesFeed>((key, signal) =>
+  requests.request(key, signal => fetchPreparedFeed<ResearchedChangesFeed>("/api/market-changes", signal),
+    { signal, ttlMs: 0, timeoutMs: 60_000 }),
 );
 const key = "market-changes:us";
 let consumers = 0;
 const visibility = () => store.setVisible(document.visibilityState === "visible");
-const snapshot = () => store.snapshot(key);
-export function useMarketChanges() {
+export function useMarketChanges(initialData?: ResearchedChangesFeed | null) {
+  const initialView = useMemo(() => initialData ? { data: initialData, loading: false, failed: false } : store.empty, [initialData]);
   const subscribe = useCallback((listener: () => void) => {
     if (consumers++ === 0) {
       document.addEventListener("visibilitychange", visibility);
       visibility();
     }
-    const stop = store.subscribe(key, listener);
+    const stop = store.subscribe(key, listener, initialData ?? undefined);
     return () => {
       stop();
       if (--consumers === 0) document.removeEventListener("visibilitychange", visibility);
     };
-  }, []);
-  const view = useSyncExternalStore(subscribe, snapshot, () => store.empty);
-  return { ...view, retry: () => { void store.refresh(key); } };
+  }, [initialData]);
+  const snapshot = useCallback(() => {
+    const current = store.snapshot(key);
+    return current.data ? current : initialView.data && !current.failed ? initialView : current;
+  }, [initialView]);
+  const view = useSyncExternalStore(subscribe, snapshot, () => initialView);
+  const [expiredAt, setExpiredAt] = useState(0);
+  const expiresAt = view.data?.expiresAt;
+  useEffect(() => {
+    if (!expiresAt) return;
+    const timer = setTimeout(() => { setExpiredAt(expiresAt); void store.refresh(key); }, Math.max(0, expiresAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [expiresAt]);
+  const data = view.data && view.data.expiresAt > expiredAt ? view.data : undefined;
+  return { ...view, data, failed: view.failed || (!!view.data && !data), retry: () => { void store.refresh(key); } };
 }

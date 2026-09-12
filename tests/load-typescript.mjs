@@ -19,6 +19,6 @@ export function loadTypescript(path, overrides={}, cache=new Map()) {
     if(!file)throw new Error(`Cannot resolve ${name} from ${absolute}`);
     return loadTypescript(file,overrides,cache);
   };
-  runInNewContext(outputText,{exports,require:localRequire,console,Date,Intl,Map,Set,Promise,JSON,Number,Object,Array,Math,Error,TypeError,DOMException,AbortController,AbortSignal,URL,URLSearchParams,structuredClone,crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval,fetch:(...args)=>globalThis.fetch(...args)}, {filename:absolute});
+  runInNewContext(outputText,{exports,require:localRequire,console,Date,Intl,Map,Set,Promise,JSON,Number,Object,Array,Math,Error,TypeError,DOMException,AbortController,AbortSignal,URL,URLSearchParams,TextEncoder,TextDecoder,structuredClone,crypto:globalThis.crypto,setTimeout,clearTimeout,setInterval,clearInterval,fetch:(...args)=>globalThis.fetch(...args)}, {filename:absolute});
   return exports;
 }

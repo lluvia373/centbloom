@@ -1,5 +1,5 @@
 import { createRequestCache } from "@/shared/async/request-cache";
-import { moverKinds } from "../movers-model";
+import { moverKinds, type MoverQuote } from "../movers-model";
 import { describeMarketChange, marketSessionDate, type MarketChangesFeed } from "../market-changes";
 import { fetchMovers } from "./movers";
 import { fetchChart } from "./chart";
@@ -15,19 +15,7 @@ export function fetchMarketChanges(signal?: AbortSignal): Promise<MarketChangesF
     const successful = lists.flatMap(result => result.status === "fulfilled" ? [result.value] : []);
     if (!successful.length) throw new MarketError("변화를 비교할 시세를 가져오지 못했습니다.");
     const quotes = [...new Map(successful.flatMap(list => list.quotes.slice(0, 3)).map(quote => [quote.symbol, quote])).values()];
-    const rows = await Promise.all(quotes.map(async quote => {
-      const date = marketSessionDate(quote.quotedAt);
-      if (!date) return { item: null, failed: true };
-      const start = new Date(Date.parse(date) - 60 * 86400_000).toISOString().slice(0, 10);
-      const end = new Date(Date.parse(date) - 86400_000).toISOString().slice(0, 10);
-      try {
-        const history = await fetchChart(quote.symbol, "1mo", start, end, signal);
-        return { item: describeMarketChange(quote, history.points), failed: false };
-      } catch {
-        signal.throwIfAborted();
-        return { item: describeMarketChange(quote, []), failed: true };
-      }
-    }));
+    const rows = await Promise.all(quotes.map(quote => fetchQuoteChange(quote, signal)));
     signal.throwIfAborted();
     return {
       items: rows.flatMap(row => row.item ? [row.item] : []), examined: quotes.length,
@@ -36,3 +24,26 @@ export function fetchMarketChanges(signal?: AbortSignal): Promise<MarketChangesF
     };
   }, { signal, ttlMs: 60_000, timeoutMs: 50_000 });
 }
+
+/** Shared per-stock comparison; orchestration never occupies the provider queue. */
+export async function fetchQuoteChange(quote: MoverQuote, signal?: AbortSignal) {
+  const date = marketSessionDate(quote.quotedAt);
+  if (!date) return { item: null, failed: true, previousSessionDate: null };
+  const start = new Date(Date.parse(date) - 60 * 86400_000).toISOString().slice(0, 10);
+  const end = new Date(Date.parse(date) - 86400_000).toISOString().slice(0, 10);
+  try {
+    const history = await fetchChart(quote.symbol, "1mo", start, end, signal);
+    const previous = history.points.filter(point => /^\d{4}-\d{2}-\d{2}$/.test(point.date)
+      && point.date < date && Number.isFinite(point.close) && point.close > 0)
+      .sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+    const previousClose = quote.price - quote.change;
+    const compatible = previous && previousClose > 0 && Math.abs(previous.close / previousClose - 1) < 0.01
+      && Date.parse(date) - Date.parse(previous.date) <= 7 * 86400_000;
+    return { item: describeMarketChange(quote, history.points), failed: false,
+      previousSessionDate: compatible ? previous.date : null };
+  } catch {
+    signal?.throwIfAborted();
+    return { item: describeMarketChange(quote, []), failed: true, previousSessionDate: null };
+  }
+}
+

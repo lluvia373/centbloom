@@ -7,6 +7,6 @@ export function HomeWatchlist() {
   return user || !configured ? <SavedWatchlist /> : null;
 }
 function SavedWatchlist() {
-  const { items } = useWatchlist({ loadQuotes: false });
-  return items.length ? <WatchlistPreview /> : null;
+  const { items, error } = useWatchlist({ loadQuotes: false });
+  return items.length || error ? <WatchlistPreview /> : null;
 }
