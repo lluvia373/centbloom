@@ -49,20 +49,35 @@ test("week API boundaries use KST, reject multiple query types and expose single
  assert.equal(single.events[0].id,"cpi-09");
  assert.equal((await GET(new NextRequest("http://localhost/api/calendar?week=wrong"))).status,400);
 });
-test("home renders seven dates, all selected-day events and same-tab detail links without modal",()=>{
- const params=new URLSearchParams("calendarDay=2026-09-16");
+test("home shows upcoming releases and real recent results with direct links, without date-count controls",()=>{
+ const now=Date.parse("2026-09-13T03:00:00Z");
+ const events=marketEvents.map(scheduleRelease);
+ const cpi=events.find(event=>event.id==="cpi-09");
+ Object.assign(cpi,{actual:"0.4",previous:"0.1",unit:"%",detail:"8월 CPI · 전월 대비"});
+ const earnings=(symbol,at)=>({...scheduleRelease({id:"earnings:"+symbol,at,title:symbol+" 실적 발표",detail:"분기 실적",source:{label:"기업",url:""}}),
+  kind:"earnings",seriesKey:"earnings:"+symbol,earnings:{symbol,currency:"USD",eps:{actual:null,forecast:null,previous:null},revenue:{actual:null,forecast:null,previous:null}}});
+ events.push(earnings("AAPL","2026-09-14T00:00:00Z"),earnings("OTHER","2026-09-15T00:00:00Z"));
+ const queries=[];
  const {MarketCalendar}=loadTypescript("src/features/home/MarketCalendar.tsx",{
-  "./use-calendar-selection":{useCalendarSelection:()=>({params,update:()=>{}})},
-  "./use-calendar-feed":{useCalendarFeed:()=>({})},"./calendar.module.css":styles,"./home.module.css":styles
+  "@/hooks/useWatchlist":{useWatchlist:options=>{assert.equal(options.loadQuotes,false);return {items:[{symbol:"AAPL"}]};}},
+  "@/features/calendar/use-calendar-feed":{useCalendarFeed:query=>{queries.push(query);return {data:{events,asOf:now},failed:false};}},
+  "@/features/calendar/upcoming-calendar.module.css":styles,
+  "./upcoming-calendar.module.css":styles,
+  "./home.module.css":styles,
  });
- const html=renderToStaticMarkup(React.createElement(MarketCalendar,{now:Date.parse("2026-09-16T00:00:00Z")}));
- assert.match(html,/이번 주 일정/);assert.match(html,/KST/);
- assert.equal((html.match(/aria-pressed=/g)||[]).length,7);
- assert.equal((html.match(/<li>/g)||[]).length,3);
- assert.match(html,/href="\/calendar\/retail-09\?/);
- assert.match(html,/calendarDay%3D2026-09-16/);
- assert.doesNotMatch(html,/<dialog|target="_blank"|중요/);
+ const html=renderToStaticMarkup(React.createElement(MarketCalendar,{now}));
+ assert.deepEqual(queries,["agenda=2026-09-13"]);
+ assert.match(html,/다가오는 일정/);assert.match(html,/KST/);
+ assert.match(html,/aria-label="예정된 발표"/);assert.match(html,/aria-label="최근 발표"/);
+ assert.equal((html.match(/<li\b/g)||[]).length,6);
+ assert.match(html,/AAPL 실적 발표/);assert.match(html,/관심종목/);
+ assert.doesNotMatch(html,/OTHER 실적 발표|연준 기자회견|미국 기업 재고/);
+ assert.match(html,/href="\/calendar\/retail-09\?from=%2F"/);
+ assert.match(html,/href="\/calendar\/cpi-09\?from=%2F"/);
+ assert.match(html,/0\.4 %/);assert.match(html,/이전보다/);assert.match(html,/0\.3%p/);
+ assert.doesNotMatch(html,/aria-pressed=|0건|2건|<dialog|target="_blank"|중요/);
 });
+
 test("calendar details are public while unrelated nested/private paths remain protected",()=>{
  const {isPublicRoute}=loadTypescript("src/features/auth/public-routes.ts");
  assert.equal(isPublicRoute("/calendar"),true);

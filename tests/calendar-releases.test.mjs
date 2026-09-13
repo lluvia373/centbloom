@@ -14,7 +14,7 @@ test("completed requires a received actual value, including zero; elapsed clock 
  assert.equal(event.forecast,"0.25%");
  assert.equal(displayValue(event.actual,event.unit),"0 %");
  const pending=normalizeReleases([sample({Actual:"",DateSpan:1})])[0];
- assert.equal(releaseStatus(pending,Date.parse("2026-09-17")),"결과 대기");
+ assert.equal(releaseStatus(pending,Date.parse("2026-09-18T00:00:00Z")),"결과 대기");
  assert.equal(releaseStatus(pending,0),"발표 예정");
  assert.equal(pending.timingEstimated,true);
  assert.equal(displayValue(null), "—");
@@ -57,4 +57,29 @@ test("earnings separates EPS and revenue, distinguishes partial results, and cha
  assert.equal(points[0].actual,null);assert.equal(points[0].forecast,null);
  assert.equal(points[1].actual,null);assert.equal(points[1].forecast,0.5);
  assert.equal(points[2].actual,0);
+});
+
+
+test("a past schedule without a result connection says past schedule rather than promising a pending result",()=>{
+ const {scheduleRelease}=loadTypescript("src/features/calendar/release.ts");
+ const event=scheduleRelease({id:"retail",at:"2026-09-16T12:30:00Z",title:"미국 소매판매",detail:"8월 소매판매",source:{label:"발표기관",url:""}});
+ assert.equal(releaseStatus(event,Date.parse("2026-09-16T12:00:00Z")),"발표 예정");
+ assert.equal(releaseStatus(event,Date.parse("2026-09-16T13:00:00Z")),"지난 일정");
+ assert.equal(releaseStatus({...event,actual:"0"},Date.parse("2026-09-16T13:00:00Z")),"발표 완료");
+ const unknownTime={...event,at:"2026-09-16T00:00:00+09:00",timingEstimated:true};
+ assert.equal(releaseStatus(unknownTime,Date.parse("2026-09-16T15:00:00+09:00")),"발표 예정");
+ assert.equal(releaseStatus(unknownTime,Date.parse("2026-09-17T00:00:00+09:00")),"지난 일정");
+});
+
+test("upcoming schedule details offer an observation without empty numeric tables or an empty history section",()=>{
+ const {scheduleRelease}=loadTypescript("src/features/calendar/release.ts");
+ const event=scheduleRelease({id:"retail",at:"2026-09-16T12:30:00Z",title:"미국 소매판매",detail:"8월 소매판매",source:{label:"발표기관",url:"https://example.test"}});
+ const {ReleaseDetails}=loadTypescript("src/features/calendar/ReleaseDetails.tsx",{
+  "./ReleaseHistory":{ReleaseHistory:()=>React.createElement("div",{"data-history":"true"},"발표 이력")},
+  "./calendar.module.css":{default:new Proxy({},{get:(_,key)=>String(key)})},
+ });
+ const html=renderToStaticMarkup(React.createElement(ReleaseDetails,{event,now:Date.parse("2026-09-13T03:00:00Z"),from:"/"}));
+ assert.match(html,/발표 예정/);assert.match(html,/살펴볼 내용/);assert.match(html,/지난달/);
+ assert.doesNotMatch(html,/<dl|실제치|예상치|이전치|발표 이력|data-history|결과 대기|—/);
+ assert.match(html,/공식 발표 보기/);
 });

@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useRef } from "react";
-import { marketEvents } from "./data";
+import { preparedCalendarRecords } from "./records";
 import { eventsInMonth, groupEvents, kstDate, shiftMonth, validMonth } from "./model";
 import { monthCells } from "./month-grid";
-import { scheduleRelease, hasActual } from "./release";
+import { hasActual } from "./release";
 import { calendarHref, eventFilter, eventHref, filterEvents, validDay } from "./navigation";
 import { useCalendarFeed } from "./use-calendar-feed";
 import { useCalendarSelection } from "./use-calendar-selection";
@@ -20,7 +20,7 @@ export function CalendarBrowser({now}: {now:number}) {
   const dayPanel = useRef<HTMLElement>(null);
   const feed = useCalendarFeed("month="+month);
   const clock = feed.data?.asOf ?? now;
-  const events = filterEvents(feed.data?.events ?? eventsInMonth(marketEvents,month).map(scheduleRelease),kind);
+  const events = filterEvents(feed.data?.events ?? eventsInMonth(preparedCalendarRecords,month),kind);
   const grouped = new Map(groupEvents(events).map(group=>[group.day,group.events]));
   const dayEvents = (date:string) => grouped.get(date) ?? [];
   const from = calendarHref(day,kind);
@@ -40,7 +40,7 @@ export function CalendarBrowser({now}: {now:number}) {
         {(["all","earnings","economic"] as const).map((value,index) => <button key={value} aria-pressed={kind===value} onClick={() => update({month,day,type:value})}>{["전체","실적","경제지표"][index]}</button>)}
       </div>
     </div>
-    <p className={styles.coverage}>{!feed.data?.connected ? "발표 결과·실적 데이터 미연결 · 등록된 일정만 표시" : !feed.data.earningsConnected ? "실적 데이터 미연결" : "KST 기준"}</p>
+    <p className={styles.coverage}>{!feed.data?.connected ? "공식 경제 일정과 확인된 발표 결과를 제공합니다." : !feed.data.earningsConnected ? "기업 실적 일정은 아직 제공하지 않습니다." : "KST 기준"}</p>
     {feed.failed && <p role="status">갱신 실패 · 기존 일정 표시 중 <button onClick={feed.retry}>다시 시도</button></p>}
     <div className={styles.monthGrid}>
       {["일","월","화","수","목","금","토"].map(weekday => <div className={styles.weekday} key={weekday}>{weekday}</div>)}

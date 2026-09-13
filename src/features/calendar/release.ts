@@ -1,4 +1,4 @@
-import type { EconomicEvent } from "./model";
+import { kstDate, type EconomicEvent } from "./model";
 export interface MetricValues { actual:string|null; forecast:string|null; previous:string|null }
 export interface Release extends EconomicEvent {
   /** Missing kind in older archives means economic. */
@@ -32,7 +32,8 @@ export function releaseStatus(event:Release,now:number) {
     return received(event.earnings?.eps.actual) && received(event.earnings?.revenue.actual) ? "발표 완료" : "일부 결과 수신";
   }
   if (hasActual(event)) return "발표 완료";
-  return Date.parse(event.at)>now ? "발표 예정" : "결과 대기";
+  if (event.timingEstimated ? kstDate(event.at) >= kstDate(now) : Date.parse(event.at) > now) return "발표 예정";
+  return event.seriesKey.startsWith("schedule:") ? "지난 일정" : "결과 대기";
 }
 export function displayValue(value:string|null,unit="") {
   if (!received(value)) return "—";

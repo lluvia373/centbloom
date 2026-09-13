@@ -15,7 +15,7 @@ export function groupEvents<T extends EconomicEvent>(events: T[]) {
   }
   return Array.from(groups, ([day, events]) => ({ day, events }));
 }
-export function eventsInMonth(events: EconomicEvent[], month: string) {
+export function eventsInMonth<T extends EconomicEvent>(events: T[], month: string) {
   if (!validMonth(month)) return [];
   return events.filter((event) => kstDate(event.at).startsWith(month));
 }
