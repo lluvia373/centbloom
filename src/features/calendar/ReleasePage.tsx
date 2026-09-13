@@ -1,15 +1,14 @@
 "use client";
 import Link from "next/link";
-import { marketEvents } from "./data";
+import { preparedCalendarRecords } from "./records";
 import { useCalendarFeed } from "./use-calendar-feed";
-import { scheduleRelease } from "./release";
 import { safeReturn } from "./navigation";
 import { ReleaseDetails } from "./ReleaseDetails";
 import styles from "./calendar.module.css";
 export function ReleasePage({id,now,from}: {id:string;now:number;from?:string}) {
   const feed=useCalendarFeed("event="+encodeURIComponent(id));
-  const fallback=marketEvents.find(event=>event.id===id);
-  const event=feed.data?.events.find(event=>event.id===id) ?? (!feed.data && fallback ? scheduleRelease(fallback) : undefined);
+  const fallback=preparedCalendarRecords.find(event=>event.id===id);
+  const event=feed.data?.events.find(event=>event.id===id) ?? (!feed.data && fallback ? fallback : undefined);
   const returnTo=safeReturn(from);
   return <article className={styles.page}>
     <Link className={styles.backLink} href={returnTo}>← 일정 목록</Link>
