@@ -521,10 +521,8 @@
 .changeComparison { display: grid; gap: var(--cf-space-2); margin-top: auto; padding-top: var(--cf-space-4); font-variant-numeric: tabular-nums; }
 .changeComparison > div { display: grid; grid-template-columns: 1fr auto; gap: var(--cf-space-2); align-items: center; font-size: var(--cf-text-caption); }
 .changeComparison > div > span:first-child { color: var(--cf-color-muted); }
-.changeComparison strong { font-weight: var(--cf-weight-medium); }
-.changeBar { grid-column: 1 / -1; height: var(--cf-space-1); background: var(--cf-color-soft); border-radius: var(--cf-radius-pill); overflow: hidden; }
-.changeBar i { display: block; height: 100%; background: var(--cf-color-ink); border-radius: inherit; }
-.changeComparison > div:last-child .changeBar i { background: var(--cf-color-muted); }
+.changeComparison strong { font-size: var(--cf-text-body); font-weight: var(--cf-weight-semibold); }
+.changeComparison > div:last-child strong { color: var(--cf-color-muted); font-size: var(--cf-text-label); font-weight: var(--cf-weight-regular); }
 .changeReversal { display: flex; align-items: center; flex-wrap: wrap; gap: var(--cf-space-3); padding: var(--cf-space-4) 0; font-size: var(--cf-text-label); line-height: var(--cf-leading-body); }
 .changeReversal > span { color: var(--cf-color-muted); }
 .changeReversal strong { font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); }

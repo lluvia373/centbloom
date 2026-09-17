@@ -105,3 +105,49 @@ test('pre-rename pending requests keep their identity and do not resurrect after
  assert.equal(storage.getItem('centifolio-local-original:user'),'original recovery bytes');
  assert.equal(storage.getItem('centifolio-pending-transaction:user'),null);
 });
+
+for (const committedBeforeDisconnect of [false,true]) {
+ test(`another tab preserves the original request after ${committedBeforeDisconnect ? 'a lost save response' : 'an offline save'}`,async()=>{
+  const storage=memoryStorage();
+  let current={transactions:[],revision:'0',writable:true}, failOnce=true, tail=Promise.resolve();
+  const receipts=new Map(), requests=[];
+  const repository={
+   read:async()=>structuredClone(current),
+   commit:async change=>{
+    requests.push(structuredClone(change));
+    const fail=failOnce;failOnce=false;
+    if(fail&&!committedBeforeDisconnect) throw new Error('network unavailable');
+    if(receipts.has(change.id)) return structuredClone(receipts.get(change.id));
+    assert.equal(change.revision,current.revision);
+    current={transactions:structuredClone(change.transactions),revision:String(Number(current.revision)+1),writable:true};
+    receipts.set(change.id,structuredClone(current));
+    if(fail) throw new Error('connection lost after commit');
+    return structuredClone(current);
+   },
+  };
+  const lock=action=>{const result=tail.then(action,action);tail=result.catch(()=>{});return result;};
+  const firstCache=transactionCache(storage,'user'),secondCache=transactionCache(storage,'user');
+  const first=createLedgerStore({repository,cache:firstCache,lock});
+  const second=createLedgerStore({repository,cache:secondCache,lock});
+  await Promise.all([first.start(),second.start()]);
+  assert.ok((await first.execute({type:'add',transaction:record(1)})).error);
+  const original=storage.getItem('centbloom-pending-transaction:user');
+  const request=structuredClone(firstCache.pending());
+  assert.equal(second.getSnapshot().status,'ready');
+  const blocked=await second.execute({type:'add',transaction:record(2)});
+  assert.ok(blocked.error,'a stale ready tab must not replace an unconfirmed request');
+  assert.equal(second.getSnapshot().status,'failed');
+  assert.equal(requests.length,1,'the second tab must not send a new server write');
+  assert.equal(storage.getItem('centbloom-pending-transaction:user'),original);
+  await second.retry();
+  assert.equal(second.getSnapshot().status,'ready');
+  assert.deepEqual(requests[1],request);
+  assert.deepEqual(current.transactions.map(row=>row.id),[validId(1)]);
+  assert.equal(firstCache.pending(),null);
+  assert.equal((await second.execute({type:'add',transaction:record(2)})).error,null);
+  await first.retry();
+  assert.deepEqual(Array.from(first.getSnapshot().transactions,row=>row.id),[validId(1),validId(2)]);
+  assert.equal(current.revision,'2');
+  first.dispose();second.dispose();
+ });
+}

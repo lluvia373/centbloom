@@ -30,7 +30,7 @@ function render(items, { selected, page = 0, failed = false, partial = false, mi
   return renderToStaticMarkup(React.createElement(MarketChanges));
 }
 
-test("maximum-breakout headline and bars use the same prior maximum; other cases retain average", () => {
+test("maximum-breakout headline and comparison values use the same prior maximum; other cases retain average", () => {
   const item = make("HPE");
   const html = render([item]);
   assert.match(html, /직전 20거래일 최대 등락폭/);

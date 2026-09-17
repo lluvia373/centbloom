@@ -24,19 +24,16 @@ function Comparison({ signal, previousMaximum }: { signal: ChangeSignal; previou
   );
   const current = Math.abs(signal.value);
   const baseline = previousMaximum ?? signal.baseline;
-  const maximum = Math.max(current, baseline);
   const format = (value: number) => signal.kind === "volume" ? formatCompactNumber(value) + "주" : value.toFixed(2) + "%";
   return (
     <div className={styles.changeComparison}>
       <div>
         <span>{signal.kind === "volume" ? "이번 정규장" : "이번 등락폭"}</span>
         <strong>{format(current)}</strong>
-        <span className={styles.changeBar} aria-hidden="true"><i style={{ width: `${current / maximum * 100}%` }} /></span>
       </div>
       <div>
         <span>{signal.kind === "volume" ? "3개월 하루 평균" : previousMaximum !== undefined ? "직전 20거래일 최대 등락폭" : "직전 20거래일 평균 등락폭"}</span>
         <strong>{format(baseline)}</strong>
-        <span className={styles.changeBar} aria-hidden="true"><i style={{ width: `${baseline / maximum * 100}%` }} /></span>
       </div>
     </div>
   );

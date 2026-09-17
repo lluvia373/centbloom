@@ -43,3 +43,19 @@ test('auth uses session events without a competing network getUser response; cle
  cleanup();callback('SIGNED_OUT',null);
  assert.equal(unsubscribed,true);assert.equal(updates[0].at(-1).id,'two');
 });
+
+for (const failure of [null, new Error('authentication server unavailable')]) {
+ test(`sign-out ${failure ? 'failure reaches the settings error handler' : 'success resolves normally'}`, async () => {
+  let calls=0;
+  const react={createContext:()=>({Provider:'provider'}),useState:initial=>[initial,()=>{}],useEffect:()=>{},useMemo:fn=>fn(),useCallback:fn=>fn};
+  const client={auth:{signOut:async()=>{calls++;return {error:failure};}}};
+  const {AuthProvider}=loadTypescript('src/hooks/useAuth.tsx',{
+   react,
+   '@/lib/supabase':{isSupabaseConfigured:()=>true,getSupabaseBrowserClient:()=>client},
+  });
+  const {signOut}=AuthProvider({children:null}).props.value;
+  if(failure) await assert.rejects(signOut(),error=>error===failure);
+  else await assert.doesNotReject(signOut());
+  assert.equal(calls,1);
+ });
+}

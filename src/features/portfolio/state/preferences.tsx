@@ -55,9 +55,9 @@ export function PreferencesProvider({
   const setDisplayCurrency = useCallback(
     (value: DisplayCurrency) => {
       const token = ++version.current.value;
+      setCurrency(value);
       try {
         localStorage.setItem(key, value);
-        setCurrency(value);
         setError(null);
       } catch {
         setError("표시 통화를 브라우저에 저장하지 못했습니다.");

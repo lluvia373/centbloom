@@ -19,6 +19,8 @@ type Options = {
   ) => Promise<Transaction[]>;
   lock?: <T>(action: () => Promise<T>) => Promise<T>;
 };
+const UNCONFIRMED_SAVE_MESSAGE =
+  "확인되지 않은 저장 요청이 있습니다. 재시도하거나 서버 기록을 다시 불러오세요.";
 const errorText = (error: unknown) =>
   error instanceof Error ? error.message : "거래 저장을 완료하지 못했습니다.";
 
@@ -60,9 +62,7 @@ export function createLedgerStore({
     publish({
       ...result,
       status: pending ? "failed" : "ready",
-      error: pending
-        ? "확인되지 않은 저장 요청이 있습니다. 재시도하거나 서버 기록을 다시 불러오세요."
-        : null,
+      error: pending ? UNCONFIRMED_SAVE_MESSAGE : null,
     });
   };
   const store = {
@@ -109,6 +109,8 @@ export function createLedgerStore({
                 state.error ??
                   "거래를 불러오거나 저장 중입니다. 다시 시도해 주세요.",
               );
+            // Another tab may have left a pending request since this tab last loaded.
+            if (cache?.pending()) throw new Error(UNCONFIRMED_SAVE_MESSAGE);
             if (!state.writable)
               throw new Error(
                 "거래 저장 서버 업데이트가 필요합니다. 기존 기록은 조회할 수 있습니다.",

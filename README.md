@@ -1,12 +1,12 @@
 # Centbloom
 
-공개 시장 정보와 투자 읽을거리에서 관심종목·개인 포트폴리오로 이어지는 앱. 첫 공개 버전에는 회원 토론을 포함하지 않는다. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
+개인 포트폴리오를 정확하고 안정적으로 관리하고, 보유·관심종목의 새 정보와 흥미로운 시장 변화를 이어서 확인하는 투자 서비스를 지향한다. 세 축과 목표/구현 구분은 [제품 방향](./PRODUCT_SPEC.md#제품-방향)을 따른다. 첫 공개 버전에는 회원 토론을 포함하지 않는다. 현재 구현·배포 범위는 [PROJECT_STATUS.md](./PROJECT_STATUS.md)를 참고한다.
 
 [GitHub 저장소](https://github.com/lluvia373/centbloom) · [공개 웹](https://centbloom.stock-web-demo.workers.dev/)
 
 ## 문서 안내
 
-새 기능이나 수정 작업은 [현재 상태](./PROJECT_STATUS.md#환경별-진행-상태)를 확인한 뒤 아래 안내로 시작한다. 기능명 또는 코드 경로를 넣으면 읽을 명세·디자인·수정 위치·검증이 함께 나온다. 새 기능의 기록 위치와 완료 절차도 [DEVELOPMENT](./DEVELOPMENT.md#코드-추가수정-절차)에 있다.
+개발 일정과 진척은 [단일 진행판](./PROJECT_STATUS.md#실행-일정과-진행판)에서 확인한다. 매 작업 시작·종료에 해당 ID를 갱신하고, 새 기능이나 수정은 아래 안내로 시작한다. 기능명 또는 코드 경로를 넣으면 읽을 명세·디자인·수정 위치·검증이 함께 나온다. 새 기능의 기록 위치와 완료 절차도 [DEVELOPMENT](./DEVELOPMENT.md#코드-추가수정-절차)에 있다.
 
 ```sh
 npm run docs:guide -- 관심종목
@@ -20,7 +20,7 @@ npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
 | 거래소 일정 근거·지원 범위 | [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) |
 | 현재 제품 결정·범위·변경 이력 | [DECISIONS.md](./DECISIONS.md) |
 | 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
-| 구현·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
+| 개발 일정·진행판·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
 | 구글 검색 조사·유입 계획 | [SEO_PLAN.md](./SEO_PLAN.md) |
 | Cloudflare 배포·로그인 설정 | [CLOUDFLARE.md](./CLOUDFLARE.md) |
 | 승인 로고·자산·재생성 | [BRAND.md](./BRAND.md) |

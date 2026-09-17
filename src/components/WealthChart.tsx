@@ -89,7 +89,7 @@ function ChartView({
     <section className="surface">
       <div className="surface-header">
         <div>
-          <h2>{mode === "assets" ? "투자자산 추이" : "운용수익률 추이"}</h2>
+          <h2>{mode === "assets" ? "주식·ETF 평가액 추이" : "운용수익률 추이"}</h2>
           {mode === "return" && <CalculationHelp label="운용수익률">자금 유입·유출의 영향을 제외한 기간별 투자 성과(TWR).</CalculationHelp>}
         </div>
         <select
@@ -97,7 +97,7 @@ function ChartView({
           value={mode}
           onChange={(event) => setMode(event.target.value)}
         >
-          <option value="assets">투자자산</option>
+          <option value="assets">주식·ETF</option>
           <option value="return">운용수익률</option>
         </select>
       </div>
@@ -252,8 +252,8 @@ function ChartView({
       )}
       <p className="chart-footnote">
         {mode === "return" ? "원화 기준"
-          : showUSD ? "일별 원화 기록 · 현재 환율 환산 · 현금 미포함"
-          : "일별 투자자산 · KST 기준 · 현금 미포함"}
+          : showUSD ? "일별 원화 기록 · 현재 환율 환산"
+          : "일별 평가액 · KST 기준"}
       </p>
       {error && <p className="chart-footnote" role="alert">{error}</p>}
     </section>
