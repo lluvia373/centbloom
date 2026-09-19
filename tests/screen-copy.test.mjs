@@ -69,7 +69,7 @@ test('empty portfolios do not substitute fictional holdings or performance',()=>
 test('holdings presents one allocation and one performance section after the editable positions',()=>{
  const holdings=[{symbol:'TEST',valuationAvailable:true,gainAvailable:true,displayMarketValue:140000,displayGainLoss:7000,displayGainLossPercent:5}];
  let allocationProps;
- const marker=(name)=>()=>createElement('div',null,name);
+ const marker=(name)=>function Marker(){return createElement('div',null,name);};
  const {default:PortfolioPage}=loadTypescript('src/app/portfolio/page.tsx',{
   '@/features/ads/PortfolioAd':{PortfolioAd:()=>null},
   '@/components/Header':{PageHeading:({children})=>createElement('header',null,children),AddTransactionLink:()=>null,CurrencySwitch:()=>null},
