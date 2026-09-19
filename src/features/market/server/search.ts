@@ -2,6 +2,7 @@ import {
   marketForSymbol,
   marketSearchSymbols,
   matchingStocks,
+  stockDisplayName,
   type MarketFilter,
 } from "@/lib/markets";
 import type { StockSearchResult } from "@/lib/types";
@@ -47,7 +48,7 @@ export function fetchSearch(
           )
           .map((q) => ({
             symbol: q.symbol,
-            name: q.shortname ?? q.longname ?? q.symbol,
+            name: stockDisplayName(q.symbol, q.longname, q.shortname),
             exchange: String(
               "exchDisp" in q
                 ? (q.exchDisp ?? q.exchange ?? "")
@@ -56,12 +57,17 @@ export function fetchSearch(
             type: String(q.quoteType ?? "EQUITY"),
           }));
 
-        const unique = new Map<string, StockSearchResult>();
-        [...localMatches, ...stocks].forEach((stock) => {
+        const unique = new Map<string, StockSearchResult>(
+          localMatches.map((stock) => [stock.symbol, stock]),
+        );
+        const supplied = new Set<string>();
+        stocks.forEach((stock) => {
           if (
             (market === "all" || marketForSymbol(stock.symbol) === market) &&
-            !unique.has(stock.symbol)
+            !supplied.has(stock.symbol)
           ) {
+            supplied.add(stock.symbol);
+            // Replacing an existing value keeps local alias matches in their original order.
             unique.set(stock.symbol, stock);
           }
         });

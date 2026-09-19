@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { stockDisplayName } from "@/lib/markets";
 import { createRecentSearches, parseRecentSearches, type RecentStock } from "./recent-searches";
 
 const repository = createRecentSearches(() => window.localStorage);
@@ -16,7 +17,9 @@ function subscribe(listener: () => void) {
 export function useRecentSearches(userId: string | null) {
   const snapshot = useCallback(() => repository.read(userId), [userId]);
   const raw = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
-  const stocks = useMemo(() => parseRecentSearches(raw), [raw]);
+  const stocks = useMemo(() => parseRecentSearches(raw).map((stock) => ({
+    ...stock, name: stockDisplayName(stock.symbol, undefined, stock.name),
+  })), [raw]);
   const record = useCallback((stock: RecentStock) => {
     const saved = repository.record(userId, stock);
     if (saved) window.dispatchEvent(new Event(changed));

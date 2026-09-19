@@ -1,13 +1,21 @@
 /* UI values live here. Keep DESIGN_SYSTEM.md in sync. */
 :root {
-  --cf-color-allocation-1: #3b8879;
-  --cf-color-allocation-2: #6d91aa;
-  --cf-color-allocation-3: #a1b7bf;
-  --cf-color-allocation-4: #91ad9c;
-  --cf-color-allocation-5: #b9a46e;
-  --cf-color-allocation-6: #b5b9c4;
-  --cf-color-allocation-7: #687b85;
-  --cf-color-allocation-8: #d0d8d5;
+  --cf-color-allocation-1: #24457c;
+  --cf-color-allocation-2: #f0ad30;
+  --cf-color-allocation-3: #098b74;
+  --cf-color-allocation-4: #c75c93;
+  --cf-color-allocation-5: #59b8d9;
+  --cf-color-allocation-6: #8956c5;
+  --cf-color-allocation-7: #cb5f2e;
+  --cf-color-allocation-8: #9abf45;
+  --cf-color-allocation-9: #34373e;
+  --cf-color-allocation-10: #e5a7cd;
+  --cf-color-allocation-11: #728ee2;
+  --cf-color-allocation-12: #715233;
+  --cf-color-allocation-13: #a7d8ba;
+  --cf-color-allocation-14: #e16566;
+  --cf-color-allocation-15: #a6a9b0;
+  --cf-color-allocation-16: #5b2b57;
   --cf-color-market-up: #d74353;
   --cf-color-market-down: #356ed5;
   --cf-font-ui: var(--font-wanted-sans), Arial, "Malgun Gothic", sans-serif;
@@ -75,6 +83,8 @@
   --color-cf-action: var(--cf-color-action);
   --color-cf-action-hover: var(--cf-color-action-hover);
   --color-cf-focus: var(--cf-color-focus);
+  --color-cf-market-up: var(--cf-color-market-up);
+  --color-cf-market-down: var(--cf-color-market-down);
   --color-cf-positive: var(--cf-color-positive);
   --color-cf-negative: var(--cf-color-negative);
   --color-cf-positive-soft: var(--cf-color-positive-soft);

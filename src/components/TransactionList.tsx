@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOperationScope } from "@/shared/react/use-operation-scope";
 
 import { formatCurrency, formatDate, todayISO } from "@/lib/format";
+import { stockDisplayName } from "@/lib/markets";
 import type { Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Loader2, Pencil, Trash2, X } from "lucide-react";
@@ -210,7 +211,7 @@ function TransactionListSession({
                         {tx.symbol}
                       </span>
                       <span className="ml-2 text-xs text-[#727680]">
-                        {tx.name}
+                        {stockDisplayName(tx.symbol, undefined, tx.name)}
                       </span>
                       <span className="ml-2 text-xs uppercase text-[#727680]">
                         {currency}

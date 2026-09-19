@@ -61,13 +61,13 @@ export function WatchlistRow({
                 </p>
                 {change !== null ? (
                   <p
-                    className={`mt-1 flex items-center justify-end gap-0.5 text-xs tabular-nums md:justify-start ${change >= 0 ? "text-[#16856b]" : "text-[#d65353]"}`}
+                    className={`mt-1 flex items-center justify-end gap-0.5 text-xs tabular-nums md:justify-start ${change > 0 ? "text-cf-market-up" : change < 0 ? "text-cf-market-down" : "text-cf-muted"}`}
                   >
-                    {change >= 0 ? (
+                    {change > 0 ? (
                       <ArrowUpRight size={13} />
-                    ) : (
+                    ) : change < 0 ? (
                       <ArrowDownRight size={13} />
-                    )}
+                    ) : null}
                     {change > 0 ? "+" : ""}
                     {change.toFixed(2)}%{" "}
                     <span className="ml-1 text-[#727680]">전일 대비</span>

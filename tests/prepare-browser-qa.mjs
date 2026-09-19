@@ -11,5 +11,15 @@ write(`${root}/src/app/api/historical/[symbol]/route.ts`,imports+`export async f
 write(`${root}/src/app/api/search/route.ts`,imports+`import {matchingStocks,type MarketFilter} from '@/lib/markets';export async function GET(request:NextRequest){return NextResponse.json(matchingStocks(request.nextUrl.searchParams.get('q')??'',(request.nextUrl.searchParams.get('market')??'all') as MarketFilter));}`);
 for(const dir of [root,resolve('work/refactor-baseline')])write(`${dir}/src/app/qa-mobile/route.ts`,`export function GET(request:Request){const paths=['/','/search','/portfolio','/insights','/watchlist','/journal','/settings'];const selected=new URL(request.url).searchParams.get('page')??'/';const page=paths.includes(selected)?selected:'/';return new Response('<!doctype html><html><body style="margin:0;background:#ddd"><nav>'+paths.map(p=>'<a style="margin:8px" href="?page='+p+'">'+p+'</a>').join('')+'</nav><iframe title="390px 모바일 검증" src="'+page+'" style="display:block;width:390px;height:640px;border:0;margin:20px auto"></iframe></body></html>',{headers:{'Content-Type':'text/html;charset=utf-8'}});}`);
 write(`${root}/src/app/qa-fixture/page.tsx`,readFileSync("tests/fixtures/browser-fixture.tsx","utf8"));
+write(`${root}/src/app/qa-allocation/page.tsx`,readFileSync("tests/fixtures/allocation-browser-fixture.tsx","utf8"));
+if (process.argv.includes('--allocation-only')) {
+  // Render the real component/styles without account providers, quotes or the app shell.
+  write(`${root}/next.config.ts`, 'export default {};');
+  write(`${root}/src/app/layout.tsx`, `import localFont from 'next/font/local';
+import './globals.css';
+import '@/styles/design-tokens.css';
+const font=localFont({src:'../assets/fonts/WantedSansVariable.woff2',variable:'--font-wanted-sans'});
+export default function Layout({children}:{children:React.ReactNode}){return <html lang="ko" className={font.variable}><body>{children}</body></html>;}`);
+}
 console.log(root);
 

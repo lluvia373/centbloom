@@ -236,10 +236,10 @@
   background: #f0f3f5;
 }
 .contribution-track span {
-  background: #6d9b90;
+  background: var(--cf-color-market-up);
 }
 .contribution-track .negative {
-  background: #d88181;
+  background: var(--cf-color-market-down);
 }
 .contribution-item {
   font-size: 13px;

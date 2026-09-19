@@ -37,3 +37,37 @@ test('KRW holdings expose the unit exchange rate required by portfolio metrics; 
  const missing=buildSummary([{...holding,symbol:'AAPL',currency:'USD'}],{AAPL:{price:120,currency:'USD',change:10}},{},'KRW');
  assert.equal(missing.holdings[0].currentFxRateToKRW,0);
 });
+
+test('portfolio display uses current full names without rewriting original holdings or amounts', () => {
+ const {buildSummary}=loadTypescript('src/features/portfolio/model/summary.ts');
+ const holding=Object.freeze({symbol:'005930.KS',name:'삼성전자',quantity:2,avgCost:100,currency:'KRW',costBasisKRW:200});
+ const quote={symbol:'005930.KS',name:'Samsung Electronics Co., Ltd.',price:120,currency:'KRW',change:10};
+ const result=buildSummary([holding],{'005930.KS':quote},{USD:1300},'KRW');
+ assert.equal(result.holdings[0].name,'Samsung Electronics Co., Ltd.');
+ assert.equal(holding.name,'삼성전자');
+ assert.equal(result.totalValue,240);assert.equal(result.totalGainLoss,40);
+ const missing=buildSummary([holding],{},{USD:1300},'KRW');
+ assert.equal(missing.holdings[0].name,'Samsung Electronics Co., Ltd.');
+ assert.equal(missing.holdings[0].valuationAvailable,false);
+});
+
+test('quote and search prefer full provider names while Korean aliases still resolve', async () => {
+ const provider={
+  providerRequests:{request:(_key,run)=>run(undefined)},
+  MarketError:class extends Error {},
+  yahoo:{
+   quote:async()=>({symbol:'OXY',shortName:'Occidental Petroleum Corporatio',longName:'Occidental Petroleum Corporation',regularMarketPrice:58,currency:'USD'}),
+   search:async()=>({quotes:[{symbol:'005930.KS',shortname:'SamsungElec',longname:'Samsung Electronics Co., Ltd.',exchange:'KOS',quoteType:'EQUITY'}]}),
+  },
+ };
+ const {fetchQuote}=loadTypescript('src/features/market/server/quote.ts',{'./provider':provider});
+ assert.equal((await fetchQuote('OXY')).name,'Occidental Petroleum Corporation');
+ const {fetchSearch}=loadTypescript('src/features/market/server/search.ts',{'./provider':provider});
+ const results=await fetchSearch('삼성전자','kr');
+ assert.equal(results.length,1);
+ assert.equal(results[0].name,'Samsung Electronics Co., Ltd.');
+ provider.yahoo.search=async()=>({quotes:[{symbol:'005930.KS',longname:'Updated Provider Name',quoteType:'EQUITY'}]});
+ assert.equal((await fetchSearch('삼성전자','kr'))[0].name,'Updated Provider Name');
+ provider.yahoo.search=async()=>{throw new Error('offline');};
+ assert.equal((await fetchSearch('삼성전자','kr'))[0].name,'Samsung Electronics Co., Ltd.');
+});

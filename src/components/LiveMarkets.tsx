@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { discoveryStocks, type MarketFilter } from "@/lib/markets";
+import { discoveryStocks, stockDisplayName, type MarketFilter } from "@/lib/markets";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { MarketPicker } from "./MarketPicker";
@@ -30,18 +30,19 @@ export function LiveMarkets() {
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {stocks.map((stock) => {
           const quote = quotes[stock.symbol];
+          const name = stockDisplayName(stock.symbol, quote?.name, stock.name);
           return (
             <Link key={stock.symbol} href={`/stock/${encodeURIComponent(stock.symbol)}`}
               className="min-w-0 rounded-xl border border-[#eceef0] p-4 transition-colors hover:bg-[#f8f9fa]">
               <div className="flex items-center justify-between gap-2">
                 <AssetAvatar symbol={stock.symbol} logoUrl={quote?.logoUrl} small />
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-[#202329]">{stock.name}</span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-[#202329]" title={name}>{name}</span>
               </div>
               <p className="mt-1 text-[11px] text-[#727680]">{stock.symbol} · {stock.exchange}</p>
               {quote ? <>
                 <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums">
                   <strong className="text-lg font-semibold tracking-tight text-[#202329]">{formatCurrency(quote.price, quote.currency)}</strong>
-                  <span className={`text-xs ${quote.changePercent >= 0 ? "text-[#16856b]" : "text-[#d65353]"}`}>{formatPercent(quote.changePercent)}</span>
+                  <span className={`text-xs ${quote.changePercent > 0 ? "text-cf-market-up" : quote.changePercent < 0 ? "text-cf-market-down" : "text-cf-muted"}`}>{formatPercent(quote.changePercent)}</span>
                 </div>
                 <QuoteStatus quote={quote} failed={failedSymbols.includes(stock.symbol)} />
               </> : <p className="mt-4 py-5 text-xs text-[#727680]">{loading ? "시세 불러오는 중…" : "시세를 확인하지 못했어요"}</p>}

@@ -9,14 +9,15 @@ export const primaryNavigation = [
 export const investmentNavigation = [
   { href: "/portfolio", label: "보유자산" },
   { href: "/watchlist", label: "관심종목" },
-  { href: "/insights", label: "성과 분석" },
   { href: "/journal", label: "투자 노트" },
   { href: "/transactions", label: "거래내역" },
 ] as const;
 
 export function investmentTab(path: string) {
   const normalized = path.replace(/\/+$/, "") || "/";
-  return investmentNavigation.find((item) => item.href === (normalized === "/search" ? "/transactions" : normalized));
+  const destination = normalized === "/search" ? "/transactions"
+    : normalized === "/insights" ? "/portfolio" : normalized;
+  return investmentNavigation.find((item) => item.href === destination);
 }
 export function navigationArea(path: string) {
   if (path === "/settings") return "settings";

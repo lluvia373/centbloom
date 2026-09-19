@@ -9,7 +9,7 @@ import {
 } from "@/features/performance/use-performance-range";
 
 import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
-import { useTransactions } from "@/hooks/usePortfolio";
+import { usePortfolioMarket, usePreferences, useTransactions } from "@/hooks/usePortfolio";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import type { ChartSeries, StockSearchResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -28,16 +28,33 @@ type ChartMode = "return" | "assets";
 
 export function PerformanceAnalytics() {
   const { transactions } = useTransactions();
+  const { summary } = usePortfolioMarket();
+  const { displayCurrency } = usePreferences();
   const { points, trackingStartedAt, loading, error } = usePerformanceHistory();
-  const [chartMode, setChartMode] = useState<ChartMode>("return");
+  const [chartMode, setChartMode] = useState<ChartMode>("assets");
   const [datePanelOpen, setDatePanelOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const [benchmark, setBenchmark] = useState<StockSearchResult | null>(null);
   const { results: searchResults, loading: searching } = useStockSearch(query, {
     delay: 250,
-    enabled: benchmark?.name !== query,
+    enabled: chartMode === "return" && benchmark?.name !== query,
   });
+
+  const currencyHolding = summary?.holdings.find((holding) =>
+    holding.valuationAvailable && Number.isFinite(holding.marketValueKRW) &&
+    holding.marketValueKRW > 0 && Number.isFinite(holding.marketValueUSD) && holding.marketValueUSD > 0,
+  );
+  const usdKrwRate = currencyHolding
+    ? currencyHolding.marketValueKRW / currencyHolding.marketValueUSD
+    : null;
+  const assetCurrency = displayCurrency === "USD" && usdKrwRate != null ? "USD" : "KRW";
+  const assetDivisor = assetCurrency === "USD" ? usdKrwRate! : 1;
+  const hasKrwImpacts = !!summary?.holdings.length && summary.holdings.every((holding) =>
+    holding.valuationAvailable && holding.gainAvailable &&
+    Number.isFinite(holding.currentFxRateToKRW) && (holding.currentFxRateToKRW ?? 0) > 0 &&
+    (holding.currency === "KRW" || holding.costBasisKRW != null),
+  );
 
   const {
     range,
@@ -57,7 +74,7 @@ export function PerformanceAnalytics() {
   } = usePerformanceRange(points, transactions);
 
   const { benchmarkSeries, benchmarkLoading, benchmarkError } =
-    useBenchmarkSeries(benchmark?.symbol, effectiveStart, effectiveEnd);
+    useBenchmarkSeries(chartMode === "return" ? benchmark?.symbol : undefined, effectiveStart, effectiveEnd);
   const chartData = useMemo(() => {
     const useAdjusted =
       benchmarkSeries?.dividendStatus !== "unavailable" &&
@@ -82,6 +99,11 @@ export function PerformanceAnalytics() {
           : null,
     }));
   }, [benchmarkSeries, normalizedPoints]);
+  const assetData = useMemo(() => normalizedPoints.map((point) => ({
+    ...point,
+    assetValue: point.assetValueKRW / assetDivisor,
+    cumulativeNetFlow: point.cumulativeNetFlowKRW / assetDivisor,
+  })), [normalizedPoints, assetDivisor]);
 
   const trackingLabel = trackingStartedAt
     ? formatTrackingAge(trackingStartedAt)
@@ -110,10 +132,10 @@ export function PerformanceAnalytics() {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-[#202329]">
-              <TrendingUp className="h-4 w-4 text-[#3b8879]" />내 성과 기록
+              <TrendingUp className="h-4 w-4 text-[#3b8879]" />기간 성과
             </div>
             <p className="mt-1 text-xs text-[#727680]">
-              전체 {trackingLabel} · 매일 23:59:59 KST 기준
+              전체 {trackingLabel} · 매일 23:59:59 KST · 성과 원화 기준
             </p>
           </div>
 
@@ -205,6 +227,12 @@ export function PerformanceAnalytics() {
         />
       </div>
 
+      {hasKrwImpacts && <p className="flex flex-wrap gap-3 border-t border-cf-line px-4 py-3 text-cf-caption text-cf-muted">
+        <span>보유분 평가손익 · KRW</span>
+        <span>주가 <strong className={impactTone(summary!.stockPriceImpactKRW)}>{formatSignedKrw(summary!.stockPriceImpactKRW)}</strong></span>
+        <span>환율 <strong className={impactTone(summary!.fxImpactKRW)}>{formatSignedKrw(summary!.fxImpactKRW)}</strong></span>
+      </p>}
+
       <div className="p-5 sm:p-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex rounded-full bg-[#f6f7f8] p-1">
@@ -236,7 +264,7 @@ export function PerformanceAnalytics() {
             </button>
           </div>
 
-          <div className="relative w-full lg:w-80">
+          {chartMode === "return" && <div className="relative w-full lg:w-80">
             {benchmark ? (
               <div className="flex h-10 items-center justify-between rounded-xl border border-[#dce7e2] bg-[#f2f7f5] px-3">
                 <div className="min-w-0">
@@ -301,8 +329,13 @@ export function PerformanceAnalytics() {
                 )}
               </>
             )}
-          </div>
+          </div>}
         </div>
+
+        {chartMode === "assets" && <div className="mt-3 flex flex-wrap gap-4 text-cf-caption text-cf-muted">
+          <span>평가액 · 누적 순투입금</span>
+          <span>{assetCurrency === "USD" ? "USD · 현재 환율 환산" : displayCurrency === "USD" ? "KRW · 달러 환율 확인 필요" : "KRW"}</span>
+        </div>}
 
         <div className="mt-6 h-72 sm:h-80">
           {loading && points.length === 0 ? (
@@ -317,7 +350,7 @@ export function PerformanceAnalytics() {
               benchmarkName={benchmark?.symbol}
             />
           ) : (
-            <AssetChart data={chartData} inactivePeriods={inactivePeriods} />
+            <AssetChart data={assetData} inactivePeriods={inactivePeriods} currency={assetCurrency} />
           )}
         </div>
 
@@ -329,6 +362,14 @@ export function PerformanceAnalytics() {
       </div>
     </section>
   );
+}
+
+function impactTone(value: number): string {
+  return value > 0 ? "text-cf-market-up" : value < 0 ? "text-cf-market-down" : "text-cf-muted";
+}
+
+function formatSignedKrw(value: number): string {
+  return `${value > 0 ? "+" : ""}${formatCurrency(value, "KRW")}`;
 }
 
 function latestBenchmarkValue(

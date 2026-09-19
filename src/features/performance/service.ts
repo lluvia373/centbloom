@@ -1,5 +1,5 @@
 import { planHistoryRequests } from "./request-plan";
-import { addCalendarDays, kstDate } from "@/lib/performance";
+import { addCalendarDays, kstDate, PERFORMANCE_CALCULATION_VERSION } from "@/lib/performance";
 import { getChartSeries } from "@/lib/stock-api";
 import type { PortfolioPerformancePoint, Transaction } from "@/lib/types";
 import { mapLimited } from "@/shared/async/pool";
@@ -31,9 +31,10 @@ export async function loadPerformance(
   const startedAt =
     persisted ?? transactions.map((tx) => tx.createdAt).sort()[0];
   const start = kstDate(new Date(startedAt));
-  // Legacy snapshots have no transaction revision. Never treat them as verified calculations.
+  // Server/legacy snapshots have no calculation version: rebuild them before reuse.
   let previousPoints =
-    saved?.revision === revision && saved.startedAt === startedAt
+    saved?.calculationVersion === PERFORMANCE_CALCULATION_VERSION &&
+    saved.revision === revision && saved.startedAt === startedAt
       ? saved.points.filter((p) => p.final && p.date >= start && p.date < today)
       : [];
   if (
@@ -116,7 +117,7 @@ export async function loadPerformance(
   );
   const error = await saveHistory(
     userId,
-    { revision, startedAt, points },
+    { calculationVersion: PERFORMANCE_CALCULATION_VERSION, revision, startedAt, points },
     saved?.serverSynced ? points.slice(previousPoints.length) : points,
     signal,
   );

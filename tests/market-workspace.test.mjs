@@ -23,6 +23,14 @@ test("screening keeps ten correctly sorted real results, numeric seconds become 
  assert.equal(sorted[0].quotedAt,new Date(1788552000*1000).toISOString());
  assert.equal(rows[0].symbol,"S0");
 });
+
+test("rankings display full provider names and tolerate missing or blank names",()=>{
+ const raw={...quote("TEST"),longName:"  Example Holdings Corporation  ",shortName:"Example"};
+ assert.equal(normalizeMovers([raw],"gainers")[0].name,"Example Holdings Corporation");
+ assert.equal(normalizeMovers([{...raw,longName:" ",shortName:" Example "}],"gainers")[0].name,"Example");
+ assert.equal(normalizeMovers([{...raw,longName:null,shortName:" "}],"gainers")[0].name,"TEST");
+ assert.equal(raw.shortName,"Example");
+});
 test("multiple consumers share in-flight list; one unsubscribe cannot cancel another",async()=>{
  let resolve,signal,calls=0;
  const store=createMoversStore((_k,s)=>{signal=s;calls++;return new Promise(r=>resolve=r);});

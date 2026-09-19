@@ -1,4 +1,5 @@
 import { createRequestCache } from "@/shared/async/request-cache";
+import type { MidnightBaseline } from "@/features/market/baseline";
 import { BASE_CURRENCY, normalizeCurrency } from "./currency";
 import type { MarketFilter } from "./markets";
 import type {
@@ -10,6 +11,12 @@ import type {
 } from "./types";
 
 export const marketRequests = createRequestCache();
+export function getMidnightBaseline(symbol: string, date: string, signal?: AbortSignal): Promise<MidnightBaseline> {
+  symbol = symbol.trim().toUpperCase();
+  return marketRequests.request(`midnight:${symbol}:${date}`,
+    (s) => json<MidnightBaseline>(`/api/baseline/${encodeURIComponent(symbol)}?date=${encodeURIComponent(date)}`, s),
+    { signal, ttlMs: 60_000 });
+}
 async function json<T>(url: string, signal: AbortSignal): Promise<T> {
   const res = await fetch(url, { signal, cache: "no-store" });
   if (!res.ok) {

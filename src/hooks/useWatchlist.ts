@@ -5,8 +5,9 @@ import { type WatchlistItem } from "@/features/watchlist/model";
 import { EMPTY_WATCHLIST } from "@/features/watchlist/store";
 import { useAuth } from "@/hooks/useAuth";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
+import { stockDisplayName } from "@/lib/markets";
 import type { StockSearchResult } from "@/lib/types";
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 export type { WatchlistItem } from "@/features/watchlist/model";
 const noSubscription = () => () => {};
@@ -34,6 +35,9 @@ export function useWatchlist({
   const live = useLiveQuotes(items.slice(0, quoteLimit).map((item) => item.symbol), {
     enabled: loadQuotes && ready, scope: store?.scope ?? "watchlist:unavailable",
   });
+  const displayItems = useMemo(() => items.map((item) => ({
+    ...item, name: stockDisplayName(item.symbol, live.quotes[item.symbol]?.name, item.name),
+  })), [items, live.quotes]);
   const unavailable = configured && !user ? "로그인 후 관심종목을 저장할 수 있습니다." : "관심종목을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.";
   const addItem = useCallback(async (stock: StockSearchResult): Promise<string | null> => {
     const item: WatchlistItem = { symbol: stock.symbol, name: stock.name, targetPrice: null, targetCurrency: null, addedAt: new Date().toISOString() };
@@ -45,7 +49,7 @@ export function useWatchlist({
     ? store.execute({ operation: "target", payload: { symbol, targetPrice: price, targetCurrency: price === null ? null : currency } }) : unavailable, [store, unavailable]);
   const refresh = useCallback(async () => { await store?.refresh(); }, [store]);
   return {
-    ...snapshot, addItem, removeItem, setTarget, refresh,
+    ...snapshot, items: displayItems, addItem, removeItem, setTarget, refresh,
     quotes: live.quotes, failedSymbols: live.failedSymbols,
     quotesLoading: live.loading, quotesRefreshing: live.refreshing, refreshQuotes: live.refresh,
   };

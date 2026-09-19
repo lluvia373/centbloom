@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { discoveryStocks, marketForSymbol, marketSearchSymbols, matchingStocks, knownMarketDelay } from "../src/lib/markets.ts";
+import { discoveryStocks, marketForSymbol, marketSearchSymbols, matchingStocks, knownMarketDelay, stockDisplayName, matchesStockQuery } from "../src/lib/markets.ts";
 import { toKRW } from "../src/lib/currency.ts";
 
 test("exchange suffix wins over a company's home country; other markets remain distinct", () => {
@@ -27,6 +27,26 @@ test("local-language aliases respect the selected listing market and never conta
   assert.equal(matchingStocks("마오타이", "cn")[0]?.symbol, "600519.SS");
   assert.deepEqual(matchingStocks("텐센트", "cn"), []);
   assert.ok(discoveryStocks("all").every((stock) => !("price" in stock)));
+});
+
+test("English full names retain Korean and local-language search aliases", () => {
+  for (const [query, symbol, name] of [
+    ["삼성전자", "005930.KS", "Samsung Electronics Co., Ltd."],
+    ["네이버", "035420.KS", "NAVER Corporation"],
+    ["알리바바", "9988.HK", "Alibaba Group Holding Limited"],
+    ["애플", "AAPL", "Apple Inc."],
+    ["CATL", "300750.SZ", "Contemporary Amperex Technology Co., Limited"],
+  ]) {
+    const result = matchingStocks(query, "all").find(stock => stock.symbol === symbol);
+    assert.equal(result?.name, name);
+    assert.ok(matchesStockQuery(query, symbol, name));
+    assert.ok(matchesStockQuery(symbol.toLowerCase(), symbol, name));
+  }
+  assert.equal(stockDisplayName("005930.KS", undefined, "삼성전자"), "Samsung Electronics Co., Ltd.");
+  assert.equal(stockDisplayName("XYZ", "  Example Holdings Limited  ", "Example"), "Example Holdings Limited");
+  assert.equal(stockDisplayName("XYZ", "  ", "Saved name"), "Saved name");
+  assert.equal(stockDisplayName("XYZ", "XYZ", "Saved name"), "Saved name");
+  assert.equal(stockDisplayName("XYZ", null, ""), "XYZ");
 });
 
 test("delayed exchanges cannot be labeled tick realtime, and Asian FX amounts retain units", () => {

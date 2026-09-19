@@ -1,8 +1,10 @@
 "use client";
 import { formatCurrency, formatPercent } from "@/lib/format";
+import type { DisplayCurrency } from "@/lib/types";
+import { useId } from "react";
 import {
   Area,
-  AreaChart,
+  ComposedChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -119,15 +121,18 @@ export function ReturnChart({
 export function AssetChart({
   data,
   inactivePeriods,
+  currency = "KRW",
 }: {
   data: Array<Record<string, unknown>>;
   inactivePeriods: Array<{ start: string; end: string }>;
+  currency?: DisplayCurrency;
 }) {
+  const gradientId = useId().replace(/:/g, "");
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 2 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 2 }}>
         <defs>
-          <linearGradient id="asset-history-fill" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3b8879" stopOpacity={0.16} />
             <stop offset="100%" stopColor="#3b8879" stopOpacity={0} />
           </linearGradient>
@@ -142,7 +147,7 @@ export function AssetChart({
           minTickGap={28}
         />
         <YAxis
-          tickFormatter={(value) => compactKRW(Number(value))}
+          tickFormatter={(value) => currency === "KRW" ? compactKRW(Number(value)) : Number(value).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 })}
           tick={axisTick}
           axisLine={false}
           tickLine={false}
@@ -151,9 +156,9 @@ export function AssetChart({
         <Tooltip
           contentStyle={tooltipStyle}
           labelFormatter={(value) => longDate(String(value ?? ""))}
-          formatter={(value) => [
-            formatCurrency(Number(value), "KRW"),
-            "총 투자자산",
+          formatter={(value, name) => [
+            formatCurrency(Number(value), currency),
+            name === "cumulativeNetFlow" ? "누적 순투입금" : "평가액",
           ]}
         />
         {inactivePeriods.map((period) => (
@@ -167,12 +172,21 @@ export function AssetChart({
         ))}
         <Area
           type="monotone"
-          dataKey="assetValueKRW"
+          dataKey="assetValue"
           stroke="#3b8879"
           strokeWidth={2.5}
-          fill="url(#asset-history-fill)"
+          fill={`url(#${gradientId})`}
+          dot={data.length === 1 ? { r: 4 } : false}
         />
-      </AreaChart>
+        <Line
+          type="monotone"
+          dataKey="cumulativeNetFlow"
+          stroke="var(--cf-color-muted)"
+          strokeWidth={1.5}
+          strokeDasharray="5 5"
+          dot={false}
+        />
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }

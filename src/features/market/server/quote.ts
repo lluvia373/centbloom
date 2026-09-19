@@ -1,4 +1,4 @@
-import { knownMarketDelay } from "@/lib/markets";
+import { knownMarketDelay, stockDisplayName } from "@/lib/markets";
 import type { StockQuote } from "@/lib/types";
 import { MarketError, providerRequests, yahoo } from "./provider";
 export function fetchQuote(
@@ -51,7 +51,7 @@ export function fetchQuote(
 
       const data: StockQuote = {
         symbol: quote.symbol ?? symbol,
-        name: quote.shortName ?? quote.longName ?? symbol,
+        name: stockDisplayName(quote.symbol ?? symbol, quote.longName, quote.shortName),
         price,
         change: quote.regularMarketChange ?? 0,
         changePercent: quote.regularMarketChangePercent ?? 0,

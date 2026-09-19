@@ -33,10 +33,10 @@ export function PriceChange({
       className={cn(
         sizeClass,
         value === 0
-          ? "text-[#727680]"
+          ? "text-cf-muted"
           : isPositive
-            ? "text-[#16856b]"
-            : "text-[#d65353]",
+            ? "text-cf-market-up"
+            : "text-cf-market-down",
         className,
       )}
     >

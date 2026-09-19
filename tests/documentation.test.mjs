@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -33,10 +32,8 @@ function fixture(t) {
   writeFileSync(join(root, "DECISIONS.md"), "# Decisions\n\nD005: no member discussions in the first release.\n");
   return root;
 }
-function reviewPlan(root) {
-  const decision = readFileSync(join(root, "DECISIONS.md"), "utf8").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
-  const hash = createHash("sha256").update(decision).digest("hex");
-  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n<!-- business-model-decisions-sha256: " + hash + " -->\n");
+function createPlan(root) {
+  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n\nCurrent revenue assumptions and budget.\n");
 }
 function run(root, ...args) {
   const result = spawnSync(process.execPath, [checker, root, ...args], { encoding: "utf8" });
@@ -116,7 +113,7 @@ test("broken paths and renamed headings fail", (t) => {
 
 test("private plan may exist locally but must not be tracked", (t) => {
   const root = fixture(t);
-  reviewPlan(root);
+  createPlan(root);
   assert.equal(run(root).code, 0);
   execFileSync("git", ["add", "-f", "BUSINESS_MODEL.md"], { cwd: root });
   const result = run(root);
@@ -124,25 +121,49 @@ test("private plan may exist locally but must not be tracked", (t) => {
   assert.match(result.output, /private document is tracked by Git/);
 });
 
-test("a product decision change blocks a previously reviewed private plan", (t) => {
+test("editing decision wording does not force private-plan bookkeeping", (t) => {
   const root = fixture(t);
-  reviewPlan(root);
-  assert.equal(run(root).code, 0);
+  createPlan(root);
+  const plan = readFileSync(join(root, "BUSINESS_MODEL.md"), "utf8");
   const decision = join(root, "DECISIONS.md");
-  writeFileSync(decision, readFileSync(decision, "utf8").replace("no member discussions", "member discussions"));
-  const result = run(root);
-  assert.equal(result.code, 1);
-  assert.match(result.output, /missing or stale decision review/);
-  reviewPlan(root);
+  writeFileSync(decision, readFileSync(decision, "utf8").replace("no member discussions", "member discussions excluded"));
   assert.equal(run(root).code, 0);
+  assert.equal(readFileSync(join(root, "BUSINESS_MODEL.md"), "utf8"), plan);
 });
 
-test("missing review fails while a Windows line-ending change preserves review", (t) => {
+for (const heading of ["변경 이력", "문서 변경 이력", "작업 일지", "수정 로그 · 2026-09", "Changelog", "Revision history"]) {
+  test("rejects accumulated document history: " + heading, (t) => {
+    const root = fixture(t);
+    append(root, "DECISIONS.md", "\n## " + heading + "\nPast work.\n");
+    const result = run(root);
+    assert.equal(result.code, 1);
+    assert.match(result.output, /DECISIONS\.md: history section is not allowed/);
+  });
+}
+
+test("private documents follow the same current-state rule", (t) => {
   const root = fixture(t);
-  writeFileSync(join(root, "BUSINESS_MODEL.md"), "# Local business plan\n");
-  assert.match(run(root).output, /missing or stale decision review/);
-  reviewPlan(root);
+  createPlan(root);
+  append(root, "BUSINESS_MODEL.md", "\n## 작업 기록\nPast work.\n");
+  const result = run(root);
+  assert.equal(result.code, 1);
+  assert.match(result.output, /BUSINESS_MODEL\.md: history section is not allowed/);
+});
+
+for (const heading of ["  ## 변경 이력", "\uFEFF# 변경 이력", "## 1. 변경 이력", "### **작업 일지** ###"]) {
+  test("history detection handles Markdown heading formatting: " + heading, (t) => {
+    const root = fixture(t);
+    writeFileSync(join(root, "DECISIONS.md"), heading + "\nPast work.\n");
+    const result = run(root);
+    assert.equal(result.code, 1);
+    assert.match(result.output, /DECISIONS\.md: history section is not allowed/);
+  });
+}
+
+test("keeps dated evidence, product history features and fenced examples", (t) => {
+  const root = fixture(t);
   const decision = join(root, "DECISIONS.md");
+  append(root, "DECISIONS.md", "\n## 검증 기록\n2026-09-19: current scope remains unverified.\n\n## 거래 이력\nFeature definition.\n\n~~~md\n## 변경 이력\nExample only.\n~~~\n");
   writeFileSync(decision, "\uFEFF" + readFileSync(decision, "utf8").replace(/\n/g, "\r\n"));
   assert.equal(run(root).code, 0);
 });
@@ -232,19 +253,19 @@ test("guide uses the current directory without a positional root and rejects unk
   assert.match(unknown.output, /일치하는 기능이 없습니다.*작업별 시작점/);
 });
 
-test("guide remains available while business review, links and source registrations are unfinished", (t) => {
+test("guide remains available while history cleanup, links and source registrations are unfinished", (t) => {
   const root = featureFixture(t);
-  reviewPlan(root);
-  append(root, "DECISIONS.md", "A changed product decision.\n");
+  createPlan(root);
+  append(root, "DECISIONS.md", "\n## 변경 이력\nPast work.\n");
   append(root, "README.md", "\n[unfinished](./missing.md)\n");
   mkdirSync(join(root, "src/features/alerts"));
   const result = run(root, "--guide", "관심종목");
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /^기능: 관심종목/m);
-  assert.doesNotMatch(result.output, /Documentation check|missing or stale decision review/);
+  assert.doesNotMatch(result.output, /Documentation check|history section is not allowed/);
   const check = run(root);
   assert.equal(check.code, 1);
-  assert.match(check.output, /missing or stale decision review/);
+  assert.match(check.output, /history section is not allowed/);
   assert.match(check.output, /broken link/);
   assert.match(check.output, /missing implementation entry src\/features\/alerts/);
 });

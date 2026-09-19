@@ -1,6 +1,6 @@
 # Cloudflare Workers 배포
 
-최종 수정: 2026-09-12 · main c13de14 배포·뉴스 KV/정기 수집 설정 확인
+현재 배포·환경 설정·복구 절차. 실행 결과와 배포 이력은 여기에 누적하지 않는다.
 
 Next.js·API를 Workers/OpenNext에서 실행한다. 실제 배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#환경별-진행-상태).
 
@@ -16,26 +16,26 @@ npm run preview:cloudflare
 npm run deploy:cloudflare
 ```
 
-- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. 09-12 로컬 확인에서는 Windows 기본 로그인 저장소 `%APPDATA%/xdg.config/.wrangler`를 사용했다. `XDG_CONFIG_HOME`을 Git 제외 `work/cloudflare-auth`로 바꾸려면 그 위치에 실제 로그인 설정이 있는지 먼저 확인한다(빈 폴더 지정 시 원격 AI 프록시 인증 실패). `wrangler.jsonc`·종료 주소 설정의 account_id는 실제 stock-web-demo 운영 계정으로 고정했다.
+- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. Windows 기본 로그인 저장소는 `%APPDATA%/xdg.config/.wrangler`다. `XDG_CONFIG_HOME`을 별도 위치로 바꾸려면 실제 로그인 설정이 있는지 확인한다. 빈 폴더를 지정하면 원격 AI 프록시 인증이 실패한다. 대상 계정은 `wrangler.jsonc`·종료 주소 설정의 account_id를 확인한다.
 - preview는 빌드 후 로컬 Workers 실행, deploy는 빌드 후 [wrangler.jsonc](./wrangler.jsonc)의 Worker에 배포한다. 업로드 전에 대상 계정·Worker를 확인한다.
 - 명령·의존성 기준은 [package.json](./package.json)·[package-lock.json](./package-lock.json). 검증 기록은 [PROJECT_STATUS.md](./PROJECT_STATUS.md#검증-기록).
 
 ## 센트블룸 주소와 이전 주소 종료
 
 - 공개 주소는 https://centbloom.stock-web-demo.workers.dev 이다. .com은 구매·연결하지 않았다.
-- 2026-09-08 사용자 요청으로 이전 centifolio 주소를 종료했다. [종료 설정](./wrangler.legacy.jsonc)의 workers_dev·preview_urls는 모두 false이며, [종료 Worker](./legacy-worker.mjs)는 서비스 바인딩 없이 410 응답만 정의한다. 공개 접속은 Cloudflare에서 404로 차단된다. Git Builds의 deploy:legacy도 같은 종료 설정을 적용하므로 재배포가 이전 주소를 다시 열지 않는다.
-- 이전 Worker와 배포 이력은 복구용으로 보관한다. 서비스 바인딩으로 새 앱을 전달하던 동작은 종료했다. 계정 거래와 DB·브라우저 저장 데이터를 삭제하지 않는다. 이전 주소에만 남은 로컬 노트·관심종목은 새 주소로 자동 이전되지 않았다.
+- 이전 centifolio 주소는 닫힌 상태를 유지한다. [종료 설정](./wrangler.legacy.jsonc)의 workers_dev·preview_urls는 false이며 [종료 Worker](./legacy-worker.mjs)는 바인딩 없이 410 응답만 정의한다. deploy:legacy도 같은 설정을 적용한다. 실제 공개 응답의 확인 범위는 PROJECT_STATUS를 따른다.
+- 이전 Worker는 복구용으로 보관하며 계정 거래·DB·브라우저 저장 데이터를 삭제하지 않는다. 이전 주소의 로컬 노트·관심종목은 새 주소로 자동 이전되지 않으므로 복구 때 별도로 확인한다.
 - Auth Site URL과 공개 Redirect URL은 센트블룸만 사용한다. 이전 공개 주소를 허용 목록에서 제거했으며 localhost:3000·127.0.0.1:3000 개발 주소는 유지한다.
 - Git Builds: centbloom은 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. centifolio는 check:docs 후 deploy:legacy로 비공개 종료 상태를 유지한다. 두 연결은 같은 저장소 main을 사용한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
-- 로컬 검사는 [README 검증](./README.md#검증)에 따라 개발 중 실행을 최소화하고 pre-push 훅에 모은다. 배포 CI의 prepare는 로컬 Git 훅 설치를 건너뛴다. 로컬 통과와 배포 환경의 OpenNext 빌드 성공은 구분하며, 원격 Builds 설정은 이번 검사 시점 변경에서 수정하지 않았다.
+- 로컬 검사는 [README 검증](./README.md#검증)에 따라 pre-push 훅에 모은다. 배포 CI의 prepare는 로컬 훅 설치를 건너뛴다. 로컬 통과와 배포 환경의 OpenNext 빌드 성공은 구분한다.
 
 ## 뉴스 제목 자동 번역
 
 - wrangler.jsonc의 NEWS_AI 바인딩을 사용한다. 모델은 [Cloudflare GPT OSS 120B](https://developers.cloudflare.com/workers-ai/models/gpt-oss-120b/)이며 공개 기사 제목만 전송한다. 개인 거래/계정 정보·기사 본문은 전송하지 않는다. 별도 OpenAI API 키는 사용하지 않는다.
 - 로컬 next dev는 OpenNext의 개발 프록시를 초기화한다. Wrangler 로그인에 AI 권한이 필요하고 remote 바인딩이므로 **로컬 번역도 실제 Cloudflare AI 사용량**에 포함된다. 생산 빌드는 이 개발 프록시를 시작하지 않는다. 공급 오류/사용량 한도/바인딩 미설정 시 원문 뉴스는 유지한다.
-- 4개 동시 추론·모델 출력 최대 600토큰을 유지한다. 09-12 로컬 변경의 번역 예산은 응답 후 준비 최대 20초/정기 준비 최대 80초이며 상위 작업 마감이 우선한다. 성공 제목은 KV에 최대 7일 보관, 같은 바인딩의 여러 뉴스 준비 작업이 요청을 공유하고 이전 v5 캐시도 새 검증 통과 시 재사용한다. 해시별 재시도 표식은 최초 시도부터 24시간 만료되며 최대 4회·최소 1분/5분/30분 간격 후 기존 준비 작업에서 재시도한다. 표식에는 기사 본문·사용자 식별자를 저장하지 않는다. 일일 번역 할당량 초과(4006) 시 한 시간 만료되는 공통 표식으로 새 추론을 중단하며 성공 캐시는 계속 사용한다. 상세와 지역 간 한계는 [번역 명세](./PRODUCT_SPEC.md#주요뉴스와-번역)를 따른다. 대기 기한/소비자 취소로 이미 서버에 전송된 추론까지 중단되지는 않는다. 공유 요청의 한 소비자 해제는 다른 소비자를 취소하지 않는다.
+- 동시 추론·출력 한도·작업 마감·캐시·재시도 기준은 [번역 명세](./PRODUCT_SPEC.md#주요뉴스와-번역)를 따른다. 운영에서는 캐시 적중·할당량 초과·실제 사용량을 확인한다. 대기 종료나 소비자 취소가 이미 전송한 추론까지 중단하지 않으므로 사용량을 요청 대기 시간만으로 계산하지 않는다.
 - 성공한 제목 번역은 KV로 인스턴스 간 공유한다. 지역별 전파 지연·동시 미수집 제목의 중복 추론 가능성은 남는다. [Workers AI 요금](https://developers.cloudflare.com/workers-ai/platform/pricing/) 기준으로 계정 대시보드 사용량을 확인하며 무제한 무료로 표현하지 않는다.
-- 09-07 main `be42761` 배포에 NEWS_AI 바인딩과 번역 호출을 포함했다. 실제 번역 품질·사용량은 별도 확인 대상이며 공급 실패 시 원문을 유지한다. 배포 버전·복구 버전은 PROJECT_STATUS의 환경별 상태를 따른다. 롤백은 이전 정상 Worker 버전으로 복귀하고 정기 수집 트리거도 비활성화한다. 뉴스 KV는 보존한다. 원문 데이터나 운영 DB를 수정하지 않는다.
+- 롤백은 PROJECT_STATUS에서 확인한 정상 Worker 버전으로 복귀하고 정기 수집 트리거를 비활성화한다. 뉴스 KV는 보존하며 원문 데이터·운영 DB를 수정하지 않는다.
 
 ## AdSense 연결 준비
 
@@ -82,7 +82,7 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 [마이그레이션](./supabase/migrations/20260905225656_atomic_portfolio_ledger.sql)은 기존 거래·설정·스냅샷 테이블용 증분 변경이다. 운영 적용 버전·검증 상태는 [PROJECT_STATUS](./PROJECT_STATUS.md#환경별-진행-상태)를 따른다. 새 프로젝트 전체 초기 스키마가 아니며 이미 적용된 파일을 다시 실행하지 않는다.
 
 1. 프로젝트 ID·migration 이력·테이블 컬럼/제약·소유자 RLS를 확인한다. 다른 미적용 변경을 함께 실행하지 않는다. 기존 환율·초과 매도·같은 날짜/생성시각 거래의 순서를 점검한다.
-2. 이번 변경은 같은 트랜잭션에서 세 테이블의 쓰기를 잠시 잠그고, 기존 값을 centbloom_release_backup 스키마에 복사한 뒤 DDL을 적용한다. 이 스키마는 Data API에 노출하지 않고 public/anon/authenticated/service_role의 접근을 취소한다. 백업 테이블은 RLS를 켜고 사용자 정책을 만들지 않는다. 개인 기록을 PC로 반출하지 않는다. 이 사본은 마이그레이션 복구용이며 DB 전체 손실에 대비한 별도 백업을 대신하지 않는다.
+2. 해당 마이그레이션은 같은 트랜잭션에서 세 테이블의 쓰기를 잠시 잠그고, 기존 값을 centbloom_release_backup 스키마에 복사한 뒤 DDL을 적용한다. 이 스키마는 Data API에 노출하지 않고 public/anon/authenticated/service_role의 접근을 취소한다. 백업 테이블은 RLS를 켜고 사용자 정책을 만들지 않는다. 개인 기록을 PC로 반출하지 않는다. 이 사본은 마이그레이션 복구용이며 DB 전체 손실에 대비한 별도 백업을 대신하지 않는다.
 3. 격리 SQL 테스트와 실제 PostgreSQL 두 연결 검사로 원자적 교체·실패·RLS·40001 충돌·응답 유실 재시도·롤백 후 사본 보존을 검증한다. [합성 계정 SQL](./supabase/tests/atomic-ledger-smoke.sql)은 격리 DB용이며 운영에서 자동 실행하지 않는다.
 4. 운영 적용은 연결된 Supabase 관리 도구의 apply_migration 또는 CLI에서 대상 SQL을 확인한 뒤 수행한다. 관리 도구가 발급한 migration 버전과 저장소 파일 이름을 일치시킨다. CLI를 사용할 때도 migration list → db push --dry-run으로 확인하고, 과거 원격 이력이 로컬에 없는 이 저장소에서 전체 push를 무조건 실행하지 않는다.
 5. 운영에는 원본/사본 비교 결과와 함수 실행 권한을 읽기 전용으로 확인한다. 앱 빌드·배포 후 공개 페이지/API를 검증한다. 실제 로그인 후 쓰기·다중 기기 검증은 별도 결과로 기록하고 격리 테스트로 대체했다고 표시하지 않는다.
@@ -104,7 +104,7 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 
 ## 경제 캘린더 결과 수집 — 준비 상태
 
-2026-09-06 기준 연결 키·운영 테이블·수집 프로세스는 활성화하지 않았다. 월간 UI와 아래 코드는 준비됐지만 실제치/컨센서스의 실서비스 수신을 검증한 상태가 아니다. 현 화면은 등록 일정과 미연결 안내만 제공한다.
+실제 자동 수신·운영 테이블·수집 프로세스는 미연결이다. 등록 일정·수동 확인 결과와 자동 공급을 구분하며 현재 화면 범위는 [캘린더 명세](./PRODUCT_SPEC.md#증시-캘린더와-발표-상세), 연결·검증 상태는 PROJECT_STATUS를 따른다. 아래 공급자 자료의 확인일은 2026-09-06이며 계약 전에 다시 확인한다.
 
 | 후보 | 확인된 적합성 | 남은 확인 |
 | --- | --- | --- |
@@ -128,8 +128,8 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 
 ## 뉴스 미리 준비
 
-- `wrangler.jsonc`의 `NEWS_CACHE` KV와 `custom-worker.ts`의 5분 Scheduled Handler를 사용한다. 같은 Scheduled Handler에서 홈 변화 카드의 종목별 조사도 별도로 실행하며 어느 한쪽의 실패가 다른 작업을 중단하지 않도록 기다린다. 변화 조사 추가는 현재 로컬 구현이며 운영 반영은 별도다. 기존 OpenNext fetch 처리는 유지한다. 09-12 사용자 main 배포 승인으로 운영 namespace를 생성하고 ID를 설정에 고정했다. 실제 활성 버전과 수집 검증은 PROJECT_STATUS를 따른다. 로컬은 계속 로컬 저장소를 사용한다.
+- `wrangler.jsonc`의 `NEWS_CACHE` KV와 `custom-worker.ts`의 5분 Scheduled Handler를 사용한다. 홈 뉴스와 변화 카드의 종목별 조사는 독립적으로 실행하며 OpenNext fetch 처리를 유지한다. 운영 namespace ID는 설정 파일, 실제 활성 버전과 수집 검증은 PROJECT_STATUS를 따른다. 로컬은 로컬 저장소를 사용한다.
 - 개발 서버가 실행된 상태에서 `npm run news:prepare -- AAPL`로 홈 변화 카드·홈 뉴스와 지정 종목 뉴스를 준비한다. `npm run news:prepare -- --watch AAPL`은 브라우저 방문 없이 로컬 3000에 5분마다 준비 요청을 보낸다. 개발 서버가 닫히면 연결 실패 시 종료한다. 운영에서는 이 PC 프로세스가 아니라 Scheduled Handler를 사용한다.
 - 첫 수집·번역이 끝나야 빠른 최초 표시가 가능하다. 운영 전 홈과 주요 종목을 준비한 후 확인한다. KV 지역별 갱신 전파·최초 읽기 지연이 있어 0.5초를 저장소 설정만으로 보장하지 않는다. 모은 목록 6시간·성공 제목 7일 보존, 실제 수집 5분/화면 확인 1분을 구분한다. KV 읽기/쓰기·AI 사용량은 운영 활성화 전에 요금과 한도를 확인한다.
-- 09-12 사용자 요청 검증에서 Next 독립 실행 빌드·OpenNext 변환과 로컬 Worker 실행을 통과했다. `/__scheduled` 호출 후 실제 KV 준비 시각 증가까지 확인했다. Windows에서는 일반 Next 빌드에 `--skipNextBuild`를 바로 적용하면 standalone 산출물이 없어 실패하므로 OpenNext 전체 빌드 또는 OpenNext와 같은 `NEXT_PRIVATE_STANDALONE=true` 빌드를 사용한다.
-- 응답 후 작업은 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)에 맞춰 25초, 정기 수집은 홈 90초·종목 2개씩 70초로 제한한다. c13de14 운영 배포·5분 트리거 설정·실제 KV 뉴스 갱신을 확인했다. 정기 실행의 장기 안정성·여러 지역 속도는 미검증이며 로컬/운영 성능과 장애 복구 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.
+- Windows에서는 일반 Next 빌드에 `--skipNextBuild`를 바로 적용하면 standalone 산출물이 없어 실패하므로 OpenNext 전체 빌드 또는 OpenNext와 같은 `NEXT_PRIVATE_STANDALONE=true` 빌드를 사용한다.
+- 작업별 시간 제한은 [뉴스 명세](./PRODUCT_SPEC.md#주요뉴스와-번역)와 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)을 대조한다. 수집 주기·KV 갱신·장기 안정성·여러 지역 속도의 실제 확인 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.

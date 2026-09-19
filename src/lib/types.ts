@@ -104,6 +104,8 @@ export interface DayOHLC {
 
 export interface HoldingWithQuote extends Holding {
   quote?: StockQuote;
+  valuationAvailable: boolean;
+  gainAvailable: boolean;
   marketValue: number;
   costBasis: number;
   gainLoss: number;

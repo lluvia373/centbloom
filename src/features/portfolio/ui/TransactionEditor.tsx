@@ -1,5 +1,6 @@
 "use client";
 import { todayISO } from "@/lib/format";
+import { stockDisplayName } from "@/lib/markets";
 import type { Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Loader2, X } from "lucide-react";
@@ -49,7 +50,7 @@ export function TransactionEditor({
               거래 수정
             </h3>
             <p className="mt-1 text-sm text-[#727680]">
-              {editing.symbol} · {editing.name}
+              {editing.symbol} · {stockDisplayName(editing.symbol, undefined, editing.name)}
             </p>
           </div>
           <button
@@ -141,7 +142,7 @@ export function TransactionEditor({
                 htmlFor="edit-transaction-price"
                 className="mb-2 block text-sm text-[#727680]"
               >
-                단가
+                단가{editing.currency ? ` (${editing.currency})` : ""}
               </label>
               <input
                 id="edit-transaction-price"
@@ -163,7 +164,7 @@ export function TransactionEditor({
                 htmlFor="edit-transaction-fee"
                 className="mb-2 block text-sm text-[#727680]"
               >
-                수수료
+                수수료{editing.currency ? ` (${editing.currency})` : ""}
               </label>
               <input
                 id="edit-transaction-fee"

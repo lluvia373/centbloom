@@ -10,11 +10,14 @@ test("public detail pages stay in market; each private page and trade entry sele
     assert.equal(navigationArea(path), "market");
     assert.equal(investmentTab(path), undefined);
   }
-  for (const path of ["/portfolio", "/watchlist", "/insights", "/journal", "/transactions"]) {
+  for (const path of ["/portfolio", "/watchlist", "/journal", "/transactions"]) {
     assert.equal(navigationArea(path), "investment");
     assert.equal(investmentTab(path).href, path);
     assert.equal(investmentTab(path + "/").href, path);
   }
+  assert.equal(navigationArea("/insights"), "investment");
+  assert.equal(investmentTab("/insights/").href, "/portfolio");
+  assert.equal(navigationPageName("/insights"), "보유자산");
   assert.equal(investmentTab("/search").href, "/transactions");
   assert.equal(navigationArea("/settings"), "settings");
   assert.equal(investmentTab("/settings"), undefined);
@@ -22,7 +25,7 @@ test("public detail pages stay in market; each private page and trade entry sele
 
 test("investment links have exactly one current page; public pages and settings omit the internal navigation", () => {
   const Link = ({ children, ...props }) => createElement("a", props, children);
-  for (const pathname of ["/", "/settings", "/portfolio", "/transactions", "/search"]) {
+  for (const pathname of ["/", "/settings", "/portfolio", "/insights", "/transactions", "/search"]) {
     const { InvestmentNavigation } = loadTypescript("src/features/navigation/InvestmentNavigation.tsx", {
       "next/navigation": { usePathname: () => pathname },
       "next/link": { default: Link },
@@ -31,12 +34,23 @@ test("investment links have exactly one current page; public pages and settings 
     const html = renderToStaticMarkup(createElement(InvestmentNavigation));
     if (["/", "/settings"].includes(pathname)) assert.equal(html, "");
     else {
-      assert.equal((html.match(/<a /g) ?? []).length, 5);
+      assert.equal((html.match(/<a /g) ?? []).length, 4);
       assert.equal((html.match(/aria-current="page"/g) ?? []).length, 1);
       assert.match(html, /aria-label="내 투자 메뉴"/);
       assert.ok(html.includes('href="/transactions"'));
+      assert.doesNotMatch(html, /href="\/insights"|성과 분석/);
     }
   }
+});
+
+test("the former analytics address redirects into holdings without rendering a second dashboard", () => {
+  const redirectSignal = new Error("redirect");
+  let destination;
+  const { default: InsightsPage } = loadTypescript("src/app/insights/page.tsx", {
+    "next/navigation": { redirect: (href) => { destination = href; throw redirectSignal; } },
+  });
+  assert.throws(() => InsightsPage(), (error) => error === redirectSignal);
+  assert.equal(destination, "/portfolio#performance");
 });
 
 test("new transaction history route retains the existing private auth boundary", () => {

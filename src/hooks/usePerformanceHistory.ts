@@ -5,7 +5,7 @@ import {
 } from "@/features/performance/service";
 import { useAuth } from "@/hooks/useAuth";
 import { useTransactions } from "@/hooks/usePortfolio";
-import { kstDate } from "@/lib/performance";
+import { useKstDate } from "@/shared/time/use-kst-date";
 import { createSharedResource } from "@/shared/async/shared-resource";
 import { useCallback, useSyncExternalStore } from "react";
 const history = createSharedResource(loadPerformance, {
@@ -13,38 +13,13 @@ const history = createSharedResource(loadPerformance, {
   trackingStartedAt: null,
   error: null,
 } as HistoryResult);
-let date = kstDate();
-const dateListeners = new Set<() => void>();
-let timer: ReturnType<typeof setInterval> | undefined;
-function subscribeDate(listener: () => void) {
-  dateListeners.add(listener);
-  if (!timer)
-    timer = setInterval(() => {
-      const next = kstDate();
-      if (next !== date) {
-        date = next;
-        dateListeners.forEach((fn) => fn());
-      }
-    }, 30_000);
-  return () => {
-    dateListeners.delete(listener);
-    if (!dateListeners.size) {
-      clearInterval(timer);
-      timer = undefined;
-    }
-  };
-}
 export function usePerformanceHistory() {
   const { user } = useAuth();
   const { transactions, revision, status } = useTransactions();
-  const today = useSyncExternalStore(
-    subscribeDate,
-    () => date,
-    () => date,
-  );
+  const today = useKstDate();
   const userId = user?.id ?? null;
   const key = JSON.stringify([userId, revision, today]);
-  const enabled = status !== "loading";
+  const enabled = status !== "loading" && !!today;
   const subscribe = useCallback(
     (listener: () => void) =>
       !enabled

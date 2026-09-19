@@ -101,10 +101,9 @@ function parseTransaction(
 
   let currency: string | undefined;
   if (value.currency != null) {
-    currency =
-      typeof value.currency === "string"
-        ? value.currency.trim().toUpperCase()
-        : "";
+    const rawCurrency = typeof value.currency === "string" ? value.currency.trim() : "";
+    // GBp is pence; uppercasing it to GBP changes every amount by 100x.
+    currency = rawCurrency === "GBp" ? rawCurrency : rawCurrency.toUpperCase();
     if (!currency || currency.length > 16) {
       errors.push(`${label}의 통화 코드가 올바르지 않습니다.`);
     }

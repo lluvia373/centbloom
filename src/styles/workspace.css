@@ -251,24 +251,6 @@
 .microsoft-mark i:nth-child(4) {
   background: #e4bd55;
 }
-.weight-bar {
-  margin-top: 6px;
-  margin-left: auto;
-  width: 50px;
-  height: 3px;
-  border-radius: 3px;
-  overflow: hidden;
-}
-.weight-bar span {
-  display: block;
-  height: 100%;
-}
-.compact-table .holding-quantity {
-  display: none;
-}
-.compact-table .holding-weight {
-  display: none;
-}
 .checkin-card {
   margin-top: 19px;
   display: flex;
@@ -364,9 +346,6 @@
   .page-date {
     display: none;
   }
-  .compact-table .holding-price {
-    display: none;
-  }
 }
 @media (max-width: 1000px) {
   .brand {
@@ -388,9 +367,6 @@
   }
   .topbar-search {
     display: none;
-  }
-  .compact-table .holding-price {
-    display: table-cell;
   }
   .analytics-grid {
     grid-template-columns: 1fr;
@@ -589,12 +565,6 @@
   background: #f5ece8;
   color: #a27864;
 }
-.weight-bar {
-  background: #edf0f3;
-}
-.weight-bar span {
-  background: #9eacb7;
-}
 .watchlist-row {
   padding-top: 15px;
   padding-bottom: 15px;
@@ -786,9 +756,6 @@
   }
   .page-heading-actions {
     padding-top: 16px;
-  }
-  .compact-table .holding-price {
-    display: none;
   }
   .mobile-nav {
     position: fixed;

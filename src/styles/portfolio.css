@@ -1,61 +1,36 @@
 .portfolio-summary {
   container-type: inline-size;
-  margin-bottom: var(--cf-space-6);
-  padding: var(--cf-space-6);
+  margin-bottom: var(--cf-space-4);
+  padding: var(--cf-space-4) var(--cf-space-6);
   border: 1px solid var(--cf-color-line);
   border-radius: var(--cf-radius-card);
   background: var(--cf-color-surface);
   color: var(--cf-color-ink);
 }
-.portfolio-summary-heading {
+.portfolio-summary-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: var(--cf-space-6);
+  margin: 0;
+}
+.portfolio-summary-grid > div { min-width: 0; }
+.portfolio-summary-grid > div + div {
+  padding-left: var(--cf-space-6);
+  border-left: 1px solid var(--cf-color-line);
+}
+.portfolio-summary-grid dt {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
   flex-wrap: wrap;
+  align-items: baseline;
   gap: var(--cf-space-2);
   color: var(--cf-color-muted);
   font-size: var(--cf-text-label);
   line-height: var(--cf-leading-label);
 }
-.portfolio-summary-heading h2 {
-  font-size: var(--cf-text-body);
-  font-weight: var(--cf-weight-medium);
-}
-.portfolio-summary-value {
+.portfolio-summary-grid dd { margin-left: 0; }
+.portfolio-summary-value, .portfolio-summary-result {
   margin-top: var(--cf-space-2);
-  font-size: var(--cf-text-display);
-  font-weight: var(--cf-weight-semibold);
-  line-height: var(--cf-leading-title);
-  letter-spacing: var(--cf-tracking-title);
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-.portfolio-summary-status {
-  margin-top: var(--cf-space-2);
-  font-size: var(--cf-text-label);
-  line-height: var(--cf-leading-label);
-  color: var(--cf-color-muted);
-}
-.portfolio-summary-details {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--cf-space-6);
-  margin-top: var(--cf-space-6);
-  padding-top: var(--cf-space-6);
-  border-top: 1px solid var(--cf-color-line);
-}
-.portfolio-summary-details dt {
-  font-size: var(--cf-text-label);
-  line-height: var(--cf-leading-label);
-  color: var(--cf-color-muted);
-}
-.portfolio-summary-result {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  column-gap: var(--cf-space-2);
-  row-gap: var(--cf-space-1);
-  margin-top: var(--cf-space-2);
+  margin-bottom: 0;
   font-size: var(--cf-text-title);
   font-weight: var(--cf-weight-semibold);
   line-height: var(--cf-leading-title);
@@ -63,223 +38,50 @@
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-.portfolio-summary-percent {
-  font-size: var(--cf-text-body);
-  font-weight: var(--cf-weight-medium);
-  letter-spacing: var(--cf-tracking-body);
-}
+.portfolio-summary-value { font-size: var(--cf-text-metric); }
 .portfolio-summary-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--cf-space-1) var(--cf-space-2);
   margin-top: var(--cf-space-2);
+  margin-bottom: 0;
   color: var(--cf-color-muted);
-  font-size: var(--cf-text-label);
+  font-size: var(--cf-text-caption);
   line-height: var(--cf-leading-label);
-  overflow-wrap: anywhere;
 }
-@container (max-width: 480px) {
-  .portfolio-summary-value { font-size: var(--cf-text-metric); }
-  .portfolio-summary-details { grid-template-columns: minmax(0, 1fr); }
-  .portfolio-summary-result { font-size: var(--cf-text-title); }
+.portfolio-summary-footnote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-space-2);
+  margin-top: var(--cf-space-3);
+  padding-top: var(--cf-space-3);
+  border-top: 1px solid var(--cf-color-line);
+  color: var(--cf-color-muted);
+  font-size: var(--cf-text-caption);
+  line-height: var(--cf-leading-label);
+}
+.portfolio-summary-footnote p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-2) var(--cf-space-4);
+  margin: 0;
+}
+.portfolio-summary-footnote strong { font-weight: var(--cf-weight-medium); }
+.portfolio-summary-footnote a { margin-left: auto; color: var(--cf-color-ink); }
+.portfolio-summary-footnote a:hover { text-decoration: underline; }
+@container (max-width: 800px) {
+  .portfolio-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cf-space-4); }
+  .portfolio-summary-total { grid-column: 1 / -1; }
+  .portfolio-summary-grid > div:nth-child(2) { padding-left: 0; border-left: 0; }
+}
+@container (max-width: 420px) {
+  .portfolio-summary-grid > div + div { padding-left: var(--cf-space-3); }
+  .portfolio-summary-grid > div:nth-child(2) { padding-left: 0; }
+  .portfolio-summary-result { font-size: var(--cf-text-section); }
 }
 @media (max-width: 760px) {
   .portfolio-summary { padding: var(--cf-space-4); }
-}
-.table-filters {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin: 17px 22px 13px;
-}
-.table-filters button {
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-.table-count {
-  margin-left: 6px;
-  font-weight: 400;
-}
-.holdings-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.holdings-table th {
-  text-align: right;
-  padding: 11px 22px 11px 10px;
-  border-top: 1px solid #e6e8eb;
-  border-bottom: 1px solid #e6e8eb;
-  white-space: nowrap;
-}
-.holdings-table th:first-child {
-  text-align: left;
-  padding-left: 22px;
-}
-.holdings-table td {
-  border-bottom: 1px solid #e6e8eb;
-  padding: 14px 22px 14px 10px;
-  text-align: right;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.holdings-table tr:last-child td {
-  border-bottom: 0;
-}
-.holdings-table td:first-child {
-  padding-left: 22px;
-  text-align: left;
-}
-.asset-cell {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.asset-cell strong {
-  display: block;
-}
-.asset-cell small {
-  display: block;
-  margin-top: 4px;
-}
-.table-subvalue {
-  display: block;
-  margin-top: 4px;
-}
-.table-sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-.table-overflow {
-  overflow: auto;
-}
-.portfolio-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.portfolio-controls input {
-  border: 1px solid var(--line);
-  padding: 9px 12px;
-  border-radius: 7px;
-  width: 200px;
-}
-.table-subvalue.positive {
-  color: var(--positive);
-}
-.table-subvalue.negative {
-  color: var(--negative);
-}
-.table-filters button {
-  font-size: 12px;
-  color: #727680;
-}
-.table-filters button.selected {
-  background: #edf0f3;
-  color: #363e49;
-}
-.table-filters {
-  flex-wrap: wrap;
-  row-gap: 6px;
-}
-.table-count {
-  color: #727680;
-  font-size: 12px;
-}
-.holdings-table {
-  font-size: 13px;
-}
-.holdings-table th {
-  background: #fafbfc;
-  color: #727680;
-  border-color: #edf0f3;
-  font-size: 11px;
-  padding-block: 13px;
-  font-weight: 400;
-}
-.holdings-table td {
-  border-color: #f0f2f4;
-  padding-top: 19px;
-  padding-bottom: 19px;
-}
-.holdings-table tbody tr:hover {
-  background: #fafbfc;
-}
-.asset-cell strong {
-  font-size: 13px;
-  font-weight: 550;
-  color: #404752;
-}
-.asset-cell small {
-  font-size: 11px;
-  color: #727680;
-}
-.table-subvalue {
-  font-size: 11px;
-  color: #727680;
-}
-.portfolio-controls input {
-  background: #fff;
-  border-color: #e3e6eb;
-  font-size: 13px;
-}
-@media (max-width: 760px) {
-  .portfolio-controls {
-    flex-wrap: wrap;
-  }
-  .portfolio-controls input {
-    width: 150px;
-  }
-  .holding-quantity {
-    display: none;
-  }
-  .holding-price {
-    display: none;
-  }
-  .holding-weight {
-    display: none;
-  }
-  .asset-cell > span:last-child {
-    max-width: 90px;
-  }
-  .asset-cell strong {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .asset-cell small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .holdings-table td {
-    padding-right: 12px;
-  }
-  .holdings-table th {
-    padding-right: 12px;
-  }
-  .holdings-table {
-    font-size: 12px;
-  }
-  .holdings-table td {
-    padding-block: 17px;
-  }
-  .holdings-table th {
-    font-size: 11px;
-  }
-  .holdings-table td:first-child {
-    padding-left: 20px;
-  }
-  .holdings-table th:first-child {
-    padding-left: 20px;
-  }
-  .asset-cell {
-    gap: 9px;
-  }
-  .asset-cell strong {
-    font-size: 12px;
-  }
-  .asset-cell small {
-    font-size: 10px;
-  }
-  .table-subvalue {
-    font-size: 10px;
-  }
 }

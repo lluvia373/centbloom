@@ -39,11 +39,12 @@ if(process.argv.includes('--benchmark')) {
   writeFileSync('work/performance-benchmark.json',JSON.stringify(report,null,2));console.log(report);
 }
 
-test('inactive periods, re-entry, currency units and current-day overrides keep original semantics',()=> {
+test('inactive periods, re-entry and current-day overrides keep original semantics',()=> {
+ // The frozen reference mishandles pence; independent monetary expectations cover it separately.
  const transactions=[
-  {id:'1',symbol:'QA',name:'QA',type:'buy',date:'2020-01-01',quantity:5,price:100,fee:1,currency:'GBp',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-01T00:00:00Z'},
-  {id:'2',symbol:'QA',name:'QA',type:'sell',date:'2020-01-03',quantity:5,price:110,fee:2,currency:'GBp',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-03T00:00:00Z'},
-  {id:'3',symbol:'QA',name:'QA',type:'buy',date:'2020-01-05',quantity:2,price:105,fee:1,currency:'GBp',fxRateToKRW:1610,usdKrwRateAtTransaction:1300,createdAt:'2020-01-05T00:00:00Z'}];
+  {id:'1',symbol:'QA',name:'QA',type:'buy',date:'2020-01-01',quantity:5,price:100,fee:1,currency:'GBP',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-01T00:00:00Z'},
+  {id:'2',symbol:'QA',name:'QA',type:'sell',date:'2020-01-03',quantity:5,price:110,fee:2,currency:'GBP',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-03T00:00:00Z'},
+  {id:'3',symbol:'QA',name:'QA',type:'buy',date:'2020-01-05',quantity:2,price:105,fee:1,currency:'GBP',fxRateToKRW:1610,usdKrwRateAtTransaction:1300,createdAt:'2020-01-05T00:00:00Z'}];
  const input={transactions,trackingStartDate:'2020-01-01',endDate:'2020-01-08',pricesBySymbol:{QA:[{date:'2019-12-31',close:100},{date:'2020-01-05',close:105}]},fxByCurrency:{GBP:[{date:'2019-12-31',close:1600},{date:'2020-01-05',close:1610}]}};
  assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance(input))),JSON.parse(JSON.stringify(baseline.buildDailyPerformance(input))));
  const today=improved.kstDate();const current={...input,transactions:transactions.slice(0,1),trackingStartDate:today,endDate:today,currentPrices:{QA:120},currentFxRates:{GBP:1700}};

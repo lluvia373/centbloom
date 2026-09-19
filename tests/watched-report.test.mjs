@@ -100,6 +100,16 @@ test("missing numbers and unsupported assets cannot masquerade as US stock compa
   assert.equal(missingAverage.averageDailyVolume3Month, undefined);
 });
 
+test("watched reports use the full company name without losing unnamed quotes", () => {
+  const raw = { symbol: "TEST", longName: "  Example Holdings Corporation  ", shortName: "Example",
+    quoteType: "EQUITY", region: "US", currency: "USD", regularMarketPrice: 100,
+    regularMarketChange: 0, regularMarketChangePercent: 0, regularMarketTime: new Date() };
+  assert.equal(normalizeWatchedQuote(raw, "TEST").name, "Example Holdings Corporation");
+  assert.equal(normalizeWatchedQuote({ ...raw, longName: " ", shortName: " Example " }, "TEST").name, "Example");
+  assert.equal(normalizeWatchedQuote({ ...raw, longName: undefined, shortName: null }, "TEST").name, "TEST");
+  assert.equal(raw.shortName, "Example");
+});
+
 test("follow-up uses only a saved exact previous session, never a same-day or skipped-day refresh", () => {
   const prior = { version: 1, sessionDate: "2026-09-10", quotedAt: "2026-09-10T19:30:00Z", price: 99, changePercent: -1 };
   assert.equal(priorWatchedSession(prior, "2026-09-10", "2026-09-11", now).price, 99);

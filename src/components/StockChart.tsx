@@ -64,12 +64,13 @@ export function StockChart({
     };
   }, [symbol, range, retry]);
 
-  const isUp = data.length >= 2 && data[data.length - 1].close >= data[0].close;
-  const color = isUp ? "#16856b" : "#d65353";
   const periodChange =
     data.length >= 2 && data[0].close > 0
       ? (data[data.length - 1].close / data[0].close - 1) * 100
       : null;
+  const color = periodChange == null || periodChange === 0
+    ? "var(--cf-color-muted)"
+    : periodChange > 0 ? "var(--cf-color-market-up)" : "var(--cf-color-market-down)";
 
   return (
     <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-4 sm:p-7">
@@ -78,7 +79,7 @@ export function StockChart({
           <h2 className="text-base font-semibold text-[#202329]">주가 추이 · 종가 기준</h2>
           {periodChange != null && !loading && <p className="mt-1.5 text-xs text-[#727680]">
               <span className="ml-2 font-medium" style={{ color }}>
-                {periodChange >= 0 ? "+" : ""}
+                {periodChange > 0 ? "+" : ""}
                 {periodChange.toFixed(2)}%
               </span>
           </p>}
@@ -138,8 +139,8 @@ export function StockChart({
             >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b8879" stopOpacity={0.13} />
-                  <stop offset="100%" stopColor="#3b8879" stopOpacity={0.01} />
+                  <stop offset="0%" stopColor={color} stopOpacity={0.13} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -187,7 +188,7 @@ export function StockChart({
               <Area
                 type="monotone"
                 dataKey="close"
-                stroke="#3b8879"
+                stroke={color}
                 fill={`url(#${gradientId})`}
                 strokeWidth={2.2}
                 isAnimationActive={false}

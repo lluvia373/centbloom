@@ -8,6 +8,7 @@ import type {
 
 const DAY_MS = 86_400_000;
 const VALUE_EPSILON = 0.01;
+export const PERFORMANCE_CALCULATION_VERSION = 2;
 
 export interface BuildPerformanceInput {
   transactions: Transaction[];
@@ -134,7 +135,8 @@ export function buildDailyPerformance({
           );
         return sum;
       }
-      return sum + toKRW(price * holding.quantity, currency, fxRate);
+      // FX lookup uses GBP, but a GBp/GBX price is still quoted in pence.
+      return sum + toKRW(price * holding.quantity, holding.currency ?? "USD", fxRate);
     }, 0);
 
     const netFlowKRW = flows.get(date) ?? 0;
@@ -265,7 +267,7 @@ export function transactionFlowKRW(transaction: Transaction): number {
     transaction.type === "buy"
       ? gross + transaction.fee
       : -(gross - transaction.fee);
-  return toKRW(nativeAmount, currency, fxRate);
+  return toKRW(nativeAmount, transaction.currency ?? "USD", fxRate);
 }
 
 function valueCursors(series: Record<string, ChartPoint[]>) {

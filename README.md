@@ -8,6 +8,8 @@
 
 개발 일정과 진척은 [단일 진행판](./PROJECT_STATUS.md#실행-일정과-진행판)에서 확인한다. 매 작업 시작·종료에 해당 ID를 갱신하고, 새 기능이나 수정은 아래 안내로 시작한다. 기능명 또는 코드 경로를 넣으면 읽을 명세·디자인·수정 위치·검증이 함께 나온다. 새 기능의 기록 위치와 완료 절차도 [DEVELOPMENT](./DEVELOPMENT.md#코드-추가수정-절차)에 있다.
 
+**문서는 현재 기준만 유지한다.** 변경 내용은 담당 문서의 기존 항목에 반영하며 과거 이야기·날짜별 작업 보고·변경 이력을 덧붙이지 않는다. 상세는 한 곳에만 두고 다른 문서는 링크한다. 적용 범위와 보존할 근거는 [문서 관리 기준](./AGENTS.md#문서-관리-기준)을 따른다.
+
 ```sh
 npm run docs:guide -- 관심종목
 npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
@@ -18,7 +20,7 @@ npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
 | 작업·문서 작성 규칙 | [AGENTS.md](./AGENTS.md) |
 | 코드 지도·파일 역할·기능 추가 방법 | [DEVELOPMENT.md](./DEVELOPMENT.md) |
 | 거래소 일정 근거·지원 범위 | [MARKET_CALENDARS.md](./MARKET_CALENDARS.md) |
-| 현재 제품 결정·범위·변경 이력 | [DECISIONS.md](./DECISIONS.md) |
+| 현재 제품 결정·범위·핵심 이유 | [DECISIONS.md](./DECISIONS.md) |
 | 기능·저장·계산 기준 | [PRODUCT_SPEC.md](./PRODUCT_SPEC.md) |
 | 개발 일정·진행판·검증·배포·남은 작업 | [PROJECT_STATUS.md](./PROJECT_STATUS.md) |
 | 구글 검색 조사·유입 계획 | [SEO_PLAN.md](./SEO_PLAN.md) |
@@ -59,7 +61,7 @@ http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](.
 
 검사 대상과 전송 코드가 같도록 현재 HEAD의 커밋만 검사한다. 커밋하지 않은 추적/미추적 파일이 있거나 다른 커밋을 전송하려 하면 중단한다(Git 제외 파일은 제외). 검사 중 코드가 바뀌어도 중단한다. 원격 참조 삭제나 보낼 변경이 없는 경우에는 검사를 생략한다. 전체 검사 명령 `npm run check:push`도 같은 조건으로 검사만 수행하며 커밋·푸시·배포를 실행하지 않는다.
 
-문서 검사는 관리 목록·상대 링크·제목 앵커·기능별 명세/디자인/코드/검증 연결과 로컬 사업 검토값을 확인한다. 새 기능 폴더·페이지·API의 안내 등록이 빠지면 실패한다. 문장 의미·기존 파일 내부 기능 추가·화면 품질까지 자동 판단하지 않으므로 담당 문서 갱신은 에이전트의 [완료 절차](./DEVELOPMENT.md#코드-추가수정-절차)에 유지한다.
+문서 검사는 관리 목록·상대 링크·제목 앵커·기능별 명세/디자인/코드/검증 연결과 사업 문서 비공개를 확인한다. 작업/변경 이력 전용 제목이나 새 기능 폴더·페이지·API의 안내 누락도 검출한다. 본문의 낡은 설명·중복·문장 의미·화면 품질까지 자동 판단하지 않으므로 에이전트가 [완료 절차](./DEVELOPMENT.md#코드-추가수정-절차)에서 직접 확인한다. 사업 문서는 수익·비용·제품 방향·출시 조건에 영향이 있을 때만 검토한다.
 
 개별 진단이 필요하면 기존 `npm run lint`, `npm run check:docs`, `npm run check:design`, `node --test tests/*.test.mjs`를 사용할 수 있다. `npm run audit:design`은 기존 미정리까지 포함해 검사하므로 푸시 기본 검사가 아니다. 새 위반 0과 전체 준수를 구분한다. 실제 PostgreSQL 두 연결·브라우저·성능 실측은 아래 별도 절차를 필요할 때 실행한다.
 
@@ -67,7 +69,9 @@ http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](.
 
 브라우저 격리 검증은 `node tests/prepare-browser-qa.mjs` 후 `npm --prefix work/refactor-qa run dev -- --port 3001`로 실행한다. 실제 환경 변수와 계정 없이 QA 시세를 사용하는 별도 앱이며 `/qa-fixture`에서 테스트 백업·Worker 계산을 실행한다. `/qa-mobile`은 390px 프레임이다. 이 파일들은 검증용 생성물이며 구현은 로컬 main 원본에서만 수정한다. 사용자에게 보여주는 최신 화면은 `localhost:3000`이다. 검증용 생성물은 공개 앱에 포함되지 않는다.
 
-실제 검증 결과와 한계는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#코드-구조-검토)에 기록한다. 운영 DB 증분 변경·복구는 [CLOUDFLARE.md](./CLOUDFLARE.md)를 따른다.
+자산 구성만 확인할 때는 준비 명령에 `--allocation-only`를 붙이고 `/qa-allocation`을 연다. 실제 계정·시세 요청 없이 1~200종목·1120/390px·KRW/USD를 바꿔 확인하는 [격리 화면](./tests/fixtures/allocation-browser-fixture.tsx)이다. 일반 앱 전체 검증을 다시 준비할 때는 옵션 없이 준비 명령을 실행한다.
+
+실제 검증 결과와 한계는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#검증-기록)의 해당 현재 항목을 갱신한다. 운영 DB 증분 변경·복구는 [CLOUDFLARE.md](./CLOUDFLARE.md)를 따른다.
 
 Windows에서 실제 PostgreSQL 두 연결의 저장 경합은 다음 별도 검사로 재현한다. 앱 의존성은 바꾸지 않으며 DB는 127.0.0.1:55439에서 실행 후 종료된다. 생성된 격리 데이터는 Git 제외 work 폴더에 남는다.
 

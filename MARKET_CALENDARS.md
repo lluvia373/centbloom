@@ -8,14 +8,12 @@
 - `time.ts`: IANA 시간대 변환, 현지 날짜, KST 표시. 각 시장 개장 시각을 고정 UTC 오프셋으로 계산하지 않는다.
 - `session.ts`: 주말/명절·공휴일/개장 전/정규장/점심 휴장/경매/마감, 다음 구간과 휴일을 건너뛴 개장 시각. React·시세 API와 독립된 순수 계산.
 - `priority.ts`: 1시간 내 장 전환 → 현재 휴일·특별/미확정 일정 → 96시간 내 다음 개장에 영향을 주는 휴일 → 거래 중 → 개장 전/점심 → 일반 휴장 순. 같은 단계에서는 다음 전환이 빠른 시장, 동률이면 calendars의 등록 순서다. 원본 달력은 변경하지 않는다.
-- `presentation.ts`: priority 0~2인 모든 알림을 제한 없이 남기고, 사유·현재 상태·다음 시각·행동이 같은 시장만 묶는다. 지역 선택은 일반 시장 목록에만 적용해 다른 지역의 휴장을 숨기지 않는다. 기본 8개/더 보기로 전체 접근, 개별 설명 팝업은 제거했다.
+- `presentation.ts`: 홈에 미국·한국·일본·중국·홍콩·독일을 고정 순서로 선택하고 다음 일정을 KST 날짜·시각으로 표시한다. 홈은 미국 요약과 접힌 6개국 시간표이며 지역 필터·전체 시장 더 보기·휴장 강조 띠는 사용하지 않는다.
 - 공개 인터페이스 `schedule/index.ts`를 통해 `MarketSessions.tsx`가 표시한다. 서버의 최초 시각을 전달해 hydration 차이를 피하며, 보이는 탭에서 30초마다 다시 계산하고 복귀 즉시 갱신한다. 시세 API 추가 요청은 없다.
 - 국가명은 대표 현물 거래소의 정규장 일정이다. 한국 NXT, 미국 시간외, 파생상품, 홍콩 점심 연장거래 대상 등은 포함하지 않는다. 브로커에서 주문할 수 있는 시간과 구분한다.
 - 등록된 공표 일정에 따른 상태이며 긴급 휴장·서킷브레이커·개별 종목 거래정지를 실시간 감시하지 않는다. 화면에는 정규장 · KST와 실제 상태/시각만 표시하고, 원문·상세 범위는 이 문서와 데이터의 sources에 보관한다. 실시간 체결 가능 여부로 표현하지 않는다.
 
 데이터 보유: 24개 대표 현물시장(미주 2, 아시아 7, 유럽 14, 오세아니아 1). 홈에는 미국·한국·일본·중국·홍콩·독일 6개만 표시하며 나머지 달력 데이터는 화면에 노출하지 않는다. 전 세계 모든 거래소·한국 증권사별 매매 가능 국가를 보장하는 목록은 아니다. 인도·태국·말레이시아·인도네시아·뉴질랜드 등은 아직 미등록이다. 홍콩 기존 마감 경매를 제외한 추가 시장은 주로 정규 연속매매 기준이며, 별도 경매/종가매매 세션 전체를 감시하지 않는다.
-
-홈 시장 선택(2026-09-07): 한국과의 교역 연관성을 고려해 영국 대신 중국을 표시하고 독일을 유지한다. 중국은 한국의 최대 교역 상대([한국 외교부](https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=4)), 독일은 한국의 유럽 최대 교역 상대([독일 외교부](https://www.auswaertiges-amt.de/en/aussenpolitik/korearepublicof-229518))라는 근거를 참고한 제품 판단이다. 교역 규모가 증시 영향력 순위를 뜻하지는 않는다.
 
 ## 확인 출처
 
@@ -26,7 +24,6 @@
 | 일본 도쿄 | [JPX 2026](https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html) | [09:00~11:30, 12:30~15:30](https://www.jpx.co.jp/english/equities/trading/domestic/01.html). 9/22 국민의 휴일 포함 |
 | 홍콩 HKEX | [공식 2026 PDF](https://www.hkex.com.hk/-/media/HKEX-Market/Services/Circulars-and-Notices/Participant-and-Members-Circulars/SEHK/2025/ce_SEHK_CT_075_2025.pdf) | [09:30~12:00, 13:00~16:00 및 마감 경매](https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en). 2/16·12/24·12/31 오전장만. 경매는 16:08~16:10(반일장 12:08~12:10) 무작위 종료라 마지막 2분은 마감 확인 중 |
 | 중국 상하이 | [상하이 2026 공식 공고](https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml) | [정규장 메커니즘](https://english.sse.com.cn/start/trading/mechanism/), 09:30~11:30, 13:00~15:00. 보충근무 토·일요일에도 거래소는 휴장. 후강통/선강통 별도 달력과 혼용하지 않음 |
-
 | 캐나다 TSX | [2026 휴일](https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar) | [09:30~16:00](https://www.tsx.com/en/trading/calendars-and-trading-hours/trading-hours), 12/24 13:00 마감. 미국의 USD 결제 휴일을 캐나다 거래 휴일로 넣지 않음 |
 | 영국 LSE | [2026 휴일·반일장](https://www.londonstockexchange.com/equities-trading/business-days) | 08:00~16:30, 12/24·12/31 12:30 마감. 은행휴일은 영국 시장에만 반영 |
 | 독일 Xetra | [거래일·시간](https://www.cashmarket.deutsche-boerse.com/cash-en/trading/trading-calendar-and-trading-hours) | 09:00~17:30, 12/24·12/31 휴장. 승천일·성령강림절 월요일은 거래 |
@@ -45,7 +42,7 @@ KRX 원본은 공개 조회 폼의 `search_bas_yy=2026, gridTp=KRX`, `MKD/01/011
 
 1. 연말 이전 각 거래소의 다음 연도 공식 공고를 확인하고 현재 연도 데이터를 덮어쓰지 않는 방식으로 기간을 확장한다. 일반 공휴일 라이브러리만으로 증시 휴일을 추정하지 않는다.
 2. `holidays`는 현지 날짜와 실제 이유를 입력한다. 임시 휴장·수능일·연초 시차·단축장 공고를 별도로 확인한다. 검증한 특별 거래일은 `overrides`의 `windows`로 기록한다.
-3. 한국 1/2 연초 시각은 이번 작업에서 공고 원문을 확보하지 못했다. 11/19 수능 날짜는 [교육부 발표](https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=100526&lev=0&m=0204)로 확인했지만 거래소의 해당 날짜 시간 변경 공고는 확인하지 못했다. 두 날은 `windows` 없는 override로 거래시간 확인 중을 표시한다. 전년도 관행으로 10시 개장을 단정하지 않는다. 다음 개장을 찾다가 미확정 특별일을 만나면 해당 날을 건너뛰어 잘못된 다음 날짜를 제시하지 않는다.
+3. 한국 1/2 연초 개장과 11/19 수능일 거래시간은 거래소 공고 원문이 미확인이다. 수능 날짜의 근거는 [교육부 발표](https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=100526&lev=0&m=0204)다. 두 날은 `windows` 없는 override로 거래시간 확인 중을 표시한다. 관행으로 개장 시각을 추정하거나 미확정 특별일을 건너뛰어 잘못된 다음 날짜를 제시하지 않는다.
 4. Euronext 프랑스/네덜란드/벨기에/포르투갈/아일랜드 12/24·12/31은 단축장 자체는 확정이나 2026 연말 상세 시간이 미확인이라 일반 거래시간으로 계산하지 않는다. 공식 연말 부록 확인 후 windows를 채운다.
 5. 지원 연도 밖에서는 일정 확인 중을 표시하고 다음 해 개장 시각을 추정하지 않는다. 공식 일정이 바뀌면 날짜·사유·출처·확인일을 함께 갱신한다. 데이터 변경을 서비스에 반영하려면 별도 승인된 배포가 필요하다.
 6. `node --test tests/market-schedule.test.mjs`로 개장·종료 경계, DST 전후, 공휴일/주말, 점심, 조기 마감, 연도 경계, 미확정 시간 회귀 검사를 실행한다. 실제 기기 시간 오차와 예정 밖 거래소 중단은 이 일정 계산 테스트로 보장하지 않는다.

@@ -1,4 +1,4 @@
-import { toKRW } from "./currency";
+import { currencyUnitScale, normalizeCurrency, toKRW } from "./currency";
 import type { Holding, Transaction } from "./types";
 
 const QUANTITY_EPSILON = 1e-8;
@@ -11,6 +11,7 @@ export function validateTransactionHistory(
       a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
   );
   const quantities = new Map<string, number>();
+  const currencyUnits = new Map<string, string>();
 
   for (const tx of sorted) {
     if (!Number.isFinite(tx.quantity) || tx.quantity <= 0) {
@@ -21,6 +22,15 @@ export function validateTransactionHistory(
     }
     if (!Number.isFinite(tx.fee) || tx.fee < 0) {
       return `${tx.symbol} 수수료는 0 이상이어야 합니다.`;
+    }
+
+    if (tx.currency) {
+      const unit = `${normalizeCurrency(tx.currency)}:${currencyUnitScale(tx.currency)}`;
+      const previousUnit = currencyUnits.get(tx.symbol);
+      if (previousUnit && previousUnit !== unit) {
+        return `${tx.symbol} 거래의 통화 또는 가격 단위가 서로 다릅니다. 원본 기록을 확인해 주세요.`;
+      }
+      currencyUnits.set(tx.symbol, unit);
     }
 
     const available = quantities.get(tx.symbol) ?? 0;

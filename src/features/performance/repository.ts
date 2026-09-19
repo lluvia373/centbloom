@@ -3,6 +3,7 @@ import { readBrandedStorage } from "@/lib/branded-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { PortfolioPerformancePoint } from "@/lib/types";
 export interface SavedHistory {
+  calculationVersion?: number;
   revision: string;
   startedAt: string;
   points: PortfolioPerformancePoint[];

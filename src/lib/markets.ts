@@ -34,31 +34,45 @@ export function knownMarketDelay(symbol: string): number | null {
 
 type DiscoveryStock = StockSearchResult & { aliases: string };
 export const DISCOVERY_STOCKS: DiscoveryStock[] = [
-  { symbol: "005930.KS", name: "삼성전자", exchange: "KOSPI", type: "EQUITY", aliases: "Samsung Electronics" },
-  { symbol: "000660.KS", name: "SK하이닉스", exchange: "KOSPI", type: "EQUITY", aliases: "SK Hynix" },
-  { symbol: "035420.KS", name: "NAVER", exchange: "KOSPI", type: "EQUITY", aliases: "네이버" },
-  { symbol: "AAPL", name: "Apple", exchange: "NASDAQ", type: "EQUITY", aliases: "애플" },
-  { symbol: "NVDA", name: "NVIDIA", exchange: "NASDAQ", type: "EQUITY", aliases: "엔비디아" },
-  { symbol: "MSFT", name: "Microsoft", exchange: "NASDAQ", type: "EQUITY", aliases: "마이크로소프트" },
-  { symbol: "7203.T", name: "토요타", exchange: "Tokyo", type: "EQUITY", aliases: "Toyota トヨタ 도요타" },
-  { symbol: "6758.T", name: "소니 그룹", exchange: "Tokyo", type: "EQUITY", aliases: "Sony ソニー" },
-  { symbol: "7974.T", name: "닌텐도", exchange: "Tokyo", type: "EQUITY", aliases: "Nintendo 任天堂" },
-  { symbol: "0700.HK", name: "텐센트", exchange: "HKEX", type: "EQUITY", aliases: "Tencent 騰訊 腾讯" },
-  { symbol: "9988.HK", name: "알리바바", exchange: "HKEX", type: "EQUITY", aliases: "Alibaba 阿里巴巴" },
-  { symbol: "1810.HK", name: "샤오미", exchange: "HKEX", type: "EQUITY", aliases: "Xiaomi 小米" },
-  { symbol: "600519.SS", name: "귀주모태", exchange: "Shanghai", type: "EQUITY", aliases: "Kweichow Moutai 贵州茅台 구이저우 마오타이" },
-  { symbol: "000001.SZ", name: "핑안은행", exchange: "Shenzhen", type: "EQUITY", aliases: "Ping An Bank 平安银行 평안은행" },
-  { symbol: "300750.SZ", name: "CATL", exchange: "Shenzhen", type: "EQUITY", aliases: "닝더스다이 宁德时代" },
+  { symbol: "005930.KS", name: "Samsung Electronics Co., Ltd.", exchange: "KOSPI", type: "EQUITY", aliases: "삼성전자 SamsungElec" },
+  { symbol: "000660.KS", name: "SK hynix Inc.", exchange: "KOSPI", type: "EQUITY", aliases: "SK하이닉스" },
+  { symbol: "035420.KS", name: "NAVER Corporation", exchange: "KOSPI", type: "EQUITY", aliases: "네이버" },
+  { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", type: "EQUITY", aliases: "애플" },
+  { symbol: "NVDA", name: "NVIDIA Corporation", exchange: "NASDAQ", type: "EQUITY", aliases: "엔비디아" },
+  { symbol: "MSFT", name: "Microsoft Corporation", exchange: "NASDAQ", type: "EQUITY", aliases: "마이크로소프트" },
+  { symbol: "7203.T", name: "Toyota Motor Corporation", exchange: "Tokyo", type: "EQUITY", aliases: "토요타 トヨタ 도요타" },
+  { symbol: "6758.T", name: "Sony Group Corporation", exchange: "Tokyo", type: "EQUITY", aliases: "소니 그룹 ソニー" },
+  { symbol: "7974.T", name: "Nintendo Co., Ltd.", exchange: "Tokyo", type: "EQUITY", aliases: "닌텐도 任天堂" },
+  { symbol: "0700.HK", name: "Tencent Holdings Limited", exchange: "HKEX", type: "EQUITY", aliases: "텐센트 騰訊 腾讯" },
+  { symbol: "9988.HK", name: "Alibaba Group Holding Limited", exchange: "HKEX", type: "EQUITY", aliases: "알리바바 阿里巴巴 BABA-W" },
+  { symbol: "1810.HK", name: "Xiaomi Corporation", exchange: "HKEX", type: "EQUITY", aliases: "샤오미 小米" },
+  { symbol: "600519.SS", name: "Kweichow Moutai Co., Ltd.", exchange: "Shanghai", type: "EQUITY", aliases: "귀주모태 贵州茅台 구이저우 마오타이" },
+  { symbol: "000001.SZ", name: "Ping An Bank Co., Ltd.", exchange: "Shenzhen", type: "EQUITY", aliases: "핑안은행 平安银行 평안은행" },
+  { symbol: "300750.SZ", name: "Contemporary Amperex Technology Co., Limited", exchange: "Shenzhen", type: "EQUITY", aliases: "CATL 닝더스다이 宁德时代" },
 ];
+
+// English long names above were checked against the quote provider on 2026-09-19.
+// Resolve display text without rewriting saved transactions or inventing legal names.
+export function stockDisplayName(symbol: string, longName?: unknown, fallbackName?: unknown): string {
+  const clean = (value: unknown) => typeof value === "string" ? value.trim() : "";
+  const fullName = clean(longName);
+  if (fullName && fullName.toUpperCase() !== symbol.trim().toUpperCase()) return fullName;
+  return DISCOVERY_STOCKS.find((stock) => stock.symbol === symbol.trim().toUpperCase())?.name
+    || clean(fallbackName) || symbol;
+}
+
+export function matchesStockQuery(query: string, symbol: string, ...names: string[]): boolean {
+  const aliases = DISCOVERY_STOCKS.find((stock) => stock.symbol === symbol.toUpperCase())?.aliases ?? "";
+  return [symbol, ...names, aliases].join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
+}
 
 export function discoveryStocks(market: MarketFilter) {
   return DISCOVERY_STOCKS.filter((stock) => market === "all" || marketForSymbol(stock.symbol) === market);
 }
 
 export function matchingStocks(query: string, market: MarketFilter): StockSearchResult[] {
-  const normalized = query.trim().toLocaleLowerCase();
   return discoveryStocks(market)
-    .filter((stock) => `${stock.symbol} ${stock.name} ${stock.aliases}`.toLocaleLowerCase().includes(normalized))
+    .filter((stock) => matchesStockQuery(query, stock.symbol, stock.name))
     .map(({ symbol, name, exchange, type }) => ({ symbol, name, exchange, type }));
 }
 

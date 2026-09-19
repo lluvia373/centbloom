@@ -1,3 +1,4 @@
+import { stockDisplayName } from "@/lib/markets";
 import type { MoverQuote } from "../movers-model";
 import { MarketError, providerRequests, validSymbol, yahoo } from "./provider";
 
@@ -21,8 +22,7 @@ export function normalizeWatchedQuote(value: unknown, symbol: string): MoverQuot
     || !Number.isFinite(time) || time <= 0 || time > Date.now() + 300_000 || Date.now() - time > 7 * 86400_000)
     throw new MarketError("종목의 비교 자료를 확인할 수 없습니다.", 502);
   return {
-    symbol, name: typeof quote.shortName === "string" && quote.shortName.trim() ? quote.shortName
-      : typeof quote.longName === "string" && quote.longName.trim() ? quote.longName : symbol,
+    symbol, name: stockDisplayName(symbol, quote.longName, quote.shortName),
     price, change, changePercent: percent, currency: "USD", quotedAt: new Date(time).toISOString(),
     fetchedAt: new Date().toISOString(),
     ...(finite(quote.regularMarketVolume) && quote.regularMarketVolume >= 0 ? { volume: quote.regularMarketVolume } : {}),

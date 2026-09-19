@@ -1,3 +1,4 @@
+import { stockDisplayName } from "@/lib/markets";
 import type { StockQuote } from "@/lib/types";
 export const MOVERS_REFRESH_MS = 30_000;
 export const MOVERS_CACHE_MS = 5_000;
@@ -67,7 +68,7 @@ export function normalizeMovers(
       return [
         {
           symbol: q.symbol,
-          name: typeof q.shortName === "string" ? q.shortName : q.symbol,
+          name: stockDisplayName(q.symbol, q.longName, q.shortName),
           price,
           change,
           changePercent: percent,

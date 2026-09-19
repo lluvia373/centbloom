@@ -9,8 +9,8 @@
   --accent: var(--cf-color-action);
   --line: var(--cf-color-line);
   --surface: var(--cf-color-surface);
-  --positive: var(--cf-color-positive);
-  --negative: var(--cf-color-negative);
+  --positive: var(--cf-color-market-up);
+  --negative: var(--cf-color-market-down);
   --sidebar-width: 236px;
 }
 @theme inline {

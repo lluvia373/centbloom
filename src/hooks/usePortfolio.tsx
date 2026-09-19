@@ -16,6 +16,7 @@ export type {
   TransactionImportMode,
   TransactionImportResult,
 } from "@/features/portfolio/model/types";
+export { usePortfolioDailyChange } from "@/features/portfolio/state/use-daily-change";
 export {
   usePortfolioMarket,
   usePreferences,
