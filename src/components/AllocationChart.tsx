@@ -41,11 +41,11 @@ export function AllocationChart({ holdings, displayCurrency, loading }: {
     return index < COLOR_COUNT ? color(index) : `url(#${patternId}-${index})`;
   };
   let offset = 0;
-  const slices = allocation.segments.map((segment) => {
-    const start = offset;
+  const slices: (typeof allocation.segments[number] & { path: string })[] = [];
+  for (const segment of allocation.segments) {
+    slices.push({ ...segment, path: slicePath(offset, segment.weight) });
     offset += segment.weight;
-    return { ...segment, path: slicePath(start, segment.weight) };
-  });
+  }
   const positiveCount = slices.filter((segment) => segment.value > 0).length;
   const selected = slices.find((segment) => segment.key === (hovered ?? active));
   const featured = selected ?? slices[0];
