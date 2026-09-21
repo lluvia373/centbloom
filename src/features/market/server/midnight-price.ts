@@ -5,6 +5,8 @@ import type { MidnightBaseline } from "../baseline";
 import { calendars } from "../schedule/calendars";
 import { addDays, isWeekend, localInstant, localParts } from "../schedule/time";
 import { MarketError, providerRequests, validDate, validSymbol, yahoo } from "./provider";
+import { fxPair } from "../fx";
+import { fetchFxBaseline } from "./fx-market";
 
 const MINUTE = 60_000;
 const FX_LOOKBACK_MINUTES = 5;
@@ -154,6 +156,7 @@ export async function fetchMidnightBaseline(
   if (!validSymbol(symbol) || !validDate(date) || date !== kstDate(now)) {
     throw new MarketError("오늘 한국 시간 기준일과 유효한 종목 코드가 필요합니다.", 400);
   }
+  if (fxPair(symbol)) return fetchFxBaseline(symbol, date, signal);
   const baselineAt = Date.parse(`${date}T00:00:00+09:00`);
   const plan = midnightPricePlan(symbol, baselineAt);
   try {

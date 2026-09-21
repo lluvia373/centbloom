@@ -14,7 +14,6 @@
     "build:cloudflare": "opennextjs-cloudflare build",
     "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "deploy:legacy": "wrangler deploy --config wrangler.legacy.jsonc",
     "prepare": "node tests/install-git-hooks.mjs",
     "hooks:install": "node tests/install-git-hooks.mjs",
     "check:push": "node tests/check-push.mjs",

@@ -2,6 +2,8 @@ import { currencyUnitScale, normalizeCurrency } from "@/lib/currency";
 import { deriveHoldings } from "@/lib/portfolio";
 import type { DisplayCurrency, StockQuote, Transaction } from "@/lib/types";
 import type { MidnightBaseline } from "@/features/market/baseline";
+import { FX_LOOKBACK, usableFxQuote } from "@/features/market/fx";
+import { formatKst, localParts } from "@/features/market/schedule/time";
 
 export interface PortfolioDailyChange {
   date: string;
@@ -11,10 +13,19 @@ export interface PortfolioDailyChange {
   fxImpact: number;
   bySymbol: Record<string, number>;
   reason: string | null;
+  estimated: boolean;
+  estimatedSymbols: string[];
+  fxNotes: string[];
+  referenceDates: string[];
+  referenceDatesBySymbol: Record<string, string[]>;
+  carriedDates: string[];
+  carriedDatesBySymbol: Record<string, string[]>;
 }
 
 export function unavailableDailyChange(date: string, reason: string): PortfolioDailyChange {
-  return { date, available: false, change: 0, priceImpact: 0, fxImpact: 0, bySymbol: {}, reason };
+  return { date, available: false, change: 0, priceImpact: 0, fxImpact: 0, bySymbol: {}, reason,
+    estimated: false, estimatedSymbols: [], fxNotes: [], referenceDates: [], referenceDatesBySymbol: {},
+    carriedDates: [], carriedDatesBySymbol: {} };
 }
 
 export function planDailyChange(transactions: Transaction[], date: string, displayCurrency: DisplayCurrency) {
@@ -50,16 +61,33 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
   const valid = (value: number | undefined | null): value is number => value != null && Number.isFinite(value) && value > 0;
   const baseline = (symbol: string) => {
     const item = baselines[symbol];
-    return item?.date === date && Date.parse(item.baselineAt) === cutoff &&
-      item.status === "available" && valid(item.price) && item.currency &&
-      item.sourceEndAt && Date.parse(item.sourceEndAt) <= cutoff ? item : null;
+    if (item?.date !== date || Date.parse(item.baselineAt) !== cutoff ||
+      item.status !== "available" || !valid(item.price) || !item.currency) return null;
+    if (item.precision === "daily-reference") {
+      const referenceDate = item.fx?.referenceDate;
+      if (item.source !== "ecb-reference" || item.fx?.method !== "ecb-reference" ||
+        !referenceDate || !/^\d{4}-\d{2}-\d{2}$/.test(referenceDate)) return null;
+      const referenceDay = Date.parse(`${referenceDate}T00:00:00+09:00`);
+      if (!Number.isFinite(referenceDay) || referenceDate >= date || cutoff - referenceDay > FX_LOOKBACK) return null;
+      if (item.fx.publishedAt && !(Date.parse(item.fx.publishedAt) <= cutoff)) return null;
+      return item; // A daily fixing has a date, not a fabricated observation timestamp.
+    }
+    return item.sourceEndAt && Date.parse(item.sourceEndAt) <= cutoff ? item : null;
+  };
+  const sameFxObservation = (quote: StockQuote, start: MidnightBaseline | null) => {
+    if (!start?.fx || start.precision !== "minute") return false;
+    const quotedAt = Date.parse(quote.quotedAt ?? "");
+    return quotedAt >= Date.parse(start.sourceAt!) && quotedAt <= Date.parse(start.sourceEndAt!) &&
+      Date.parse(quote.fetchedAt ?? "") >= cutoff && (quote.price === start.price ||
+        (Math.fround(start.price!) === start.price && Math.fround(quote.price) === start.price));
   };
   const current = (symbol: string) => {
     const item = quotes[symbol];
     return !failedSymbols.includes(symbol) && item && valid(item.price) ? item : null;
   };
   const sameSessionClose = (quote: StockQuote, start: MidnightBaseline | null) => {
-    if (!start || start.precision !== "session-close" || start.marketClosed !== true || quote.marketState !== "CLOSED") return false;
+    if (!start || start.marketClosed !== true || quote.marketState !== "CLOSED") return false;
+    if (start.precision !== "session-close" && !(start.precision === "minute" && start.fx)) return false;
     const quotedAt = Date.parse(quote.quotedAt ?? "");
     const samePrice = quote.price === start.price ||
       (Math.fround(start.price!) === start.price && Math.fround(quote.price) === start.price);
@@ -72,22 +100,53 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
     const quotedAt = Date.parse(quote.quotedAt ?? "");
     if (!Number.isFinite(quotedAt)) return false;
     if (!start) return quotedAt >= cutoff;
+    if (start.precision === "daily-reference") {
+      // Publication time is availability metadata, not a trade time. Compare only
+      // the reference's European date; still reject a quote from an earlier day.
+      return localParts(quotedAt, "Europe/Berlin").date >= start.fx!.referenceDate!;
+    }
     if (quotedAt >= Date.parse(start.sourceEndAt!)) return true;
     // A session's last trade can occur seconds before its published closing time.
-    return sameSessionClose(quote, start);
+    return sameSessionClose(quote, start) || sameFxObservation(quote, start);
   };
   const currentRate = (symbol: string) => {
     const quote = current(symbol);
-    return quote && currentFollowsBaseline(quote, baseline(symbol)) ? quote.price : null;
+    if (!quote || quote.currency !== "KRW") return null;
+    const fetched = Date.parse(quote.fetchedAt ?? ""), quoted = Date.parse(quote.quotedAt ?? "");
+    if (fetched < cutoff || !usableFxQuote(quoted, fetched, quote.marketState)) return null;
+    return currentFollowsBaseline(quote, baseline(symbol)) ? quote.price : null;
+  };
+  const fxNotes = new Set<string>();
+  let missingFx = "";
+  const midnightRate = (symbol: string) => {
+    const item = baseline(symbol);
+    if (!item || item.currency !== "KRW") return null;
+    const pair = symbol.replace("KRW=X", "/KRW");
+    const note = item.fx?.method === "ecb-reference"
+      ? `${pair} 자정 기준: ${item.fx.referenceDate} ECB 일별 환율 적용`
+      : `${pair} 자정 기준: ${formatKst(Date.parse(item.sourceEndAt!))} KST${item.marketClosed ? " · 주말 마감 무렵" : ""}${item.fx?.method === "usd-cross" ? " · 같은 분의 달러 환율로 계산" : ""}`;
+    fxNotes.add(note);
+    const end = current(symbol);
+    // Reconcile the same closed FX observation's float32 chart representation,
+    // just as for stock closes; do not manufacture a weekend FX gain from encoding precision.
+    return end && currentRate(symbol) != null && sameFxObservation(end, item) ? end.price : item.price;
+  };
+  const fxRate = (symbol: string, atMidnight: boolean) => {
+    const value = atMidnight ? midnightRate(symbol) : currentRate(symbol);
+    if (value == null) missingFx = symbol.replace("KRW=X", "/KRW");
+    else if (!atMidnight) fxNotes.add(`${symbol.replace("KRW=X", "/KRW")} 현재: ${formatKst(Date.parse(quotes[symbol].quotedAt!))} KST`);
+    return value;
   };
   const rate = (currency: string, atMidnight: boolean): number | null => {
     if (currency === displayCurrency) return 1;
-    const fx = currency === "KRW" ? 1 : (atMidnight ? baseline(`${currency}KRW=X`)?.price : currentRate(`${currency}KRW=X`));
-    const usd = displayCurrency === "KRW" ? 1 : (atMidnight ? baseline("USDKRW=X")?.price : currentRate("USDKRW=X"));
+    const fx = currency === "KRW" ? 1 : fxRate(`${currency}KRW=X`, atMidnight);
+    const usd = displayCurrency === "KRW" ? 1 : fxRate("USDKRW=X", atMidnight);
     return valid(fx) && valid(usd) ? fx / usd : null;
   };
   const result: PortfolioDailyChange = {
     date, available: true, change: 0, priceImpact: 0, fxImpact: 0, bySymbol: {}, reason: null,
+    estimated: false, estimatedSymbols: [], fxNotes: [], referenceDates: [], referenceDatesBySymbol: {},
+    carriedDates: [], carriedDatesBySymbol: {},
   };
   for (const symbol of plan.symbols) {
     const opening = plan.opening.find((holding) => holding.symbol === symbol);
@@ -102,8 +161,25 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
       trades.some((tx) => !tx.currency || normalizeCurrency(tx.currency) !== currency))
       return unavailable("거래 통화 확인이 필요합니다");
     const startRate = rate(currency, true);
+    if (startRate == null) return unavailable(`${missingFx} 자정 기준 환율을 확인하지 못했습니다`);
     const endRate = closing ? rate(currency, false) : startRate;
-    if (startRate == null || endRate == null) return unavailable("자정 또는 현재 환율을 확인하지 못했습니다");
+    if (endRate == null) return unavailable(`${missingFx} 현재 환율을 확인하지 못했습니다`);
+    const rateSymbols = currency === displayCurrency ? [] : [
+      ...(currency === "KRW" ? [] : [`${currency}KRW=X`]), ...(displayCurrency === "USD" ? ["USDKRW=X"] : []),
+    ];
+    if (rateSymbols.some(fxSymbol => baseline(fxSymbol)?.precision === "daily-reference")) result.estimatedSymbols.push(symbol);
+    const referenceDates = rateSymbols.flatMap(fxSymbol => {
+      const item = baseline(fxSymbol);
+      return item?.precision === "daily-reference" && item.fx?.referenceDate ? [item.fx.referenceDate] : [];
+    });
+    const carriedDates = rateSymbols.flatMap(fxSymbol => {
+      const startFx = baseline(fxSymbol), endFx = closing ? current(fxSymbol) : null;
+      return [startFx?.fx?.carried ? startFx.sourceAt : null, endFx?.fx?.carried ?
+        (endFx.fx.components[0]?.sourceAt ?? endFx.quotedAt) : null]
+        .filter((at): at is string => !!at).map(at => localParts(Date.parse(at), "Asia/Seoul").date);
+    });
+    if (referenceDates.length) result.referenceDatesBySymbol[symbol] = [...new Set(referenceDates)].sort();
+    if (carriedDates.length) result.carriedDatesBySymbol[symbol] = [...new Set(carriedDates)].sort();
     // A stale quote must not run time backwards relative to the midnight price.
     if (end && !currentFollowsBaseline(end, start))
       return unavailable("현재 시세를 다시 확인하고 있습니다");
@@ -134,5 +210,9 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
     result.priceImpact += priceImpact;
     result.fxImpact += change - priceImpact;
   }
+  result.estimated = result.estimatedSymbols.length > 0;
+  result.referenceDates = [...new Set(Object.values(result.referenceDatesBySymbol).flat())].sort();
+  result.carriedDates = [...new Set(Object.values(result.carriedDatesBySymbol).flat())].sort();
+  result.fxNotes = [...fxNotes];
   return result;
 }

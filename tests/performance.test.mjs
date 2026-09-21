@@ -22,6 +22,31 @@ test('cursor algorithm matches original, including fees, partial sales and inact
 test('strict calculation refuses missing data instead of valuing it at zero',()=> {
   assert.throws(()=>improved.buildDailyPerformance({...fixture(10,50),pricesBySymbol:{},strict:true}),/누락/);
 });
+
+test('strict historical FX needs an exact valuation day while stock prices can carry across closures',()=> {
+ const input={...fixture(3,1),strict:true,transactions:[{...fixture(3,1).transactions[0],currency:'USD',fxRateToKRW:1300}],
+  pricesBySymbol:{QA0:[{date:'2020-01-01',close:100}]},
+  fxByCurrency:{USD:[{date:'2020-01-01',close:1300,referenceDate:'2019-12-31',carried:true,source:'ecb-reference'}]}};
+ assert.throws(()=>improved.buildDailyPerformance(input),/2020-01-02 USD\/KRW 일별 환율/);
+ input.fxByCurrency.USD.push({date:'2020-01-02',close:1300,referenceDate:'2019-12-31',carried:true,source:'ecb-reference'},
+  {date:'2020-01-03',close:1400,referenceDate:'2020-01-03',carried:false,source:'ecb-reference'});
+ const result=improved.buildDailyPerformance(input);
+ assert.deepEqual(Array.from(result,p=>p.assetValueKRW),[130000,130000,140000]);
+ assert.equal(result[1].fxReferences.USD,'2019-12-31');
+ assert.equal(result[2].fxReferences.USD,'2020-01-03');
+ assert.throws(()=>improved.buildDailyPerformance({...input,pricesBySymbol:{}}),/2020-01-01 QA0 가격이 누락/);
+});
+
+test('strict current valuation cannot silently use a past daily reference when live FX is missing or invalid',()=>{
+ const today=improved.kstDate();
+ const input={...fixture(1,1),strict:true,trackingStartDate:today,endDate:today,
+  transactions:[{...fixture(1,1).transactions[0],currency:'USD',fxRateToKRW:1300}],
+  pricesBySymbol:{QA0:[{date:today,close:100}]},fxByCurrency:{USD:[{date:today,close:1300,referenceDate:improved.addCalendarDays(today,-1)}]}};
+ for(const currentFxRates of [{},{USD:NaN},{USD:0}])
+  assert.throws(()=>improved.buildDailyPerformance({...input,currentFxRates}),/USD\/KRW 현재 환율/);
+ const result=improved.buildDailyPerformance({...input,currentFxRates:{USD:1400}});
+ assert.equal(result[0].assetValueKRW,140000);assert.equal(result[0].fxReferences,undefined);
+});
 if(process.argv.includes('--benchmark')) {
   const results=[];
   for(const days of [365,1825]) {

@@ -6,28 +6,40 @@ Next.js·API를 Workers/OpenNext에서 실행한다. 실제 배포 상태는 [PR
 
 ## 준비와 실행
 
-Node.js 22 이상·npm·Cloudflare 계정이 필요하다.
+Node.js 24.19.0·npm·Cloudflare 계정을 기준으로 한다. 로컬 푸시 검사도 자동 배포의 Node 버전과 맞춘다. Node 22.14.0에서는 TypeScript 파일을 직접 불러오는 기존 테스트가 실행되지 않으므로 검사 생략이나 코드 우회로 해결하지 않는다.
 
 ```sh
 npm ci
 npx wrangler login
-npm run build:cloudflare
-npm run preview:cloudflare
-npm run deploy:cloudflare
 ```
 
-- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. Windows 기본 로그인 저장소는 `%APPDATA%/xdg.config/.wrangler`다. `XDG_CONFIG_HOME`을 별도 위치로 바꾸려면 실제 로그인 설정이 있는지 확인한다. 빈 폴더를 지정하면 원격 AI 프록시 인증이 실패한다. 대상 계정은 `wrangler.jsonc`·종료 주소 설정의 account_id를 확인한다.
+아래는 순서대로 실행하는 단계가 아니라 용도별 선택 명령이다. `preview`와 `deploy`는 빌드를 포함하므로 `build`를 먼저 실행하지 않는다. 기본 배포는 승인된 GitHub 푸시 이후 자동 배포이며, 로컬에서 아래 세 명령을 연달아 실행하지 않는다.
+
+| 목적 | 명령 |
+| --- | --- |
+| Cloudflare 빌드만 확인하도록 요청받은 경우 | `npm run build:cloudflare` |
+| Workers 환경에서만 확인할 문제가 있는 경우 | `npm run preview:cloudflare` |
+| 자동 배포 대신 직접 배포하도록 명시적으로 승인받은 경우 | `npm run deploy:cloudflare` |
+
+- 로그인은 최초 연결 시 수행한다. 로컬 Next.js 개발은 `npm run dev`. Windows 기본 로그인 저장소는 `%APPDATA%/xdg.config/.wrangler`다. `XDG_CONFIG_HOME`을 별도 위치로 바꾸려면 실제 로그인 설정이 있는지 확인한다. 빈 폴더를 지정하면 원격 AI 프록시 인증이 실패한다. 대상 계정은 `wrangler.jsonc`의 account_id를 확인한다.
 - preview는 빌드 후 로컬 Workers 실행, deploy는 빌드 후 [wrangler.jsonc](./wrangler.jsonc)의 Worker에 배포한다. 업로드 전에 대상 계정·Worker를 확인한다.
 - 명령·의존성 기준은 [package.json](./package.json)·[package-lock.json](./package-lock.json). 검증 기록은 [PROJECT_STATUS.md](./PROJECT_STATUS.md#검증-기록).
 
 ## 센트블룸 주소와 이전 주소 종료
 
 - 공개 주소는 https://centbloom.stock-web-demo.workers.dev 이다. .com은 구매·연결하지 않았다.
-- 이전 centifolio 주소는 닫힌 상태를 유지한다. [종료 설정](./wrangler.legacy.jsonc)의 workers_dev·preview_urls는 false이며 [종료 Worker](./legacy-worker.mjs)는 바인딩 없이 410 응답만 정의한다. deploy:legacy도 같은 설정을 적용한다. 실제 공개 응답의 확인 범위는 PROJECT_STATUS를 따른다.
-- 이전 Worker는 복구용으로 보관하며 계정 거래·DB·브라우저 저장 데이터를 삭제하지 않는다. 이전 주소의 로컬 노트·관심종목은 새 주소로 자동 이전되지 않으므로 복구 때 별도로 확인한다.
+- 이전 centifolio Worker와 연결된 배포·버전·Git Builds는 삭제했으며 다시 배포하지 않는다. 계정 거래·DB·브라우저 저장 데이터와 이전 브랜드 데이터 호환은 별도이므로 보존한다. 이전 주소의 로컬 노트·관심종목은 새 주소로 자동 이전되지 않는다.
 - Auth Site URL과 공개 Redirect URL은 센트블룸만 사용한다. 이전 공개 주소를 허용 목록에서 제거했으며 localhost:3000·127.0.0.1:3000 개발 주소는 유지한다.
-- Git Builds: centbloom은 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. centifolio는 check:docs 후 deploy:legacy로 비공개 종료 상태를 유지한다. 두 연결은 같은 저장소 main을 사용한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
-- 로컬 검사는 [README 검증](./README.md#검증)에 따라 pre-push 훅에 모은다. 배포 CI의 prepare는 로컬 훅 설치를 건너뛴다. 로컬 통과와 배포 환경의 OpenNext 빌드 성공은 구분한다.
+- Git Builds: centbloom만 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
+- 로컬 전체 검사는 [README 검증](./README.md#검증)에 따라 pre-push 훅에 모으며 개발 중에는 변경 부분만 빠르게 확인한다. 배포 CI의 prepare는 로컬 훅 설치를 건너뛴다. 배포 환경에서 하는 검사와 OpenNext 빌드는 환경이 다른 필수 확인이므로 로컬 중복 검사로 간주해 제거하지 않는다.
+
+## 일별 환율 공통 저장소
+
+- 기존 NEWS_CACHE 바인딩 안의 `fx:ecb-krw:v1:` 전용 키를 사용한다. 뉴스 키·개인 계좌·Supabase 테이블을 수정하지 않으며 새로운 유료 서비스나 저장소를 개설하지 않는다. 운영 KV 사용량은 기존 계정 할당량과 합산된다.
+- 첫 조회 또는 배포 후 정기 실행이 ECB 전체 XML을 읽어 연도별 원화 환율 묶음을 저장한다. 연도별 저장 성공 후 완료 색인을 기록하며 원본 자료·키에 만료를 두지 않는다. 이후 기존 5분 cron이 갱신 필요를 확인하되 실제 최근 90일 수집은 최소 1시간 간격이다. 마지막 저장 발표일이 85일 이상 오래됐으면 전체 이력으로 재수집해 장기 중단 공백을 복구한다. 로컬 next dev는 요청 시 준비·갱신하고 정기 실행은 하지 않는다.
+- 운영 데이터는 Cloudflare KV에, 개발 데이터는 OpenNext의 로컬 KV에 저장된다. 로컬에서 준비한 데이터가 운영에 이미 반영됐다는 뜻은 아니다. 스토어 바인딩 없이 메모리만으로 동작하면서 영구 저장됐다고 보고하는 대체 동작은 없다.
+- ECB 수집 실패 시 기존 정상 이력은 유지하며 자료가 없는 평가일만 오류로 처리한다. 저장 도중 실패한 최초 수집은 완료로 표시하지 않는다. KV는 지역별 전파 지연과 동시 갱신 경합이 가능한 저장소이며 전역 원자적 거래를 보장하지 않는다. 조회 때 날짜·통화·휴일·유효값을 다시 검사한다. 최근 정정은 90일 범위에서 갱신하며 더 오래된 공급자 정정 자동 동기화는 미지원이다.
+- 출처·사용 기준(2026-09-21 확인): [ECB 일별 기준환율](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html), [전체 XML](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml), [90일 XML](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml), [ECB 이용 조건](https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html). ECB 출처·자체 원화 환산 방식은 계산 명세와 API의 출처·기준 통화 메타데이터에 보존한다. 제품 화면의 간결한 표시는 [기간 성과 디자인](./DESIGN_SYSTEM.md#보유자산-세부-다듬기-검토)을 따르며 공급처 설명·기준일 목록을 반복하지 않는다. 실제 환전 거래용 가격으로 보장하지 않으며 유료화 시 무료 원자료 안내 조건을 다시 검토한다. 사업 문서 원본이 없는 현재 환경에서는 별도 사업·최종 운영 비용 검토는 미완료다.
 
 ## 뉴스 제목 자동 번역
 

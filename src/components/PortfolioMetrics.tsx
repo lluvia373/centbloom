@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { usePortfolioDailyChange, usePortfolioMarket, usePreferences } from "@/hooks/usePortfolio";
 import { formatCurrency, formatPercent } from "@/lib/format";
 
@@ -23,36 +22,36 @@ export function PortfolioMetrics() {
         <div className="portfolio-summary-total">
           <dt>총 보유자산</dt>
           <dd className="portfolio-summary-value">{hasData ? money(summary!.totalValue) : "—"}</dd>
-          <dd className="portfolio-summary-context">{hasData ? `${holdings.length}개 종목` : status}</dd>
+          {!hasData && <dd className="portfolio-summary-context">{status}</dd>}
         </div>
         <div>
           <dt>평가손익</dt>
-          <dd className={`portfolio-summary-result ${tone(gain, hasGain)}`}>
-            {hasGain ? money(gain, true) : "—"}
+          <dd className={`portfolio-summary-result portfolio-summary-gain ${tone(gain, hasGain)}`}>
+            <span>{hasGain ? money(gain, true) : "—"}</span>
+            {hasGain && <span className="portfolio-summary-percent">{formatPercent(summary!.totalGainLossPercent)}</span>}
           </dd>
           <dd className="portfolio-summary-context">
-            {hasGain ? <><span className={tone(gain, true)}>{formatPercent(summary!.totalGainLossPercent)}</span><span>매입원가 {money(summary!.totalCost)}</span></>
+            {hasGain ? <>매입원가 {money(summary!.totalCost)}</>
               : hasData ? "매입 정보 확인 필요" : "보유종목 기준"}
           </dd>
         </div>
-        <div>
-          <dt>오늘 변동</dt>
+        <div className="portfolio-summary-daily">
+          <dt>오늘 손익</dt>
           <dd className={`portfolio-summary-result ${tone(daily.change, daily.available)}`}>
             {daily.available ? money(daily.change, true) : "—"}
           </dd>
+          {daily.available && <dd className="portfolio-summary-factors" aria-label="오늘 손익 요인">
+            <span>주가·매매 <strong className={tone(daily.priceImpact, true)}>{money(daily.priceImpact, true)}</strong></span>
+            <span>환율 <strong className={tone(daily.fxImpact, true)}>{money(daily.fxImpact, true)}</strong></span>
+          </dd>}
           <dd className="portfolio-summary-context">
-            {daily.available ? "00:00 KST 이후" : daily.reason}
+            {daily.available ? "오늘 00:00 기준(KST)" : daily.reason}
           </dd>
+          {daily.available && closedSymbols.length > 0 && <dd className="portfolio-summary-context">
+            전량 매도 {closedSymbols.length}종목 {money(closedChange, true)} 포함
+          </dd>}
         </div>
       </dl>
-      <div className="portfolio-summary-footnote">
-        {daily.available ? <p><span>오늘 변동 요인</span>
-          <span title="기록한 수수료와 오늘 전량 매도한 종목의 손익도 포함합니다">주가·매매 <strong className={tone(daily.priceImpact, true)}>{money(daily.priceImpact, true)}</strong></span>
-          <span>환율 <strong className={tone(daily.fxImpact, true)}>{money(daily.fxImpact, true)}</strong></span>
-          {closedSymbols.length > 0 && <span>전량 매도 {closedSymbols.length}종목 {money(closedChange, true)} 포함</span>}
-        </p> : null}
-        <Link href="#performance">기간 성과 <span aria-hidden="true">→</span></Link>
-      </div>
     </section>
   );
 }

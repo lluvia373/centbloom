@@ -168,7 +168,7 @@ test('canonical symbol/date share a bounded request; unavailable data are retrie
       providerRequests: createRequestCache({ concurrency: 4 }),
       yahoo: { chart: async (symbol, options, request) => {
         calls.push({ symbol, options, signal: request.fetchOptions.signal });
-        return chart(symbol, missing ? [] : [row(new Date(options.period2.getTime() - 60000), 100)]);
+        return chart(symbol, missing ? [] : [row(new Date(options.period2.getTime() - 60000), 100)], symbol.endsWith('=X') ? 'KRW' : 'USD');
       } },
     },
   });

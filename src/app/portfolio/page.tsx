@@ -12,7 +12,9 @@ import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import styles from "@/features/portfolio/ui/PortfolioHoldings.module.css";
 import { usePortfolioDailyChange, usePortfolioMarket, usePreferences, useTransactions } from "@/hooks/usePortfolio";
 import { Download } from "lucide-react";
+import { useRef } from "react";
 export default function PortfolioPage() {
+  const performanceRef = useRef<HTMLElement>(null);
   const { transactions } = useTransactions();
   const { displayCurrency } = usePreferences();
   const { summary, loading, marketDataError } = usePortfolioMarket();
@@ -59,7 +61,17 @@ export default function PortfolioPage() {
   return (
     <>
       <div className={styles.pageHeading}>
-        <PageHeading title="보유자산">
+        <PageHeading title="보유자산" titleAction={
+          <button type="button" className={styles.performanceButton} aria-controls="performance" onClick={() => {
+            const section = performanceRef.current;
+            if (!section) return;
+            section.focus({ preventScroll: true });
+            section.scrollIntoView({
+              block: "start",
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+            });
+          }}>기간 성과</button>
+        }>
           <CurrencySwitch />
           <AddTransactionLink />
         </PageHeading>
@@ -77,11 +89,14 @@ export default function PortfolioPage() {
       <AllocationChart holdings={summary?.holdings ?? []} displayCurrency={displayCurrency} loading={loading} />
       <HoldingsTable
         holdings={summary?.holdings ?? []}
+        transactions={transactions}
         displayCurrency={displayCurrency}
         loading={loading}
         editable
         dailyChanges={dailyChange.available ? dailyChange.bySymbol : undefined}
         dailyChangeReason={dailyChange.reason}
+        referenceDatesBySymbol={dailyChange.referenceDatesBySymbol}
+        carriedDatesBySymbol={dailyChange.carriedDatesBySymbol}
         toolbarAction={(summary?.holdings.length ?? 0) > 0 ? (
           <button type="button" className={styles.csv} onClick={exportHoldings}>
             <Download size={16} aria-hidden="true" />보유 자산 CSV
@@ -89,7 +104,7 @@ export default function PortfolioPage() {
         ) : undefined}
       />
 
-      <section id="performance" className={`page-section ${styles.performance}`} aria-label="기간 성과">
+      <section ref={performanceRef} id="performance" tabIndex={-1} className={`page-section ${styles.performance}`} aria-label="기간 성과">
         <PerformanceAnalytics />
       </section>
       <PortfolioAd hasContent={transactions.length > 0} />

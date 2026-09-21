@@ -1,7 +1,8 @@
 "use client";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import type { DisplayCurrency } from "@/lib/types";
-import { useId } from "react";
+import { useId, useState } from "react";
+import { getAssetAxis, getChartDates, getReturnAxis } from "./chart-presentation";
 import {
   Area,
   ComposedChart,
@@ -15,33 +16,20 @@ import {
   YAxis,
 } from "recharts";
 
-function shortDate(value: string): string {
-  return value.slice(5).replace("-", ".");
-}
-
 function longDate(value: string): string {
   return value.replaceAll("-", ".");
 }
 
-function compactKRW(value: number): string {
-  if (Math.abs(value) >= 100_000_000)
-    return `${(value / 100_000_000).toFixed(1)}억`;
-  if (Math.abs(value) >= 10_000) return `${(value / 10_000).toFixed(0)}만`;
-  return `${Math.round(value)}`;
-}
-
-function percentAxis(value: number): string {
-  const normalized = Math.abs(value) < 0.005 ? 0 : value;
-  const digits = Math.abs(normalized) < 10 ? 2 : 0;
-  return `${normalized.toFixed(digits)}%`;
-}
-
-const axisTick = { fill: "#727680", fontSize: 11 };
+const axisTick = { fill: "var(--cf-color-muted)", fontSize: "var(--cf-text-caption)", fontFamily: "var(--cf-font-ui)" };
 const tooltipStyle = {
-  background: "#ffffff",
-  border: "1px solid #e9eaed",
-  borderRadius: "12px",
-  color: "#202329",
+  background: "var(--cf-color-surface)",
+  border: "1px solid var(--cf-color-line)",
+  borderRadius: "var(--cf-radius-card)",
+  color: "var(--cf-color-ink)",
+  boxShadow: "var(--cf-shadow-dialog)",
+  fontSize: "var(--cf-text-label)",
+  fontVariantNumeric: "tabular-nums",
+  padding: "var(--cf-space-3) var(--cf-space-4)",
 };
 
 export function ReturnChart({
@@ -53,36 +41,48 @@ export function ReturnChart({
   inactivePeriods: Array<{ start: string; end: string }>;
   benchmarkName?: string;
 }) {
+  const [width, setWidth] = useState(0);
+  const dates = getChartDates(data, width);
+  const axis = getReturnAxis(data);
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height="100%" onResize={setWidth}>
       <LineChart
         data={data}
-        margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
+        margin={{ top: 12, right: 0, bottom: 0, left: 8 }}
       >
-        <CartesianGrid vertical={false} stroke="#e9eaed" />
+        <CartesianGrid vertical={false} stroke="var(--cf-color-line)" strokeOpacity={0.7} />
         <XAxis
           dataKey="date"
-          tickFormatter={shortDate}
+          ticks={dates.ticks}
+          tickFormatter={dates.format}
           tick={axisTick}
           axisLine={false}
           tickLine={false}
-          minTickGap={28}
+          minTickGap={24}
+          interval="preserveStartEnd"
+          tickMargin={12}
+          height={36}
         />
         <YAxis
-          tickFormatter={percentAxis}
+          ticks={axis.ticks}
+          domain={axis.domain}
+          tickFormatter={axis.format}
           tick={axisTick}
           axisLine={false}
           tickLine={false}
-          width={58}
+          orientation="right"
+          tickMargin={12}
+          width={64}
         />
         <Tooltip
           contentStyle={tooltipStyle}
+          cursor={{ stroke: "var(--cf-color-focus)", strokeDasharray: "3 4", strokeOpacity: 0.6 }}
           labelFormatter={(value) => longDate(String(value ?? ""))}
           formatter={(value, name) => [
             formatPercent(Number(value)),
             name === "portfolioReturn"
-              ? "내 포트폴리오"
-              : (benchmarkName ?? "비교 자산"),
+              ? "내 수익률"
+              : `${benchmarkName ?? "비교 자산"} 참고 수익률`,
           ]}
         />
         {inactivePeriods.map((period) => (
@@ -90,27 +90,30 @@ export function ReturnChart({
             key={`${period.start}-${period.end}`}
             x1={period.start}
             x2={period.end}
-            fill="#727680"
+            fill="var(--cf-color-muted)"
             fillOpacity={0.06}
           />
         ))}
         <Line
-          type="monotone"
+          type="linear"
           dataKey="portfolioReturn"
-          stroke="#3b8879"
+          stroke="var(--cf-color-chart)"
           strokeWidth={2.5}
           dot={false}
-          activeDot={{ r: 4 }}
+          connectNulls={false}
+          activeDot={{ r: 4, stroke: "var(--cf-color-surface)", strokeWidth: 2 }}
+          isAnimationActive={false}
         />
         {benchmarkName && (
           <Line
-            type="monotone"
+            type="linear"
             dataKey="benchmarkReturn"
-            stroke="#727680"
+            stroke="var(--cf-color-muted)"
             strokeWidth={1.8}
             strokeDasharray="5 4"
             dot={false}
-            connectNulls
+            connectNulls={false}
+            isAnimationActive={false}
           />
         )}
       </LineChart>
@@ -128,37 +131,49 @@ export function AssetChart({
   currency?: DisplayCurrency;
 }) {
   const gradientId = useId().replace(/:/g, "");
+  const [width, setWidth] = useState(0);
+  const dates = getChartDates(data, width);
+  const axis = getAssetAxis(data, currency);
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 2 }}>
+    <ResponsiveContainer width="100%" height="100%" onResize={setWidth}>
+      <ComposedChart data={data} margin={{ top: 12, right: 0, bottom: 0, left: 8 }}>
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b8879" stopOpacity={0.16} />
-            <stop offset="100%" stopColor="#3b8879" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--cf-color-chart)" stopOpacity={0.1} />
+            <stop offset="100%" stopColor="var(--cf-color-chart)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="#e9eaed" />
+        <CartesianGrid vertical={false} stroke="var(--cf-color-line)" strokeOpacity={0.7} />
         <XAxis
           dataKey="date"
-          tickFormatter={shortDate}
+          ticks={dates.ticks}
+          tickFormatter={dates.format}
           tick={axisTick}
           axisLine={false}
           tickLine={false}
-          minTickGap={28}
+          minTickGap={24}
+          interval="preserveStartEnd"
+          tickMargin={12}
+          height={36}
         />
         <YAxis
-          tickFormatter={(value) => currency === "KRW" ? compactKRW(Number(value)) : Number(value).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 })}
+          ticks={axis.ticks}
+          domain={axis.domain}
+          tickFormatter={axis.format}
           tick={axisTick}
           axisLine={false}
           tickLine={false}
-          width={58}
+          orientation="right"
+          tickMargin={12}
+          width={64}
         />
         <Tooltip
           contentStyle={tooltipStyle}
+          cursor={{ stroke: "var(--cf-color-focus)", strokeDasharray: "3 4", strokeOpacity: 0.6 }}
           labelFormatter={(value) => longDate(String(value ?? ""))}
-          formatter={(value, name) => [
+          formatter={(value) => [
             formatCurrency(Number(value), currency),
-            name === "cumulativeNetFlow" ? "누적 순투입금" : "평가액",
+            "보유자산",
           ]}
         />
         {inactivePeriods.map((period) => (
@@ -166,25 +181,19 @@ export function AssetChart({
             key={`${period.start}-${period.end}`}
             x1={period.start}
             x2={period.end}
-            fill="#727680"
+            fill="var(--cf-color-muted)"
             fillOpacity={0.06}
           />
         ))}
         <Area
-          type="monotone"
+          type="linear"
           dataKey="assetValue"
-          stroke="#3b8879"
+          stroke="var(--cf-color-chart)"
           strokeWidth={2.5}
           fill={`url(#${gradientId})`}
           dot={data.length === 1 ? { r: 4 } : false}
-        />
-        <Line
-          type="monotone"
-          dataKey="cumulativeNetFlow"
-          stroke="var(--cf-color-muted)"
-          strokeWidth={1.5}
-          strokeDasharray="5 5"
-          dot={false}
+          activeDot={{ r: 4, stroke: "var(--cf-color-surface)", strokeWidth: 2 }}
+          isAnimationActive={false}
         />
       </ComposedChart>
     </ResponsiveContainer>

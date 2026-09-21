@@ -1,5 +1,6 @@
 import { normalizeCurrency, toKRW } from "./currency";
 import { createHoldingAccumulator } from "./portfolio";
+import type { DailyFxPoint } from "@/features/market/fx-history";
 import type {
   ChartPoint,
   PortfolioPerformancePoint,
@@ -8,14 +9,14 @@ import type {
 
 const DAY_MS = 86_400_000;
 const VALUE_EPSILON = 0.01;
-export const PERFORMANCE_CALCULATION_VERSION = 2;
+export const PERFORMANCE_CALCULATION_VERSION = 3;
 
 export interface BuildPerformanceInput {
   transactions: Transaction[];
   trackingStartDate: string;
   endDate: string;
   pricesBySymbol: Record<string, ChartPoint[]>;
-  fxByCurrency: Record<string, ChartPoint[]>;
+  fxByCurrency: Record<string, (ChartPoint & Partial<DailyFxPoint>)[]>;
   currentPrices?: Record<string, number>;
   currentFxRates?: Record<string, number>;
   previousPoints?: PortfolioPerformancePoint[];
@@ -87,6 +88,8 @@ export function buildDailyPerformance({
   let transactionIndex = 0;
   const prices = valueCursors(pricesBySymbol);
   const rates = valueCursors(fxByCurrency);
+  const dailyRates = new Map(Object.entries(fxByCurrency)
+    .map(([currency, values]) => [currency, new Map(values.map(point => [point.date, point]))]));
   const flows = new Map<string, number>();
   // Preserve input order for daily floating-point flow accumulation.
   for (const tx of transactions) {
@@ -109,6 +112,7 @@ export function buildDailyPerformance({
     )
       positions.apply(sorted[transactionIndex++]);
     const holdings = positions.holdings();
+    const fxReferences: Record<string, string> = {};
     const assetValueKRW = holdings.reduce((sum, holding) => {
       const currency = normalizeCurrency(holding.currency ?? "USD");
       const historicalPrice = prices(holding.symbol, date);
@@ -116,25 +120,27 @@ export function buildDailyPerformance({
         date === today && currentPrices[holding.symbol] != null
           ? currentPrices[holding.symbol]
           : historicalPrice;
-      const historicalFx = currency === "KRW" ? 1 : rates(currency, date);
+      const dailyFx = dailyRates.get(currency)?.get(date);
+      // The FX API resolves weekends/holidays to an explicit point for each day.
+      // A missing day must not inherit an arbitrarily old rate in strict mode.
+      const historicalFx = currency === "KRW" ? 1 : strict ? dailyFx?.close : rates(currency, date);
       const fxRate =
         currency === "KRW"
           ? 1
-          : date === today && currentFxRates[currency] != null
+          : date === today && (strict || currentFxRates[currency] != null)
             ? currentFxRates[currency]
             : historicalFx;
 
-      if (
-        price == null ||
-        fxRate == null ||
-        (strict && (price <= 0 || fxRate <= 0))
-      ) {
-        if (strict)
-          throw new Error(
-            date + " " + holding.symbol + " 가격 또는 환율이 누락되었습니다.",
-          );
+      if (price == null || !Number.isFinite(price) || (strict && price <= 0)) {
+        if (strict) throw new Error(`${date} ${holding.symbol} 가격이 누락되었습니다.`);
         return sum;
       }
+      if (fxRate == null || !Number.isFinite(fxRate) || (strict && fxRate <= 0)) {
+        if (strict) throw new Error(`${date} ${currency}/KRW ${date === today ? "현재" : "일별"} 환율이 누락되었습니다.`);
+        return sum;
+      }
+      if (currency !== "KRW" && !(date === today && currentFxRates[currency] != null) && dailyFx?.referenceDate)
+        fxReferences[currency] = dailyFx.referenceDate;
       // FX lookup uses GBP, but a GBp/GBX price is still quoted in pence.
       return sum + toKRW(price * holding.quantity, holding.currency ?? "USD", fxRate);
     }, 0);
@@ -170,6 +176,7 @@ export function buildDailyPerformance({
       cumulativeProfitKRW,
       active: assetValueKRW > VALUE_EPSILON,
       final: date < today,
+      ...(Object.keys(fxReferences).length ? { fxReferences } : {}),
     });
   }
 
@@ -199,24 +206,11 @@ export function calculatePerformanceMetrics(
   const last = selected[selected.length - 1];
   const operatingReturn =
     first.twrIndex > 0 ? (last.twrIndex / first.twrIndex - 1) * 100 : null;
-  const periodTransactions = transactions.filter(
-    (tx) => tx.date > first.date && tx.date <= last.date,
-  );
-  const flows = periodTransactions.map((tx) => ({
-    date: tx.date,
-    amount: transactionFlowKRW(tx),
-  }));
-  const netFlow = flows.reduce((sum, flow) => sum + flow.amount, 0);
-  const totalDays = Math.max(1, daysBetween(first.date, last.date));
-  const weightedFlow = flows.reduce((sum, flow) => {
-    const elapsed = daysBetween(first.date, flow.date);
-    const weight = Math.max(0, (totalDays - elapsed) / totalDays);
-    return sum + flow.amount * weight;
-  }, 0);
-  const denominator = first.assetValueKRW + weightedFlow;
-  const profitKRW = last.assetValueKRW - first.assetValueKRW - netFlow;
-  const moneyWeightedReturn =
-    denominator > VALUE_EPSILON ? (profitKRW / denominator) * 100 : null;
+  const { profitKRW, moneyWeightedReturn } = createMoneyWeightedCalculator(
+    first,
+    transactions,
+    last.date,
+  )(last);
 
   return {
     operatingReturn,
@@ -224,6 +218,67 @@ export function calculatePerformanceMetrics(
     profitKRW,
     startValueKRW: first.assetValueKRW,
     endValueKRW: last.assetValueKRW,
+  };
+}
+
+/** Cumulative, nonannualized Modified Dietz returns from the selected first day. */
+export function buildMoneyWeightedReturnSeries(
+  points: PortfolioPerformancePoint[],
+  transactions: Transaction[],
+) {
+  if (points.length === 0) return [];
+  const calculate = createMoneyWeightedCalculator(
+    points[0],
+    transactions,
+    points[points.length - 1].date,
+  );
+  return points.map((point) => ({
+    ...point,
+    portfolioReturn: calculate(point).moneyWeightedReturn,
+  }));
+}
+
+function createMoneyWeightedCalculator(
+  first: PortfolioPerformancePoint,
+  transactions: Transaction[],
+  endDate: string,
+) {
+  // The first day's closing value already includes its transactions.
+  const flows = transactions
+    .filter((tx) => tx.date > first.date && tx.date <= endDate)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((tx) => ({
+      date: tx.date,
+      elapsed: daysBetween(first.date, tx.date),
+      amount: transactionFlowKRW(tx),
+    }));
+  let flowIndex = 0;
+  let netFlow = 0;
+  let previousFlowDay = 0;
+  let weightedFlowDays = 0;
+
+  return (point: PortfolioPerformancePoint) => {
+    // Accumulate only at transaction boundaries so summary and chart endpoints
+    // use identical arithmetic, without scanning every transaction for each day.
+    while (flowIndex < flows.length && flows[flowIndex].date <= point.date) {
+      const flow = flows[flowIndex++];
+      weightedFlowDays += netFlow * (flow.elapsed - previousFlowDay);
+      netFlow += flow.amount;
+      previousFlowDay = flow.elapsed;
+    }
+    const totalDays = Math.max(1, daysBetween(first.date, point.date));
+    const weightedFlow =
+      (weightedFlowDays + netFlow * (totalDays - previousFlowDay)) / totalDays;
+    const denominator = first.assetValueKRW + weightedFlow;
+    const profitKRW = point.assetValueKRW - first.assetValueKRW - netFlow;
+    const result = (profitKRW / denominator) * 100;
+    const moneyWeightedReturn =
+      Number.isFinite(denominator) &&
+      denominator > VALUE_EPSILON &&
+      Number.isFinite(result)
+        ? result
+        : null;
+    return { profitKRW, moneyWeightedReturn };
   };
 }
 

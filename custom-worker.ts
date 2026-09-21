@@ -5,12 +5,14 @@ import { refreshPreparedChanges } from "./src/features/market/server/changes-ref
 import { refreshScheduledNews } from "./src/features/market/server/news-refresh";
 
 import { refreshScheduledWatchedReports } from "./src/features/market/server/watched-report-refresh";
+import { refreshScheduledFxHistory } from "./src/features/market/server/fx-history-store";
 
 export default {
   fetch: handler.fetch,
   async scheduled(_event, env, ctx) {
     ctx.waitUntil((async () => {
       const results = await Promise.allSettled([
+        refreshScheduledFxHistory(env),
         refreshScheduledNews(env),
         refreshScheduledWatchedReports(env),
         refreshPreparedChanges(env, { force: true, timeoutMs: 90_000 }),

@@ -1,10 +1,13 @@
 import { knownMarketDelay, stockDisplayName } from "@/lib/markets";
 import type { StockQuote } from "@/lib/types";
 import { MarketError, providerRequests, yahoo } from "./provider";
+import { fxPair } from "../fx";
+import { fetchFxQuote } from "./fx-market";
 export function fetchQuote(
   symbol: string,
   signal?: AbortSignal,
 ): Promise<StockQuote> {
+  if (fxPair(symbol)) return fetchFxQuote(symbol, signal);
   return providerRequests.request(
     "quote:" + symbol,
     async (signal) => {

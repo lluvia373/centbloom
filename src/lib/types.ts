@@ -29,6 +29,7 @@ export interface Holding {
 }
 
 export interface StockQuote {
+  fx?: import("@/features/market/fx").FxEvidence;
   symbol: string;
   name: string;
   price: number;
@@ -91,6 +92,8 @@ export interface PortfolioPerformancePoint {
   cumulativeProfitKRW: number;
   active: boolean;
   final: boolean;
+  /** Actual reference day used per foreign currency; absent for live rates. */
+  fxReferences?: Record<string, string>;
 }
 
 export interface DayOHLC {

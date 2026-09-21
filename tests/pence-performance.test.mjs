@@ -29,7 +29,7 @@ test('pence history values shares and partial sales in won without a hundredfold
         date: '2020-01-02', quantity: 1, price: 120, createdAt: '2020-01-02T00:00:00Z' })],
       trackingStartDate: '2020-01-01', endDate: '2020-01-02', strict: true,
       pricesBySymbol: { 'QA.L': [{ date: '2020-01-01', close: 100 }, { date: '2020-01-02', close: 120 }] },
-      fxByCurrency: { GBP: [{ date: '2020-01-01', close: 1600 }] },
+      fxByCurrency: { GBP: [{ date: '2020-01-01', close: 1600 }, { date: '2020-01-02', close: 1600 }] },
     });
     assert.equal(points[0].assetValueKRW, 3200);
     assert.equal(points[1].assetValueKRW, 1920);

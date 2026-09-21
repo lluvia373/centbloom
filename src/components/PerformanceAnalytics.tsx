@@ -1,7 +1,8 @@
 "use client";
 import { useStockSearch } from "@/features/market/use-stock-search";
 import { AssetChart, ReturnChart } from "@/features/performance/Charts";
-import { DateField, MetricCard } from "@/features/performance/Controls";
+import { DateField, PerformanceSummary } from "@/features/performance/Controls";
+import { getAssetAxis } from "@/features/performance/chart-presentation";
 import { useBenchmarkSeries } from "@/features/performance/use-benchmark-series";
 import {
   RANGES,
@@ -10,19 +11,10 @@ import {
 
 import { usePerformanceHistory } from "@/hooks/usePerformanceHistory";
 import { usePortfolioMarket, usePreferences, useTransactions } from "@/hooks/usePortfolio";
-import { formatCurrency, formatPercent } from "@/lib/format";
 import type { ChartSeries, StockSearchResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import {
-  CalendarRange,
-  Check,
-  ChevronDown,
-  Loader2,
-  Search,
-  TrendingUp,
-  X,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+import { CalendarDays, Loader2, Search, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 
 type ChartMode = "return" | "assets";
 
@@ -30,10 +22,11 @@ export function PerformanceAnalytics() {
   const { transactions } = useTransactions();
   const { summary } = usePortfolioMarket();
   const { displayCurrency } = usePreferences();
-  const { points, trackingStartedAt, loading, error } = usePerformanceHistory();
+  const { points, loading, error } = usePerformanceHistory();
   const [chartMode, setChartMode] = useState<ChartMode>("assets");
-  const [datePanelOpen, setDatePanelOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const rangeButton = useRef<HTMLButtonElement>(null);
+  const [rangeSelection, setRangeSelection] = useState<{ step: "start" } | { step: "end"; start: string } | null>(null);
 
   const [benchmark, setBenchmark] = useState<StockSearchResult | null>(null);
   const { results: searchResults, loading: searching } = useStockSearch(query, {
@@ -50,18 +43,11 @@ export function PerformanceAnalytics() {
     : null;
   const assetCurrency = displayCurrency === "USD" && usdKrwRate != null ? "USD" : "KRW";
   const assetDivisor = assetCurrency === "USD" ? usdKrwRate! : 1;
-  const hasKrwImpacts = !!summary?.holdings.length && summary.holdings.every((holding) =>
-    holding.valuationAvailable && holding.gainAvailable &&
-    Number.isFinite(holding.currentFxRateToKRW) && (holding.currentFxRateToKRW ?? 0) > 0 &&
-    (holding.currency === "KRW" || holding.costBasisKRW != null),
-  );
 
   const {
     range,
     setRange,
-    customStart,
     setCustomStart,
-    customEnd,
     setCustomEnd,
     firstDate,
     lastDate,
@@ -78,7 +64,7 @@ export function PerformanceAnalytics() {
   const chartData = useMemo(() => {
     const useAdjusted =
       benchmarkSeries?.dividendStatus !== "unavailable" &&
-      benchmarkSeries?.points.some((point) => point.adjustedClose != null);
+      benchmarkSeries?.points.some((point) => point.adjustedClose != null && Number.isFinite(point.adjustedClose));
     const benchmarkValues = normalizedPoints.map((point) => {
       const candidate = latestBenchmarkValue(
         benchmarkSeries,
@@ -102,274 +88,168 @@ export function PerformanceAnalytics() {
   const assetData = useMemo(() => normalizedPoints.map((point) => ({
     ...point,
     assetValue: point.assetValueKRW / assetDivisor,
-    cumulativeNetFlow: point.cumulativeNetFlowKRW / assetDivisor,
   })), [normalizedPoints, assetDivisor]);
-
-  const trackingLabel = trackingStartedAt
-    ? formatTrackingAge(trackingStartedAt)
-    : "기록 없음";
-
-  if (!loading && points.length === 0) {
-    return (
-      <section className="rounded-2xl border border-[#e9eaed] bg-[#ffffff] px-5 py-16 text-center sm:px-7">
-        <CalendarRange className="mx-auto h-6 w-6 text-[#3b8879]" />
-        <h2 className="mt-4 font-semibold text-[#202329]">
-          {error ? "성과 조회 실패" : "성과 기록 없음"}
-        </h2>
-        {error && <p role="alert" className="mt-2 text-cf-caption text-cf-negative">{error}</p>}
-      </section>
-    );
-  }
+  const dateReady = Boolean(firstDate && lastDate);
+  const loadingInitial = loading && points.length === 0;
+  const dismissRange = (restoreFocus: boolean) => {
+    setRangeSelection(null);
+    if (restoreFocus) rangeButton.current?.focus();
+  };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e9eaed] bg-[#ffffff] ">
-      {benchmarkError && (
-        <p role="alert" className="text-sm text-[#d65353]">
-          {benchmarkError}
-        </p>
-      )}
-      <div className="border-b border-[#e9eaed] px-5 py-5 sm:px-7">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#202329]">
-              <TrendingUp className="h-4 w-4 text-[#3b8879]" />기간 성과
-            </div>
-            <p className="mt-1 text-xs text-[#727680]">
-              전체 {trackingLabel} · 매일 23:59:59 KST · 성과 원화 기준
-            </p>
-          </div>
-
-          <div className="flex max-w-full gap-1 overflow-x-auto rounded-full bg-[#f6f7f8] p-1">
-            {RANGES.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                aria-pressed={range === item.key}
-                onClick={() => setRange(item.key)}
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-                  range === item.key
-                    ? "bg-[#202329] text-[#ffffff]"
-                    : "text-[#727680] hover:text-[#202329]",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-expanded={datePanelOpen}
-              onClick={() => setDatePanelOpen((open) => !open)}
-              className={cn(
-                "flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-                range === "custom"
-                  ? "bg-[#202329] text-[#ffffff]"
-                  : "text-[#727680] hover:text-[#202329]",
-              )}
-            >
-              직접 선택 <ChevronDown className="h-3 w-3" />
-            </button>
-          </div>
+    <div className="performance-panel">
+      <h2 className="performance-heading">기간 성과</h2>
+      {!loading && points.length === 0 ? (
+        <div className="performance-card performance-empty">
+          <p>{error ? "성과 조회 실패" : "성과 기록 없음"}</p>
+          {error && <p role="alert" className="performance-notice text-cf-negative">{error}</p>}
         </div>
-
-        {datePanelOpen && firstDate && lastDate && (
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#e9eaed] bg-[#f6f7f8] p-4 sm:flex-row sm:items-end">
-            <DateField
-              label="시작일"
-              value={customStart || effectiveStart}
-              min={firstDate}
-              max={customEnd || lastDate}
-              onChange={(value) => {
-                setCustomStart(value);
-                setRange("custom");
-              }}
-            />
-            <DateField
-              label="종료일"
-              value={customEnd || effectiveEnd}
-              min={customStart || firstDate}
-              max={lastDate}
-              onChange={(value) => {
-                setCustomEnd(value);
-                setRange("custom");
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => setDatePanelOpen(false)}
-              className="flex h-10 items-center justify-center gap-1 rounded-xl bg-[#202329] px-4 text-sm font-semibold text-[#ffffff]"
-            >
-              <Check className="h-4 w-4" /> 적용
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid gap-px bg-[#e9eaed] sm:grid-cols-3">
-        <MetricCard
-          label="운용수익률"
-          value={
-            entirelyInactive
-              ? "미운용"
-              : formatOptionalPercent(metrics.operatingReturn)
-          }
-          help="운용수익률(TWR): 자금 유입·유출의 영향을 제외한 기간별 투자 성과. 보유 자산과 매입원가의 차이인 평가손익과 구분합니다."
-        />
-        <MetricCard
-          label="내 자금수익률"
-          value={formatOptionalPercent(metrics.moneyWeightedReturn)}
-          help="자금수익률(MWR): 기간 손익을 시작 자산과 기간 가중 순투입금의 합으로 나눈 수익률(Modified Dietz). 분모가 0 이하이면 계산 불가로 표시합니다."
-        />
-        <MetricCard
-          label="선택 기간 손익"
-          value={formatCurrency(metrics.profitKRW, "KRW")}
-          description={`${formatCurrency(metrics.startValueKRW, "KRW")} → ${formatCurrency(metrics.endValueKRW, "KRW")}`}
-        />
-      </div>
-
-      {hasKrwImpacts && <p className="flex flex-wrap gap-3 border-t border-cf-line px-4 py-3 text-cf-caption text-cf-muted">
-        <span>보유분 평가손익 · KRW</span>
-        <span>주가 <strong className={impactTone(summary!.stockPriceImpactKRW)}>{formatSignedKrw(summary!.stockPriceImpactKRW)}</strong></span>
-        <span>환율 <strong className={impactTone(summary!.fxImpactKRW)}>{formatSignedKrw(summary!.fxImpactKRW)}</strong></span>
-      </p>}
-
-      <div className="p-5 sm:p-7">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex rounded-full bg-[#f6f7f8] p-1">
-            <button
-              type="button"
-              aria-pressed={chartMode === "return"}
-              onClick={() => setChartMode("return")}
-              className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-medium",
-                chartMode === "return"
-                  ? "bg-[#ffffff] text-[#202329] shadow-sm"
-                  : "text-[#727680]",
-              )}
-            >
-              수익률 비교
-            </button>
-            <button
-              type="button"
-              aria-pressed={chartMode === "assets"}
-              onClick={() => setChartMode("assets")}
-              className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-medium",
-                chartMode === "assets"
-                  ? "bg-[#ffffff] text-[#202329] shadow-sm"
-                  : "text-[#727680]",
-              )}
-            >
-              자산 추이
-            </button>
-          </div>
-
-          {chartMode === "return" && <div className="relative w-full lg:w-80">
-            {benchmark ? (
-              <div className="flex h-10 items-center justify-between rounded-xl border border-[#dce7e2] bg-[#f2f7f5] px-3">
-                <div className="min-w-0">
-                  <span className="text-xs font-semibold text-[#3b8879]">
-                    {benchmark.symbol}
-                  </span>
-                  <span className="ml-2 truncate text-xs text-[#727680]">
-                    {benchmark.name}
-                  </span>
-                </div>
+      ) : (
+        <div className="performance-card" aria-busy={loading}>
+          <div className="performance-period">
+            <div className="performance-ranges" role="group" aria-label="조회 기간">
+              {RANGES.map((item) => (
                 <button
+                  key={item.key}
                   type="button"
-                  onClick={() => {
-                    setBenchmark(null);
-                    setQuery("");
-                  }}
-                  className="rounded-md p-1 text-[#727680] hover:text-[#202329]"
-                  aria-label="비교 자산 제거"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#727680]" />
-                <input
-                  aria-label="비교할 주식·ETF·지수 검색"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="비교할 주식·ETF·지수 검색"
-                  className="h-10 w-full rounded-xl border border-[#e9eaed] bg-[#ffffff] pl-9 pr-9 text-sm text-[#202329] outline-none placeholder:text-[#727680] focus:border-[#3b8879]"
-                />
-                {searching && (
-                  <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-[#727680]" />
-                )}
-                {searchResults.length > 0 && (
-                  <div className="absolute right-0 top-12 z-20 max-h-64 w-full overflow-y-auto rounded-2xl border border-[#e9eaed] bg-[#ffffff] p-1 shadow-2xl">
-                    {searchResults.map((result) => (
-                      <button
-                        key={`${result.symbol}-${result.exchange}`}
-                        type="button"
-                        onClick={() => {
-                          setBenchmark(result);
-                          setQuery(result.name);
-                        }}
-                        className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-[#f6f7f8]"
-                      >
-                        <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-[#202329]">
-                            {result.symbol}
-                          </span>
-                          <span className="block truncate text-xs text-[#727680]">
-                            {result.name}
-                          </span>
-                        </span>
-                        <span className="shrink-0 text-[11px] text-[#727680]">
-                          {result.type}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>}
-        </div>
-
-        {chartMode === "assets" && <div className="mt-3 flex flex-wrap gap-4 text-cf-caption text-cf-muted">
-          <span>평가액 · 누적 순투입금</span>
-          <span>{assetCurrency === "USD" ? "USD · 현재 환율 환산" : displayCurrency === "USD" ? "KRW · 달러 환율 확인 필요" : "KRW"}</span>
-        </div>}
-
-        <div className="mt-6 h-72 sm:h-80">
-          {loading && points.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-[#727680]">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 일별 기록 구성
-              중
+                  aria-pressed={range === item.key}
+                  disabled={!dateReady}
+                  onClick={() => setRange(item.key)}
+                  className="performance-choice"
+                >{item.label}</button>
+              ))}
             </div>
-          ) : chartMode === "return" ? (
-            <ReturnChart
-              data={chartData}
-              inactivePeriods={inactivePeriods}
-              benchmarkName={benchmark?.symbol}
-            />
-          ) : (
-            <AssetChart data={assetData} inactivePeriods={inactivePeriods} currency={assetCurrency} />
-          )}
+            {dateReady && <div className="performance-dates" role="group" aria-label="조회 날짜">
+              <button ref={rangeButton} type="button" className="performance-date-trigger" aria-label="기간 선택" aria-haspopup="dialog" aria-expanded={rangeSelection !== null} onClick={() => setRangeSelection({ step: "start" })}>
+                <CalendarDays className="performance-date-icon" aria-hidden="true" />
+              </button>
+              <DateField
+                label="시작일"
+                value={effectiveStart}
+                min={firstDate}
+                max={effectiveEnd}
+                rangeStart={effectiveStart}
+                rangeEnd={effectiveEnd}
+                picker={rangeSelection?.step === "start" ? {
+                  value: effectiveStart, min: firstDate, max: lastDate,
+                  onSelect: (start) => setRangeSelection({ step: "end", start }),
+                  onDismiss: dismissRange,
+                } : undefined}
+                onChange={(value) => {
+                  if (!value || value < firstDate || value > effectiveEnd) return;
+                  setCustomStart(value);
+                  setCustomEnd(effectiveEnd);
+                  setRange("custom");
+                }}
+              />
+              <span className="performance-date-separator" aria-hidden="true">–</span>
+              <DateField
+                label="종료일"
+                value={effectiveEnd}
+                min={effectiveStart}
+                max={lastDate}
+                rangeStart={rangeSelection?.step === "end" ? rangeSelection.start : effectiveStart}
+                rangeEnd={rangeSelection?.step === "end" ? undefined : effectiveEnd}
+                picker={rangeSelection?.step === "end" ? {
+                  value: rangeSelection.start, min: rangeSelection.start, max: lastDate,
+                  onSelect: (end) => {
+                    setCustomStart(rangeSelection.start);
+                    setCustomEnd(end);
+                    setRange("custom");
+                    dismissRange(true);
+                  },
+                  onDismiss: dismissRange,
+                } : undefined}
+                onChange={(value) => {
+                  if (!value || value < effectiveStart || value > lastDate) return;
+                  setCustomStart(effectiveStart);
+                  setCustomEnd(value);
+                  setRange("custom");
+                }}
+              />
+            </div>}
+          </div>
+
+          {loadingInitial ? (
+            <div className="performance-empty" role="status">
+              <Loader2 className="performance-spinner" aria-hidden="true" /> 성과 불러오는 중
+            </div>
+          ) : <>
+            <div className="performance-results">
+              <PerformanceSummary
+                profitKRW={metrics.profitKRW}
+                returnPercent={metrics.moneyWeightedReturn}
+                inactive={entirelyInactive}
+              />
+            </div>
+
+            <div className="performance-chart-section">
+              <div className="performance-toolbar">
+                <div className="performance-modes" role="group" aria-label="차트 종류">
+                  <button type="button" className="performance-choice" aria-pressed={chartMode === "assets"} onClick={() => setChartMode("assets")}>보유자산 추이</button>
+                  <button type="button" className="performance-choice" aria-pressed={chartMode === "return"} onClick={() => setChartMode("return")}>수익률 비교</button>
+                </div>
+                {chartMode === "return" && <div className="performance-search">
+                  {benchmark ? (
+                    <div className="performance-benchmark">
+                      <span className="performance-benchmark-name">{benchmark.name}<small>{benchmark.symbol}</small></span>
+                      <button
+                        type="button"
+                        className="performance-remove"
+                        onClick={() => { setBenchmark(null); setQuery(""); }}
+                        aria-label="비교 자산 제거"
+                      ><X aria-hidden="true" /></button>
+                    </div>
+                  ) : <>
+                    <Search className="performance-search-icon" aria-hidden="true" />
+                    <input
+                      aria-label="비교할 주식·ETF·지수 검색"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="비교할 주식·ETF·지수"
+                      className="performance-input"
+                    />
+                    {searching && <Loader2 className="performance-search-loading" aria-label="검색 중" />}
+                    {searchResults.length > 0 && <div className="performance-search-results" aria-label="비교 종목 검색 결과">
+                      {searchResults.map((result) => (
+                        <button key={`${result.symbol}-${result.exchange}`} type="button" onClick={() => { setBenchmark(result); setQuery(result.name); }}>
+                          <span>{result.name}<small>{result.symbol}</small></span>
+                        </button>
+                      ))}
+                    </div>}
+                  </>}
+                </div>}
+              </div>
+
+              <div className="performance-chart-meta">
+                <div className="performance-legend" aria-label="차트 범례">
+                  <span><i className="performance-line-key" aria-hidden="true" />{chartMode === "assets" ? "보유자산" : "내 수익률"}</span>
+                  {chartMode === "return" && benchmark ? <span><i className="performance-line-key performance-line-key-dashed" aria-hidden="true" />{benchmark.symbol} 참고 수익률</span> : null}
+                  {inactivePeriods.length > 0 && <span><i className="performance-inactive-key" aria-hidden="true" />미보유 기간</span>}
+                </div>
+                <span className="performance-currency">
+                  {chartMode === "return" ? "내 수익률 KRW 기준" : `단위: ${getAssetAxis(assetData, assetCurrency).unitLabel}${assetCurrency === "USD" ? " · 현재 환율 환산" : ""}`}
+                </span>
+              </div>
+              {chartMode === "assets" && displayCurrency === "USD" && assetCurrency === "KRW" && <p role="status" className="performance-notice text-cf-warning">달러 환율 확인 필요 · 원화로 표시</p>}
+              {chartMode === "return" && benchmark && (benchmarkLoading || benchmarkSeries || benchmarkError) && <p
+                role={benchmarkError ? "alert" : "status"}
+                className={cn("performance-notice", benchmarkError ? "text-cf-negative" : "text-cf-muted")}
+              >{benchmarkError ?? (benchmarkLoading ? "비교 자료 불러오는 중" : `${benchmark.symbol} · 현지 통화 · ${dividendLabel(benchmarkSeries!)} · 내 매매 미반영`)}</p>}
+              <div className="performance-chart" role="region" aria-label={chartMode === "assets" ? "보유자산 추이 그래프" : "수익률 비교 그래프"}>
+                {chartMode === "return" ? (
+                  <ReturnChart data={chartData} inactivePeriods={inactivePeriods} benchmarkName={benchmark?.symbol} />
+                ) : (
+                  <AssetChart data={assetData} inactivePeriods={inactivePeriods} currency={assetCurrency} />
+                )}
+              </div>
+            </div>
+          </>}
+          {error && <p role="alert" className="performance-error">{error}</p>}
         </div>
-
-        {(inactivePeriods.length > 0 || benchmarkLoading || benchmarkSeries) && <div className="mt-4 flex flex-col gap-2 text-cf-caption text-cf-muted">
-          {inactivePeriods.length > 0 && <p>회색 구간: 미운용 · 자산 0원, 수익률 고정</p>}
-          {(benchmarkLoading || benchmarkSeries) && <p>{benchmarkLoading ? "비교 자료 확인 중" : dividendLabel(benchmarkSeries!)}</p>}
-        </div>}
-        {error && <p role="alert" className="mt-3 text-xs text-[#946a24]">{error}</p>}
-      </div>
-    </section>
+      )}
+    </div>
   );
-}
-
-function impactTone(value: number): string {
-  return value > 0 ? "text-cf-market-up" : value < 0 ? "text-cf-market-down" : "text-cf-muted";
-}
-
-function formatSignedKrw(value: number): string {
-  return `${value > 0 ? "+" : ""}${formatCurrency(value, "KRW")}`;
 }
 
 function latestBenchmarkValue(
@@ -386,22 +266,9 @@ function latestBenchmarkValue(
   return value;
 }
 
-function formatOptionalPercent(value: number | null): string {
-  return value == null || !Number.isFinite(value)
-    ? "계산 불가"
-    : formatPercent(value);
-}
-
 function dividendLabel(series: ChartSeries): string {
-  if (series.dividendStatus === "confirmed_amount") return "배당 포함 총수익률";
-  if (series.dividendStatus === "confirmed_zero")
-    return "선택 기간 배당 0원 · 가격수익률과 동일";
-  return "가격수익률 · 배당 자료 없음";
-}
-
-function formatTrackingAge(startedAt: string): string {
-  const elapsed = Math.max(0, Date.now() - Date.parse(startedAt));
-  const hours = Math.floor(elapsed / 3_600_000);
-  if (hours < 24) return `${Math.max(1, hours)}시간`;
-  return `${Math.floor(hours / 24) + 1}일`;
+  if (series.dividendStatus === "confirmed_amount" && series.points.some((point) => point.adjustedClose != null && Number.isFinite(point.adjustedClose))) return "배당 포함";
+  if (series.dividendStatus === "confirmed_amount") return "가격 기준 · 배당 미반영";
+  if (series.dividendStatus === "confirmed_zero") return "가격 기준 · 기간 내 배당 없음";
+  return "가격 기준 · 배당 자료 없음";
 }

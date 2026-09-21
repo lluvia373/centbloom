@@ -1,18 +1,16 @@
 "use client";
 import {
   addCalendarDays,
+  buildMoneyWeightedReturnSeries,
   calculatePerformanceMetrics,
   findInactivePeriods,
-  normalizePerformancePoints,
 } from "@/lib/performance";
 import type { PortfolioPerformancePoint, Transaction } from "@/lib/types";
 import { useMemo, useState } from "react";
 export const RANGES = [
-  { key: "1d", label: "1일", days: 1 },
   { key: "1w", label: "1주", days: 7 },
   { key: "1m", label: "1개월", days: 30 },
   { key: "3m", label: "3개월", days: 90 },
-  { key: "6m", label: "6개월", days: 180 },
   { key: "ytd", label: "올해" },
   { key: "1y", label: "1년", days: 365 },
   { key: "all", label: "전체" },
@@ -56,8 +54,8 @@ export function usePerformanceRange(
     [effectiveEnd, effectiveStart, points],
   );
   const normalizedPoints = useMemo(
-    () => normalizePerformancePoints(selectedPoints),
-    [selectedPoints],
+    () => buildMoneyWeightedReturnSeries(selectedPoints, transactions),
+    [selectedPoints, transactions],
   );
   const metrics = useMemo(
     () =>
@@ -74,7 +72,12 @@ export function usePerformanceRange(
     [selectedPoints],
   );
   const entirelyInactive =
-    selectedPoints.length > 0 && selectedPoints.every((point) => !point.active);
+    selectedPoints.length > 0 &&
+    selectedPoints.every((point) => !point.active) &&
+    !transactions.some((transaction) =>
+      transaction.date > selectedPoints[0].date &&
+      transaction.date <= selectedPoints[selectedPoints.length - 1].date,
+    );
 
   return {
     range,

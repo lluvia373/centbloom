@@ -3,11 +3,16 @@ import assert from 'node:assert/strict';
 import {loadTypescript} from './load-typescript.mjs';
 const api=loadTypescript('src/lib/stock-api.ts');
 test('market request normalization shares quote and same-date USD calls; malformed prices are not cached',async()=> {
- const original=globalThis.fetch;let calls=[];let valid=false;
- globalThis.fetch=async(url)=>{calls.push(url);return {ok:true,json:async()=>url.includes('/historical/')?{close:1300}:url.includes('/chart/')?(valid?[{date:'2020-01-01',close:100}]:[{date:'2020-01-01',close:null}]):{price:100,currency:'USD'}};};
+ const original=globalThis.fetch;const calls=[];let valid=false;
+ const fxUrl='/api/fx-history?currency=USD&start=2020-01-01&end=2020-01-01';
+ const dailyFx={currency:'USD',baseCurrency:'KRW',method:'daily-reference',source:'ecb-reference',points:[
+  {date:'2020-01-01',close:1300,referenceDate:'2019-12-31',carried:true,source:'ecb-reference'},
+ ]};
+ globalThis.fetch=async(url)=>{calls.push(url);return {ok:true,json:async()=>url===fxUrl?dailyFx:url.includes('/chart/')?(valid?[{date:'2020-01-01',close:100}]:[{date:'2020-01-01',close:null}]):{price:100,currency:'USD'}};};
  try {
   await Promise.all([api.getQuote(' aapl '),api.getQuote('AAPL')]);assert.equal(calls.length,1);
-  await Promise.all([api.getFxRateToKRW('USD','2020-01-01'),api.getFxRateToKRW('USD','2020-01-01')]);assert.equal(calls.length,2);
+  const rates=await Promise.all([api.getFxRateToKRW('USD','2020-01-01'),api.getFxRateToKRW('USD','2020-01-01')]);
+  assert.deepEqual(rates,[1300,1300]);assert.equal(calls.length,2);assert.equal(calls[1],fxUrl);
   await assert.rejects(api.getChart('AAPL'));valid=true;assert.equal((await api.getChart('AAPL'))[0].close,100);assert.equal(calls.length,4);
  } finally {globalThis.fetch=original;}
 });

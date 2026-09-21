@@ -20,7 +20,7 @@ function transaction(overrides = {}) {
 
 function quote(symbol, price, currency = 'USD', overrides = {}) {
   return { symbol, name: symbol, price, currency, change: 0, changePercent: 0,
-    quotedAt: CURRENT, fetchedAt: CURRENT, ...overrides };
+    quotedAt: symbol.endsWith('=X') ? '2026-09-18T20:59:00.000Z' : CURRENT, fetchedAt: CURRENT, ...overrides };
 }
 
 function baseline(symbol, price, currency = 'USD', overrides = {}) {
@@ -58,6 +58,123 @@ test('KST midnight price and FX both contribute, independently of previous-close
   close(result.fxImpact, 11000);
   close(result.bySymbol.AAPL, 151000);
   close(result.priceImpact + result.fxImpact, result.change);
+});
+
+test('a reference date reaches only the affected result and position, without an estimate label', () => {
+  const reference = baseline('USDKRW=X', 1400, 'KRW', { precision: 'daily-reference', source: 'ecb-reference',
+    sourceAt: null, sourceEndAt: null,
+    fx: { method: 'ecb-reference', referenceDate: '2026-09-17', components: [] } });
+  const result = calculate({ baselines: { AAPL: baseline('AAPL', 100), 'USDKRW=X': reference } });
+  assert.equal(result.available, true); assert.equal(result.estimated, true);
+  assert.deepEqual(Array.from(result.estimatedSymbols), ['AAPL']);
+  assert.ok(result.fxNotes.some(note => note.includes('2026-09-17 ECB 일별 환율 적용')));
+  assert.ok(result.fxNotes.every(note => !note.includes('추정')));
+  assert.deepEqual(Array.from(result.referenceDates), ['2026-09-17']);
+  assert.deepEqual(Array.from(result.referenceDatesBySymbol.AAPL), ['2026-09-17']);
+  close(result.change, result.priceImpact + result.fxImpact);
+  const dollars = calculate({ displayCurrency: 'USD', baselines: { AAPL: baseline('AAPL', 100), 'USDKRW=X': reference } });
+  assert.equal(dollars.estimated, false); assert.equal(dollars.fxNotes.length, 0);
+  assert.equal(dollars.referenceDates.length, 0);
+});
+
+test('missing midnight and current FX identify which rate failed; stale/future/wrong-currency rates are rejected', () => {
+  assert.match(calculate({ baselines: { AAPL: baseline('AAPL', 100) } }).reason, /USD\/KRW 자정 기준 환율/);
+  for (const extra of [{ quotedAt: '2026-09-11T20:44:00Z' }, { quotedAt: '2026-09-20T00:00:00Z' }, { currency: 'USD' }]) {
+    const result = calculate({ quotes: { AAPL: quote('AAPL', 110), 'USDKRW=X': quote('USDKRW=X', 1410, 'KRW', extra) } });
+    assert.equal(result.available, false); assert.match(result.reason, /USD\/KRW 현재 환율/);
+  }
+});
+
+function mondayInput() {
+  const day = { date: '2026-09-21', baselineAt: '2026-09-20T15:00:00Z' };
+  const fetchedAt = '2026-09-20T18:00:00Z'; // Monday 03:00 KST, before the FX week reopens.
+  return { date: day.date,
+    baselines: {
+      AAPL: baseline('AAPL', 100, 'USD', { ...day, precision: 'session-close', marketClosed: true,
+        sourceAt: '2026-09-18T13:30:00Z', sourceEndAt: '2026-09-18T20:00:00Z' }),
+      'USDKRW=X': baseline('USDKRW=X', 1400, 'KRW', { ...day, precision: 'daily-reference', source: 'ecb-reference',
+        sourceAt: null, sourceEndAt: null, marketClosed: null,
+        fx: { method: 'ecb-reference', referenceDate: '2026-09-18', publishedAt: '2026-09-18T13:55:08Z', components: [] } }),
+    },
+    quotes: {
+      AAPL: quote('AAPL', 100, 'USD', { quotedAt: '2026-09-18T20:00:00Z', fetchedAt, marketState: 'CLOSED' }),
+      'USDKRW=X': quote('USDKRW=X', 1400, 'KRW', { quotedAt: '2026-09-18T12:59:30Z', fetchedAt, marketState: 'CLOSED' }),
+    },
+  };
+}
+
+test('a reference publication time is not compared with a price observation, but earlier dates still fail', () => {
+  const input = mondayInput();
+  const result = calculate(input);
+  assert.equal(result.available, true); close(result.change, 0);
+  // Same European date is valid even when the observation predates publication.
+  assert.deepEqual(Array.from(result.referenceDates), ['2026-09-18']);
+  const earlier = { ...input.quotes['USDKRW=X'], quotedAt: '2026-09-17T20:59:30Z' };
+  assert.equal(calculate({ ...input, quotes: { ...input.quotes, 'USDKRW=X': earlier } }).available, false);
+  for (const fx of [
+    { referenceDate: '2026-09-21' }, { referenceDate: '2026-09-10' },
+    { publishedAt: '2026-09-20T15:00:01Z' }, { publishedAt: 'invalid' },
+  ]) {
+    const start = input.baselines['USDKRW=X'];
+    const invalid = { ...input, baselines: { ...input.baselines, 'USDKRW=X': { ...start, fx: { ...start.fx, ...fx } } } };
+    assert.equal(calculate(invalid).available, false);
+  }
+});
+
+test('Friday missing or early-close observations carry their actual KST date without false float32 gains', () => {
+  for (const sourceAt of ['2026-09-17T12:59:00Z', '2026-09-18T12:59:00Z']) {
+    const input = mondayInput(), price = Math.fround(1385.95);
+    const sourceEndAt = new Date(Date.parse(sourceAt) + 60000).toISOString();
+    input.baselines['USDKRW=X'] = { ...input.baselines['USDKRW=X'], price, precision: 'minute', source: 'yahoo-chart',
+      sourceAt, sourceEndAt, fx: { method: 'direct', carried: true, components: [{ symbol: 'USDKRW=X', price, sourceAt }] } };
+    input.quotes['USDKRW=X'] = { ...input.quotes['USDKRW=X'], price: 1385.95,
+      quotedAt: new Date(Date.parse(sourceAt) + 30000).toISOString(),
+      fx: { method: 'direct', carried: true, components: [{ symbol: 'USDKRW=X', price: 1385.95, sourceAt }] } };
+    const result = calculate(input);
+    assert.equal(result.available, true); close(result.change, 0); assert.equal(result.estimated, false);
+    assert.deepEqual(Array.from(result.carriedDates), [sourceAt.slice(0, 10)]);
+    assert.deepEqual(Array.from(result.carriedDatesBySymbol.AAPL), [sourceAt.slice(0, 10)]);
+    assert.equal(result.referenceDates.length, 0);
+    const openMarket = { ...input.quotes['USDKRW=X'], fetchedAt: '2026-09-21T01:00:00Z', marketState: 'REGULAR' };
+    assert.equal(calculate({ ...input, quotes: { ...input.quotes, 'USDKRW=X': openMarket } }).available, false);
+    const notFetchedToday = { ...input.quotes['USDKRW=X'], fetchedAt: '2026-09-20T14:59:00Z' };
+    assert.equal(calculate({ ...input, quotes: { ...input.quotes, 'USDKRW=X': notFetchedToday } }).available, false);
+  }
+});
+
+test('USD display tracks both conversion legs and only positions actually using them', () => {
+  const input = mondayInput();
+  const result = calculate({ ...input, displayCurrency: 'USD',
+    transactions: [transaction(), transaction({ id: 'jp', symbol: '7203.T', currency: 'JPY', quantity: 1, price: 10000 })],
+    quotes: { ...input.quotes, '7203.T': quote('7203.T', 10000, 'JPY'),
+      'JPYKRW=X': { ...input.quotes['USDKRW=X'], symbol: 'JPYKRW=X', price: 9,
+        quotedAt: '2026-09-18T20:59:00Z', fx: { method: 'direct', carried: true, components: [] } } },
+    baselines: { ...input.baselines, '7203.T': { ...input.baselines.AAPL, symbol: '7203.T', currency: 'JPY', price: 10000 },
+      'JPYKRW=X': { ...input.baselines['USDKRW=X'], symbol: 'JPYKRW=X', price: 9 } },
+  });
+  // Use a current stock observation appropriate for the requested Monday.
+  assert.equal(result.available, true);
+  assert.equal(result.referenceDatesBySymbol.AAPL, undefined);
+  assert.deepEqual(Array.from(result.referenceDatesBySymbol['7203.T']), ['2026-09-18']);
+  assert.deepEqual(Array.from(result.carriedDatesBySymbol['7203.T']), ['2026-09-19']);
+});
+
+test('the same weekend FX minute never invents a change when a quote is stamped inside that minute', () => {
+  const price = 1385.949951171875;
+  const nextDay = { date: '2026-09-20', baselineAt: '2026-09-19T15:00:00Z' };
+  const baselines = { AAPL: baseline('AAPL', 100, 'USD', { ...nextDay, precision: 'session-close', marketClosed: true,
+      sourceAt: '2026-09-18T13:30:00Z', sourceEndAt: '2026-09-18T20:00:00Z' }),
+    'USDKRW=X': baseline('USDKRW=X', price, 'KRW', {
+      ...nextDay,
+      marketClosed: true, sourceAt: '2026-09-18T20:59:00Z', sourceEndAt: '2026-09-18T21:00:00Z',
+      fx: { method: 'direct', components: [] },
+    }) };
+  const quotes = { AAPL: quote('AAPL', 100, 'USD', { marketState: 'CLOSED', quotedAt: '2026-09-18T20:00:00Z', fetchedAt: '2026-09-20T02:00:00Z' }),
+    'USDKRW=X': quote('USDKRW=X', 1385.95, 'KRW', { marketState: 'CLOSED', quotedAt: '2026-09-18T20:59:30Z', fetchedAt: '2026-09-20T02:00:00Z' }) };
+  const result = calculate({ date: nextDay.date, baselines, quotes });
+  assert.equal(result.available, true); close(result.change, 0); assert.equal(result.estimated, false);
+  // Wrong-date data are never accepted merely because the market is closed.
+  assert.equal(calculate({ baselines, quotes }).available, false);
 });
 
 test('USD display leaves USD assets unchanged and converts KRW and JPY at each respective instant', () => {

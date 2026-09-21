@@ -1,52 +1,39 @@
 "use client";
-import { CalculationHelp } from "@/components/CalculationHelp";
 
-export function MetricCard({
-  label,
-  value,
-  description,
-  help,
+import { formatCurrency, formatPercent } from "@/lib/format";
+
+export { DateField } from "./DateField";
+
+export function PerformanceSummary({
+  profitKRW,
+  returnPercent,
+  inactive = false,
 }: {
-  label: string;
-  value: string;
-  description?: string;
-  help?: string;
+  profitKRW: number;
+  returnPercent: number | null;
+  inactive?: boolean;
 }) {
+  const hasReturn = returnPercent != null && Number.isFinite(returnPercent);
+  const returnLabel = inactive ? "미운용" : hasReturn ? formatPercent(returnPercent) : "수익률 계산 불가";
   return (
-    <div className="bg-[#ffffff] px-5 py-4 sm:px-7">
-      <div className="text-cf-caption text-cf-muted">{label}{help && <CalculationHelp label={label}>{help}</CalculationHelp>}</div>
-      <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#202329]">
-        {value}
-      </p>
-      {description && <p className="mt-1 text-cf-caption text-cf-muted">{description}</p>}
-    </div>
+    <dl className="performance-metrics">
+      <div>
+        <dt>기간 손익<span className="performance-basis">원화 기준</span></dt>
+        <dd className="performance-metric-value">
+          <span className={`performance-metric-amount ${valueTone(profitKRW)}`}>
+            {Number.isFinite(profitKRW) ? `${profitKRW > 0 ? "+" : ""}${formatCurrency(profitKRW, "KRW")}` : "계산 불가"}
+          </span>
+          <span className={`performance-metric-return ${inactive || !hasReturn ? "text-cf-muted" : valueTone(returnPercent)}`}>
+            {hasReturn && !inactive && <span className="sr-only">기간 수익률 </span>}
+            {returnLabel}
+          </span>
+        </dd>
+      </div>
+    </dl>
   );
 }
 
-export function DateField({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  min: string;
-  max: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="flex-1">
-      <span className="mb-1.5 block text-xs text-[#727680]">{label}</span>
-      <input
-        type="date"
-        value={value}
-        min={min}
-        max={max}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-xl border border-[#e9eaed] bg-[#ffffff] px-3 text-sm text-[#202329] outline-none focus:border-[#3b8879]"
-      />
-    </label>
-  );
+function valueTone(value: number | null): string {
+  if (value == null || !Number.isFinite(value) || value === 0) return "text-cf-ink";
+  return value > 0 ? "text-cf-market-up" : "text-cf-market-down";
 }

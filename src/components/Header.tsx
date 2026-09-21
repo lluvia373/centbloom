@@ -87,15 +87,18 @@ export function Header() {
 }
 export function PageHeading({
   title,
+  titleAction,
   children,
 }: {
   title: string;
+  titleAction?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
     <div className="page-heading">
-      <div>
+      <div className="page-heading-title">
         <h1>{title}</h1>
+        {titleAction}
       </div>
       {children && <div className="page-heading-actions">{children}</div>}
     </div>
