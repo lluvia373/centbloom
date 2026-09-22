@@ -23,11 +23,12 @@ const resource = createSharedResource(async ({ symbols, date }: BaselineInput, s
 
 /** One shared baseline request set; current prices continue through the existing quote hub. */
 export function usePortfolioDailyChange() {
-  const { transactions, status } = useTransactions();
+  const { transactions, status, revision } = useTransactions();
   const { displayCurrency } = usePreferences();
   const date = useKstDate();
   const plan = useMemo(() => planDailyChange(transactions, date, displayCurrency), [transactions, date, displayCurrency]);
-  const enabled = status !== "loading" && !!date && plan.symbols.length > 0;
+  const ledgerKnown = status !== "loading" && revision !== "";
+  const enabled = ledgerKnown && !!date && plan.symbols.length > 0;
   const live = useLiveQuotes(plan.liveSymbols, { enabled });
   const key = JSON.stringify([date, plan.baselineSymbols]);
   const subscribe = useCallback((listener: () => void) => {
@@ -39,8 +40,9 @@ export function usePortfolioDailyChange() {
   const loading = enabled && (live.loading || (baseline.loading && !Object.keys(baseline.value).length));
   const result = useMemo(() => !date || status === "loading" || loading
     ? unavailableDailyChange(date, "자정 기준 자료 확인 중")
+    : !ledgerKnown ? unavailableDailyChange(date, "거래 기록 확인 필요")
     : calculateDailyChange({ transactions, date, displayCurrency, quotes: live.quotes, baselines: baseline.value, failedSymbols: live.failedSymbols }),
-  [date, status, loading, transactions, displayCurrency, live.quotes, live.failedSymbols, baseline.value]);
+  [date, status, loading, ledgerKnown, transactions, displayCurrency, live.quotes, live.failedSymbols, baseline.value]);
   const baselineLagSeconds = Math.max(0, ...Object.values(baseline.value)
     .filter((item) => item.status === "available" && item.precision === "minute")
     .map((item) => Math.max(0, (Date.parse(item.baselineAt) - Date.parse(item.sourceEndAt ?? item.baselineAt)) / 1_000)));

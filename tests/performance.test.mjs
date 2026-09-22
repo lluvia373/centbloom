@@ -13,11 +13,13 @@ export function fixture(days,count=20000) {
   const points=Array.from({length:days},(_,i)=>({date:improved.addCalendarDays(start,i),close:100+i%13}));
   return {transactions,trackingStartDate:start,endDate:improved.addCalendarDays(start,days-1),pricesBySymbol:Object.fromEntries(Array.from({length:10},(_,i)=>['QA'+i,points])),fxByCurrency:{USD:points.map(p=>({...p,close:1300}))}};
 }
-test('cursor algorithm matches original, including fees, partial sales and inactive days',()=> {
+const valuationFields = points => JSON.parse(JSON.stringify(points.map(({date, cutoffAt, assetValueKRW, active, final}) => ({date, cutoffAt, assetValueKRW, active, final}))));
+test('cursor valuations match the frozen reference while inclusive cashless profits survive prefix reuse',()=> {
   const input=fixture(90,1000);
-  assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance(input))),JSON.parse(JSON.stringify(baseline.buildDailyPerformance(input))));
+  const complete=improved.buildDailyPerformance(input);
+  assert.deepEqual(valuationFields(complete),valuationFields(baseline.buildDailyPerformance(input)));
   const prefix=improved.buildDailyPerformance({...input,endDate:'2020-02-01'});
-  assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance({...input,previousPoints:prefix}))),JSON.parse(JSON.stringify(baseline.buildDailyPerformance(input))));
+  assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance({...input,previousPoints:prefix}))),JSON.parse(JSON.stringify(complete)));
 });
 test('strict calculation refuses missing data instead of valuing it at zero',()=> {
   assert.throws(()=>improved.buildDailyPerformance({...fixture(10,50),pricesBySymbol:{},strict:true}),/누락/);
@@ -56,7 +58,7 @@ if(process.argv.includes('--benchmark')) {
     for(let i=0;i<3;i++) {
       let at=performance.now(); const a=baseline.buildDailyPerformance(input); before.push(performance.now()-at);
       at=performance.now(); const b=improved.buildDailyPerformance(input); after.push(performance.now()-at);
-      assert.deepEqual(JSON.parse(JSON.stringify(a)),JSON.parse(JSON.stringify(b)));
+      assert.deepEqual(valuationFields(a),valuationFields(b));
     }
     results.push({days,transactions:20000,symbols:10,beforeMs:before,afterMs:after});
   }
@@ -64,14 +66,14 @@ if(process.argv.includes('--benchmark')) {
   writeFileSync('work/performance-benchmark.json',JSON.stringify(report,null,2));console.log(report);
 }
 
-test('inactive periods, re-entry and current-day overrides keep original semantics',()=> {
+test('inactive periods, re-entry and current-day overrides keep securities valuation semantics',()=> {
  // The frozen reference mishandles pence; independent monetary expectations cover it separately.
  const transactions=[
   {id:'1',symbol:'QA',name:'QA',type:'buy',date:'2020-01-01',quantity:5,price:100,fee:1,currency:'GBP',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-01T00:00:00Z'},
   {id:'2',symbol:'QA',name:'QA',type:'sell',date:'2020-01-03',quantity:5,price:110,fee:2,currency:'GBP',fxRateToKRW:1600,usdKrwRateAtTransaction:1300,createdAt:'2020-01-03T00:00:00Z'},
   {id:'3',symbol:'QA',name:'QA',type:'buy',date:'2020-01-05',quantity:2,price:105,fee:1,currency:'GBP',fxRateToKRW:1610,usdKrwRateAtTransaction:1300,createdAt:'2020-01-05T00:00:00Z'}];
  const input={transactions,trackingStartDate:'2020-01-01',endDate:'2020-01-08',pricesBySymbol:{QA:[{date:'2019-12-31',close:100},{date:'2020-01-05',close:105}]},fxByCurrency:{GBP:[{date:'2019-12-31',close:1600},{date:'2020-01-05',close:1610}]}};
- assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance(input))),JSON.parse(JSON.stringify(baseline.buildDailyPerformance(input))));
+ assert.deepEqual(valuationFields(improved.buildDailyPerformance(input)),valuationFields(baseline.buildDailyPerformance(input)));
  const today=improved.kstDate();const current={...input,transactions:transactions.slice(0,1),trackingStartDate:today,endDate:today,currentPrices:{QA:120},currentFxRates:{GBP:1700}};
- assert.deepEqual(JSON.parse(JSON.stringify(improved.buildDailyPerformance(current))),JSON.parse(JSON.stringify(baseline.buildDailyPerformance(current))));
+ assert.deepEqual(valuationFields(improved.buildDailyPerformance(current)),valuationFields(baseline.buildDailyPerformance(current)));
 });

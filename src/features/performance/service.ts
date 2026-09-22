@@ -30,13 +30,18 @@ export async function loadPerformance(
     revision,
     signal,
   );
-  const startedAt =
-    persisted ?? transactions.map((tx) => tx.createdAt).sort()[0];
+  const earliestTrade = transactions.map(tx => tx.date).sort()[0];
+  const recordedStart = persisted ?? transactions.map((tx) => tx.createdAt).sort()[0];
+  // Recording a past trade today must not discard its investment history.
+  const startedAt = kstDate(new Date(recordedStart)) > earliestTrade
+    ? `${earliestTrade}T00:00:00+09:00`
+    : recordedStart;
   const start = kstDate(new Date(startedAt));
   const refreshStart = addCalendarDays(today, -90);
   // Server/legacy snapshots have no calculation version: rebuild them before reuse.
   let previousPoints =
     saved?.calculationVersion === PERFORMANCE_CALCULATION_VERSION &&
+    saved.points.every(point => Number.isFinite(point.openingValueKRW) && point.openingValueKRW! >= 0) &&
     saved.revision === revision && saved.startedAt === startedAt
       ? saved.points.filter((p) => p.final && p.date >= start && p.date < refreshStart)
       : [];

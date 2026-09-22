@@ -38,9 +38,13 @@ export function planDailyChange(transactions: Transaction[], date: string, displ
   const fxSymbols = currencies.filter((currency) => currency !== "KRW" && currency !== displayCurrency)
     .map((currency) => `${currency}KRW=X`);
   if (displayCurrency === "USD" && currencies.some((currency) => currency !== "USD")) fxSymbols.push("USDKRW=X");
+  const closingCurrencies = [...new Set(closing.map((item) => normalizeCurrency(item.currency)))];
+  const liveFxSymbols = closingCurrencies.filter((currency) => currency !== "KRW" && currency !== displayCurrency)
+    .map((currency) => `${currency}KRW=X`);
+  if (displayCurrency === "USD" && closingCurrencies.some((currency) => currency !== "USD")) liveFxSymbols.push("USDKRW=X");
   return {
     opening, closing, trades, symbols,
-    liveSymbols: [...new Set([...symbols, ...fxSymbols])].sort(),
+    liveSymbols: [...new Set([...closing.map((item) => item.symbol), ...liveFxSymbols])].sort(),
     baselineSymbols: [...new Set([...opening.map((item) => item.symbol), ...fxSymbols])].sort(),
   };
 }
@@ -56,7 +60,7 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
 }): PortfolioDailyChange {
   const plan = planDailyChange(transactions, date, displayCurrency);
   const unavailable = (reason: string) => unavailableDailyChange(date, reason);
-  if (!plan.symbols.length) return unavailable("보유종목 없음");
+  if (!plan.symbols.length) return { ...unavailableDailyChange(date, ""), available: true, reason: null };
   const cutoff = Date.parse(`${date}T00:00:00+09:00`);
   const valid = (value: number | undefined | null): value is number => value != null && Number.isFinite(value) && value > 0;
   const baseline = (symbol: string) => {
@@ -86,15 +90,22 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
     return !failedSymbols.includes(symbol) && item && valid(item.price) ? item : null;
   };
   const sameSessionClose = (quote: StockQuote, start: MidnightBaseline | null) => {
-    if (!start || start.marketClosed !== true || quote.marketState !== "CLOSED") return false;
+    if (!start || start.marketClosed !== true) return false;
+    const beforeOpen = start.precision === "session-close" && !start.fx &&
+      (quote.marketState === "PREPRE" || quote.marketState === "PRE");
+    if (quote.marketState !== "CLOSED" && !beforeOpen) return false;
     if (start.precision !== "session-close" && !(start.precision === "minute" && start.fx)) return false;
     const quotedAt = Date.parse(quote.quotedAt ?? "");
+    const fetchedAt = Date.parse(quote.fetchedAt ?? "");
+    // Before the next open, regularMarketTime still points to the prior session.
+    // Require a fresh check on this KST day, not a carried response from another day.
+    if (beforeOpen && !(fetchedAt >= cutoff && fetchedAt < cutoff + 86_400_000)) return false;
     const samePrice = quote.price === start.price ||
       (Math.fround(start.price!) === start.price && Math.fround(quote.price) === start.price);
     // Chart closes can be float32 while the quote returns the original decimal.
     // Only reconcile the same closed session; never round away intraday changes.
     return quotedAt >= Date.parse(start.sourceAt!) && quotedAt <= Date.parse(start.sourceEndAt!) &&
-      Date.parse(quote.fetchedAt ?? "") >= cutoff && samePrice;
+      fetchedAt >= cutoff && samePrice;
   };
   const currentFollowsBaseline = (quote: StockQuote, start: MidnightBaseline | null) => {
     const quotedAt = Date.parse(quote.quotedAt ?? "");
@@ -106,7 +117,7 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
       return localParts(quotedAt, "Europe/Berlin").date >= start.fx!.referenceDate!;
     }
     if (quotedAt >= Date.parse(start.sourceEndAt!)) return true;
-    // A session's last trade can occur seconds before its published closing time.
+    // A session's last trade can precede the published closing time by minutes.
     return sameSessionClose(quote, start) || sameFxObservation(quote, start);
   };
   const currentRate = (symbol: string) => {

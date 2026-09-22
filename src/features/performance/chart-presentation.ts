@@ -45,31 +45,97 @@ export function getAssetAxis(data: ChartPoint[], currency: DisplayCurrency) {
   return { ticks, domain: [ticks[0], ticks[ticks.length - 1]] as [number, number], unitLabel, format: axisFormatter(divisor, ticks[1] - ticks[0]) };
 }
 
-export function getReturnAxis(data: ChartPoint[]) {
-  const ticks = roundedTicks(...numericExtent(data, ["portfolioReturn", "benchmarkReturn"]));
+export function getReturnAxis(data: ChartPoint[], keys: string[] = ["portfolioReturn", "benchmarkReturn"]) {
+  const ticks = roundedTicks(...numericExtent(data, keys));
   const format = axisFormatter(1, ticks[1] - ticks[0]);
   return { ticks, domain: [ticks[0], ticks[ticks.length - 1]] as [number, number], format: (value: number) => `${format(value)}%` };
 }
 
-export function getChartDates(data: ChartPoint[], width: number) {
-  const dates = [...new Set(data.map((point) => point.date).filter((date): date is string => typeof date === "string"))];
-  const count = width < 480 ? 3 : width < 720 ? 4 : 6;
-  if (dates.length === 0) return { ticks: [], format: (value: string) => value };
-  const first = dates[0];
-  const last = dates[dates.length - 1];
-  const span = (Date.parse(last) - Date.parse(first)) / 86_400_000;
-  const candidates = span > 45
-    ? dates.filter((date, index) => index === 0 || index === dates.length - 1 || date.slice(0, 7) !== dates[index - 1].slice(0, 7))
-    : dates;
-  const tickCount = Math.min(count, candidates.length);
-  const ticks = Array.from({ length: tickCount }, (_, index) => candidates[tickCount === 1 ? 0 : Math.round(index * (candidates.length - 1) / (tickCount - 1))]);
-  const crossesYear = first.slice(0, 4) !== last.slice(0, 4);
-  return {
-    ticks,
-    format(value: string) {
-      const [year, month, day] = value.split("-").map(Number);
-      if (crossesYear) return span > 730 ? `${year}년 ${month}월` : `${String(year).slice(2)}.${month}.${day}`;
-      return span > 45 && day === 1 ? `${month}월` : `${month}월 ${day}일`;
-    },
+const DAY_MS = 86_400_000;
+type YearBand = { year: number; start: number; end: number };
+type DateAxis = {
+  ticks: number[];
+  domain: [number, number];
+  yearBands: YearBand[];
+  format: (timestamp: number) => string;
+};
+
+function dateTimestamp(value: unknown) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value ? timestamp : null;
+}
+
+function clippedYears(first: number, last: number): YearBand[] {
+  const bands: YearBand[] = [];
+  for (let year = new Date(first).getUTCFullYear(); year <= new Date(last).getUTCFullYear(); year += 1) {
+    const start = Math.max(first, Date.UTC(year, 0, 1));
+    const end = Math.min(last, Date.UTC(year + 1, 0, 1));
+    if (end > start) bands.push({ year, start, end });
+  }
+  return bands;
+}
+
+function niceYearStep(minimum: number) {
+  const magnitude = 10 ** Math.floor(Math.log10(Math.max(1, minimum)));
+  return ([1, 2, 5, 10].find((value) => value * magnitude >= minimum) ?? 10) * magnitude;
+}
+
+export function getChartDates(data: ChartPoint[], width: number): DateAxis {
+  let first = Infinity;
+  let last = -Infinity;
+  for (const point of data) {
+    const timestamp = dateTimestamp(point.date);
+    if (timestamp === null) continue;
+    first = Math.min(first, timestamp);
+    last = Math.max(last, timestamp);
+  }
+  const formatDay = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return `${date.getUTCMonth() + 1}월 ${date.getUTCDate()}일`;
   };
+  if (!Number.isFinite(first)) return { ticks: [], domain: [0, 1], yearBands: [], format: formatDay };
+  if (first === last) return { ticks: [first], domain: [first - DAY_MS / 2, last + DAY_MS / 2], yearBands: [], format: formatDay };
+
+  const domain: [number, number] = [first, last];
+  const spanDays = (last - first) / DAY_MS;
+  const narrow = width < 600;
+  const ticks: number[] = [];
+  const firstDate = new Date(first);
+  const lastDate = new Date(last);
+  const firstYear = firstDate.getUTCFullYear();
+  const lastYear = lastDate.getUTCFullYear();
+
+  if (spanDays <= 45) {
+    const roughStep = spanDays / (narrow ? 2 : 5);
+    const stepDays = [1, 2, 3, 7, 14].find((value) => value >= roughStep) ?? 14;
+    const step = stepDays * DAY_MS;
+    // Weekly landmarks start on Monday; all positions remain actual UTC dates.
+    const anchor = stepDays >= 7 ? Date.UTC(1970, 0, 5) : 0;
+    for (let tick = anchor + Math.ceil((first - anchor) / step) * step; tick <= last; tick += step) ticks.push(tick);
+    return { ticks, domain, yearBands: firstYear === lastYear ? [] : clippedYears(first, last), format: formatDay };
+  }
+
+  // Calendar anniversaries must not pick a coarser interval because of leap days.
+  const spanMonths = (lastYear - firstYear) * 12 + lastDate.getUTCMonth() - firstDate.getUTCMonth()
+    + (lastDate.getUTCDate() - firstDate.getUTCDate()) / 31;
+  const spanYears = spanMonths / 12;
+  if (spanYears > 4) {
+    const step = niceYearStep(spanYears / (narrow ? 2.5 : 5));
+    for (let year = Math.ceil(firstYear / step) * step; year <= lastYear; year += step) {
+      const tick = Date.UTC(year, 0, 1);
+      if (tick >= first && tick <= last) ticks.push(tick);
+    }
+    return { ticks, domain, yearBands: [], format: (timestamp) => `${new Date(timestamp).getUTCFullYear()}년` };
+  }
+
+  const roughMonths = spanMonths / (narrow ? 4 : 10);
+  const step = [1, 2, 3, 6, 12].find((value) => value >= roughMonths) ?? 12;
+  const firstMonth = firstYear * 12 + firstDate.getUTCMonth();
+  const lastMonth = lastYear * 12 + lastDate.getUTCMonth();
+  for (let month = Math.ceil(firstMonth / step) * step; month <= lastMonth; month += step) {
+    const tick = Date.UTC(Math.floor(month / 12), month % 12, 1);
+    if (tick >= first && tick <= last) ticks.push(tick);
+  }
+  return { ticks, domain, yearBands: clippedYears(first, last), format: (timestamp) => `${new Date(timestamp).getUTCMonth() + 1}월` };
 }

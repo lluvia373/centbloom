@@ -51,6 +51,53 @@ test('timed-out non-cooperative loaders release logical pool slots for later req
  assert.equal(await cache.request('recovered',async()=>42,{timeoutMs:100}),42);
 });
 
+test('queued requests receive their full network budget after acquiring a slot',async()=> {
+ const cache=createRequestCache({concurrency:1});let release;
+ const first=cache.request('busy',()=>new Promise(r=>release=r),{timeoutMs:500});
+ const second=cache.request('queued',async()=>42,{timeoutMs:10,queueTimeoutMs:500});
+ await new Promise(r=>setTimeout(r,35));release(1);
+ assert.equal(await first,1);assert.equal(await second,42);
+});
+
+test('queue timeout never starts the loader and queued cancellation does not wait for a slot',async()=> {
+ const {createPool}=loadTypescript('src/shared/async/pool.ts');
+ const run=createPool(1);let release;
+ const busy=run(()=>new Promise(r=>release=r));
+ const controller=new AbortController();let calls=0;
+ const queued=run(async()=>++calls,controller.signal);controller.abort();
+ await assert.rejects(queued,{name:'AbortError'});assert.equal(calls,0);
+ release();await busy;
+ const cache=createRequestCache({concurrency:1});let unblock;
+ const first=cache.request('busy',()=>new Promise(r=>unblock=r),{timeoutMs:500});
+ await assert.rejects(cache.request('queued',async()=>++calls,{timeoutMs:100,queueTimeoutMs:10}),/대기 시간/);
+ unblock(1);await first;
+ assert.equal(await cache.request('next',async()=>42),42);assert.equal(calls,0);
+});
+
+test('subscribers share one bounded timeout retry and late attempts cannot replace the recovered value',async()=> {
+ const cache=createRequestCache({concurrency:1});let calls=0,late;const signals=[];
+ const load=s=>{signals.push(s);return ++calls===1?new Promise(r=>late=r):Promise.resolve(42);};
+ const options={timeoutMs:10,ttlMs:1000,retry:{limit:1,delayMs:1,when:e=>e.name==='TimeoutError'}};
+ assert.deepEqual(await Promise.all([cache.request('retry',load,options),cache.request('retry',load,options)]),[42,42]);
+ assert.equal(calls,2);assert.equal(signals[0].aborted,true);assert.equal(signals[1].aborted,false);
+ late(99);await tick();assert.equal(await cache.request('retry',load,options),42);assert.equal(calls,2);
+});
+
+test('retry limits, non-retryable errors and final subscriber cancellation are respected',async()=> {
+ const cache=createRequestCache();let calls=0;
+ const retry={limit:1,delayMs:1,when:e=>e.cause===503};
+ const failed=async()=>{calls++;throw new Error('offline',{cause:503});};
+ await assert.rejects(cache.request('limit',failed,{retry}),/offline/);assert.equal(calls,2);
+ calls=0;
+ await assert.rejects(cache.request('invalid',async()=>{calls++;throw new Error('invalid',{cause:400});},{retry}),/invalid/);
+ assert.equal(calls,1);
+ const controller=new AbortController();calls=0;let retried;
+ const retrying=new Promise(r=>retried=r);
+ const pending=cache.request('cancel',failed,{signal:controller.signal,retry:{...retry,delayMs:100,onRetry:retried}});
+ await retrying;controller.abort();await assert.rejects(pending,{name:'AbortError'});
+ await new Promise(r=>setTimeout(r,120));assert.equal(calls,1);
+});
+
 test('fast quotes notify subscribers before an unrelated slow quote completes',async(t)=>{
  let releaseSlow;const gate=new Promise(r=>releaseSlow=r);const published=[];
  const hub=createQuoteHub(async symbol=>{if(symbol==='SLOW')await gate;return {symbol,price:100,currency:'USD'};},60000);

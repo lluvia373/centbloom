@@ -7,14 +7,15 @@ export function PortfolioMetrics() {
   const { summary, loading } = usePortfolioMarket();
   const daily = usePortfolioDailyChange();
   const holdings = summary?.holdings ?? [];
-  const hasData = holdings.length > 0 && holdings.every((holding) => holding.valuationAvailable);
+  const hasData = summary != null && holdings.every((holding) => holding.valuationAvailable);
   const hasGain = hasData && holdings.every((holding) => holding.gainAvailable);
   const money = (amount: number, signed = false) => `${signed && amount > 0 ? "+" : ""}${formatCurrency(amount, displayCurrency)}`;
   const tone = (amount: number, available: boolean) => !available || amount === 0 ? "" : amount > 0 ? "positive" : "negative";
   const gain = summary?.totalGainLoss ?? 0;
   const closedSymbols = Object.keys(daily.bySymbol).filter((symbol) => !holdings.some((holding) => holding.symbol === symbol));
   const closedChange = closedSymbols.reduce((sum, symbol) => sum + daily.bySymbol[symbol], 0);
-  const status = loading ? "시세 확인 중" : holdings.length ? "일부 시세 확인 필요" : "보유종목 없음";
+  const status = loading ? "시세 확인 중" : summary == null ? "거래 기록 확인 필요"
+    : holdings.length ? "일부 시세 확인 필요" : "보유종목 없음";
 
   return (
     <section className="portfolio-summary" aria-label="보유자산 요약">
@@ -22,13 +23,13 @@ export function PortfolioMetrics() {
         <div className="portfolio-summary-total">
           <dt>총 보유자산</dt>
           <dd className="portfolio-summary-value">{hasData ? money(summary!.totalValue) : "—"}</dd>
-          {!hasData && <dd className="portfolio-summary-context">{status}</dd>}
+          {(!hasData || !holdings.length) && <dd className="portfolio-summary-context">{status}</dd>}
         </div>
         <div>
           <dt>평가손익</dt>
           <dd className={`portfolio-summary-result portfolio-summary-gain ${tone(gain, hasGain)}`}>
             <span>{hasGain ? money(gain, true) : "—"}</span>
-            {hasGain && <span className="portfolio-summary-percent">{formatPercent(summary!.totalGainLossPercent)}</span>}
+            {hasGain && holdings.length > 0 && <span className="portfolio-summary-percent">{formatPercent(summary!.totalGainLossPercent)}</span>}
           </dd>
           <dd className="portfolio-summary-context">
             {hasGain ? <>매입원가 {money(summary!.totalCost)}</>

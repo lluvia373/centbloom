@@ -19,7 +19,12 @@ export function getMidnightBaseline(symbol: string, date: string, signal?: Abort
     { signal, ttlMs: 60_000, timeoutMs: 60_000 });
 }
 async function json<T>(url: string, signal: AbortSignal): Promise<T> {
-  const res = await fetch(url, { signal, cache: "no-store" });
+  let res: Response;
+  try { res = await fetch(url, { signal, cache: "no-store" }); }
+  catch (error) {
+    signal.throwIfAborted();
+    throw new Error("시장 데이터에 연결하지 못했습니다.", { cause: error instanceof TypeError ? "network" : error });
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(
@@ -28,7 +33,45 @@ async function json<T>(url: string, signal: AbortSignal): Promise<T> {
       { cause: res.status },
     );
   }
-  return res.json();
+  try { return await res.json(); }
+  catch (error) {
+    signal.throwIfAborted();
+    if (error instanceof TypeError)
+      throw new Error("시장 데이터 수신이 중단되었습니다.", { cause: "network" });
+    throw error;
+  }
+}
+
+function recoverableRequest<T>(
+  key: string,
+  label: string,
+  loader: (signal: AbortSignal) => Promise<T>,
+  options: { signal?: AbortSignal; ttlMs: number; timeoutMs?: number },
+): Promise<T> {
+  const diagnostic = (event: string, error: unknown) => console.warn(event, {
+    request: key,
+    reason: error instanceof Error
+      ? error.name === "TimeoutError" ? (error.message.includes("대기") ? "queue-timeout" : "request-timeout")
+        : error.cause === "network" ? "network"
+          : typeof error.cause === "number" ? "http" : "invalid-response"
+      : "unknown",
+    status: error instanceof Error && typeof error.cause === "number" ? error.cause : null,
+  });
+  return marketRequests.request(key, loader, {
+    ...options,
+    retry: {
+      limit: 1, delayMs: 500,
+      when: error => error instanceof Error && (error.name === "TimeoutError" || error.cause === "network" ||
+        (typeof error.cause === "number" && [408, 429, 500, 502, 503, 504].includes(error.cause))),
+      onRetry: error => diagnostic("market_request_retry", error),
+    },
+  }).catch(error => {
+    if (options.signal?.aborted) throw error;
+    diagnostic("market_request_failed", error);
+    const detail = error instanceof Error ? error.message : "시장 데이터 조회 실패";
+    // Keep the status for the suspended-listing 404 fallback; never return partial data.
+    throw new Error(`${label}: ${detail}`, { cause: error instanceof Error ? error.cause : undefined });
+  });
 }
 export function searchStocks(
   query: string,
@@ -47,8 +90,9 @@ export function getQuote(
   signal?: AbortSignal,
 ): Promise<StockQuote> {
   symbol = symbol.trim().toUpperCase();
-  return marketRequests.request(
+  return recoverableRequest(
     `quote:${symbol}`,
+    symbol.endsWith("=X") ? `${symbol} 현재 환율 조회` : `${symbol} 현재 시세 조회`,
     async (s) => {
       const quote = await json<StockQuote>(
         `/api/quote/${encodeURIComponent(symbol)}`,
@@ -91,8 +135,9 @@ export function getChartSeries(
 ): Promise<ChartSeries> {
   symbol = symbol.trim().toUpperCase();
   const params = new URLSearchParams({ start, end, detailed: "true" });
-  return marketRequests.request(
+  return recoverableRequest(
     `series:${symbol}:${start}:${end}`,
+    `${symbol} 과거 시세 조회`,
     async (s) => {
       const series = await json<ChartSeries>(
         `/api/chart/${encodeURIComponent(symbol)}?${params}`,
@@ -134,7 +179,7 @@ export function getDailyFxHistory(
   if (!/^[A-Z]{3}$/.test(currency) || !validFxDate(start) || !validFxDate(end) || start > end || end > fxToday())
     return Promise.reject(new Error("일별 환율의 통화와 조회 기간이 올바르지 않습니다."));
   const params = new URLSearchParams({ currency, start, end });
-  return marketRequests.request(`daily-fx:${currency}:${start}:${end}`, async (s) => {
+  return recoverableRequest(`daily-fx:${currency}:${start}:${end}`, `${currency}/KRW 과거 환율 조회`, async (s) => {
     const series = await json<DailyFxSeries>(`/api/fx-history?${params}`, s);
     const count = (Date.parse(end) - Date.parse(start)) / 86400000 + 1;
     if (!series || series.currency !== currency || series.baseCurrency !== "KRW" ||

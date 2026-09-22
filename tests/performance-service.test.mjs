@@ -5,7 +5,7 @@ const {buildDailyPerformance,PERFORMANCE_CALCULATION_VERSION,addCalendarDays,kst
 const {createSharedResource}=loadTypescript('src/shared/async/shared-resource.ts');
 const tx={id:'00000000-0000-4000-8000-000000000001',symbol:'QA',name:'QA',type:'buy',date:'2020-01-01',createdAt:'2020-01-01T00:00:00Z',price:100,quantity:1,fee:0,currency:'KRW',fxRateToKRW:1,usdKrwRateAtTransaction:1300};
 const input={userId:'user',revision:'r1',transactions:[tx],today:'2020-01-03'};
-const point=date=>({date,cutoffAt:date+'T14:59:59.000Z',assetValueKRW:100,twrIndex:100,netFlowKRW:0,cumulativeNetFlowKRW:100,cumulativeProfitKRW:0,active:true,final:true});
+const point=date=>({date,cutoffAt:date+'T14:59:59.000Z',assetValueKRW:100,openingValueKRW:date==='2020-01-01'?0:100,twrIndex:100,netFlowKRW:date==='2020-01-01'?100:0,cumulativeNetFlowKRW:100,cumulativeProfitKRW:0,active:true,final:true});
 function harness({fail=false,saved,gate}={}) {
  const calls={read:0,chart:[],calc:[],save:[]};
  const {loadPerformance}=loadTypescript('src/features/performance/service.ts',{
@@ -163,4 +163,43 @@ test('separate currency holding intervals are combined without requiring FX duri
  assert.deepEqual(calls,[['CNY','2020-01-02','2020-01-03'],['CNY','2020-01-06','2020-01-07']]);
  assert.deepEqual(Array.from(result.points,p=>p.assetValueKRW),[0,20000,20000,0,0,20000,20000]);
  assert.equal(result.points[1].fxReferences.CNY,'2020-01-02');assert.equal(result.points[5].fxReferences.CNY,'2020-01-06');
+});
+
+test('past trades entered later start at their real trade date and retain fully realized profit',async()=>{
+ const trades=[{...tx,date:'2018-01-02',createdAt:'2020-01-01T00:00:00Z'},
+  {...tx,id:'sale',date:'2018-01-03',type:'sell',price:200,createdAt:'2020-01-01T01:00:00Z'}];
+ let saved;
+ const {loadPerformance}=loadTypescript('src/features/performance/service.ts',{
+  './repository':{readHistory:async()=>({saved:null,startedAt:'2020-01-01T00:00:00Z'}),saveHistory:async(_user,history)=>{saved=history;return null;}},
+  './calculate':{calculateHistory:async data=>buildDailyPerformance(data)},
+  '@/lib/stock-api':{getChartSeries:async()=>({points:[{date:'2018-01-02',close:100}]})},
+ });
+ const result=await loadPerformance({...input,transactions:trades,today:'2018-01-04'},new AbortController().signal);
+ assert.equal(result.points[0].date,'2018-01-02');
+ assert.equal(result.points.at(-1).assetValueKRW,0);assert.equal(result.points.at(-1).cumulativeProfitKRW,100);
+ assert.equal(saved.startedAt,'2018-01-02T00:00:00+09:00');
+});
+
+test('a fully closed same-day foreign trade needs neither closing prices nor valuation FX',async()=>{
+ const trades=[{...tx,currency:'USD',fxRateToKRW:1300},
+  {...tx,id:'sale',type:'sell',price:120,fee:1,currency:'USD',fxRateToKRW:1400,createdAt:'2020-01-01T01:00:00Z'}];
+ const {loadPerformance}=loadTypescript('src/features/performance/service.ts',{
+  './repository':{readHistory:async()=>({saved:null,startedAt:tx.createdAt}),saveHistory:async()=>null},
+  './calculate':{calculateHistory:async data=>buildDailyPerformance(data)},
+  '@/lib/stock-api':{
+   getChartSeries:async()=>{throw Error('unused closing quote requested');},
+   getDailyFxHistory:async()=>{throw Error('unused closing FX requested');},
+   getQuote:async()=>{throw Error('unused current quote requested');},
+  },
+ });
+ const result=await loadPerformance({...input,transactions:trades},new AbortController().signal);
+ assert.deepEqual(Array.from(result.points,p=>p.assetValueKRW),[0,0,0]);
+ assert.equal(result.points.at(-1).cumulativeProfitKRW,36600);
+});
+
+test('even a current-version cache without daily opening values is rebuilt',async()=>{
+ const legacy=point('2020-01-01');delete legacy.openingValueKRW;
+ const {loadPerformance,calls}=harness({saved:{calculationVersion:PERFORMANCE_CALCULATION_VERSION,revision:'r1',startedAt:tx.createdAt,points:[legacy],serverSynced:true}});
+ await loadPerformance(input,new AbortController().signal);
+ assert.equal(calls.calc[0].previousPoints.length,0);assert.equal(calls.save[0].history.points[0].openingValueKRW,0);
 });

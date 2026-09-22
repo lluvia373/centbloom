@@ -248,7 +248,8 @@ test('KST trade dates determine opening holdings even for later-entered history;
   assert.deepEqual(Array.from(plan.trades, (item) => item.id), ['today']);
   assert.deepEqual(Array.from(plan.baselineSymbols), ['AAPL']);
   assert.deepEqual(Array.from(plan.liveSymbols), ['AAPL', 'MSFT']);
-  assert.equal(calculate({ transactions: [] }).available, false);
+  assert.equal(calculate({ transactions: [] }).available, true);
+  assert.equal(calculate({ transactions: [] }).change, 0);
 });
 
 test('missing, wrong-day, future, stale or failed market inputs cannot become a partial or zero day result', () => {
@@ -306,6 +307,108 @@ test('float32 chart precision does not turn the same verified closing price into
   assert.equal(calculate({ ...input, quotes: { AAPL: { ...input.quotes.AAPL, price: 109.29 } } }).available, false);
   assert.equal(calculate({ ...input, quotes: { AAPL: { ...input.quotes.AAPL, marketState: 'REGULAR' } } }).available, false);
   assert.equal(calculate({ ...input, baselines: { AAPL: { ...input.baselines.AAPL, precision: 'minute', marketClosed: false } } }).available, false);
+});
+
+function beforeOpenInput(symbol = '0700.HK', price = 430) {
+  const date = '2026-09-22', fetchedAt = '2026-09-21T22:53:45.689Z';
+  return {
+    date, displayCurrency: 'KRW',
+    transactions: [transaction({ symbol, currency: 'HKD', quantity: 10 })],
+    baselines: {
+      [symbol]: baseline(symbol, Math.fround(price), 'HKD', {
+        date, baselineAt: '2026-09-21T15:00:00Z', fetchedAt,
+        precision: 'session-close', marketClosed: true,
+        sourceAt: '2026-09-21T01:30:00Z', sourceEndAt: '2026-09-21T08:10:00Z',
+      }),
+      'HKDKRW=X': baseline('HKDKRW=X', 175, 'KRW', {
+        date, baselineAt: '2026-09-21T15:00:00Z', fetchedAt,
+        sourceAt: '2026-09-21T14:59:00Z', sourceEndAt: '2026-09-21T15:00:00Z',
+      }),
+    },
+    quotes: {
+      [symbol]: quote(symbol, price, 'HKD', {
+        marketState: 'PREPRE', quotedAt: '2026-09-21T08:08:34Z', fetchedAt,
+      }),
+      'HKDKRW=X': quote('HKDKRW=X', 176, 'KRW', {
+        marketState: 'REGULAR', quotedAt: '2026-09-21T22:49:06Z', fetchedAt,
+      }),
+    },
+  };
+}
+
+test('PRE and PREPRE retain verified Tencent and Alibaba closes while preserving current FX gains', () => {
+  for (const [symbol, price] of [['0700.HK', 430], ['9988.HK', 112.6]]) {
+    for (const marketState of ['PREPRE', 'PRE']) {
+      const input = beforeOpenInput(symbol, price);
+      input.quotes[symbol].marketState = marketState;
+      const original = structuredClone(input);
+      const result = calculate(input);
+      assert.equal(result.available, true, `${symbol}/${marketState}`);
+      close(result.priceImpact, 0);
+      close(result.fxImpact, price * 10);
+      close(result.change, price * 10);
+      close(result.bySymbol[symbol], result.change);
+      assert.deepEqual(input, original, 'published session end and real trade timestamps remain unchanged');
+    }
+  }
+});
+
+test('Monday pre-open can retain a verified Thursday close after a Friday holiday without a one-day age assumption', () => {
+  const input = beforeOpenInput(), symbol = '0700.HK';
+  input.date = '2026-09-21';
+  for (const item of Object.values(input.baselines)) {
+    item.date = input.date;
+    item.baselineAt = '2026-09-20T15:00:00Z';
+  }
+  Object.assign(input.baselines[symbol], {
+    sourceAt: '2026-09-17T01:30:00Z', sourceEndAt: '2026-09-17T08:10:00Z',
+  });
+  Object.assign(input.baselines['HKDKRW=X'], {
+    sourceAt: '2026-09-18T20:59:00Z', sourceEndAt: '2026-09-18T21:00:00Z',
+  });
+  Object.assign(input.quotes[symbol], { quotedAt: '2026-09-17T08:08:34Z', fetchedAt: '2026-09-20T22:53:00Z' });
+  Object.assign(input.quotes['HKDKRW=X'], { quotedAt: '2026-09-20T22:49:00Z', fetchedAt: '2026-09-20T22:53:00Z' });
+  const result = calculate(input);
+  assert.equal(result.available, true);
+  close(result.priceImpact, 0);
+  close(result.fxImpact, 4300);
+});
+
+test('pre-open close reuse rejects stale fetches, other sessions, different prices and unverified market states', () => {
+  const symbol = '0700.HK';
+  const cases = [
+    ['yesterday fetch', { fetchedAt: '2026-09-21T14:59:59Z' }],
+    ['future-day fetch', { fetchedAt: '2026-09-22T15:00:00Z' }],
+    ['missing fetch time', { fetchedAt: undefined }],
+    ['older trading session', { quotedAt: '2026-09-18T08:08:34Z' }],
+    ['before this session opened', { quotedAt: '2026-09-21T01:29:59Z' }],
+    ['different last price', { price: 429.9 }],
+    ['already open', { marketState: 'REGULAR' }],
+    ['unknown state', { marketState: undefined }],
+    ['postmarket state', { marketState: 'POST' }],
+  ];
+  for (const [label, changes] of cases) {
+    const input = beforeOpenInput();
+    Object.assign(input.quotes[symbol], changes);
+    const result = calculate(input);
+    assert.equal(result.available, false, label);
+    assert.deepEqual(Object.keys(result.bySymbol), [], label);
+  }
+  for (const changes of [{ marketClosed: false }, { precision: 'minute' }, { fx: { method: 'direct', components: [] } }]) {
+    const input = beforeOpenInput();
+    Object.assign(input.baselines[symbol], changes);
+    assert.equal(calculate(input).available, false, JSON.stringify(changes));
+  }
+});
+
+test('a new post-close observation is not reconciled to the old price merely because its state is PRE', () => {
+  const input = beforeOpenInput(), symbol = '0700.HK';
+  Object.assign(input.quotes[symbol], { marketState: 'PRE', quotedAt: '2026-09-21T22:49:06Z', price: 431 });
+  const result = calculate(input);
+  assert.equal(result.available, true);
+  close(result.priceImpact, 1750);
+  close(result.fxImpact, 4310);
+  close(result.change, 6060);
 });
 
 test('minor currency units are converted once when the quote uses GBp and the stored holding uses GBX', () => {

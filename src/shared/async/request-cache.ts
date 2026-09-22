@@ -1,5 +1,11 @@
 import { createPool } from "./pool";
-type Options = { signal?: AbortSignal; ttlMs?: number; timeoutMs?: number };
+type Options = {
+  signal?: AbortSignal;
+  ttlMs?: number;
+  timeoutMs?: number;
+  queueTimeoutMs?: number;
+  retry?: { limit: number; delayMs: number; when: (error: unknown) => boolean; onRetry?: (error: unknown) => void };
+};
 interface Entry {
   promise: Promise<unknown>;
   controller: AbortController;
@@ -18,7 +24,7 @@ export function createRequestCache({
   function request<T>(
     key: string,
     loader: (signal: AbortSignal) => Promise<T>,
-    { signal, ttlMs = 0, timeoutMs = 20_000 }: Options = {},
+    { signal, ttlMs = 0, timeoutMs = 20_000, queueTimeoutMs = 60_000, retry }: Options = {},
   ): Promise<T> {
     if (signal?.aborted) return Promise.reject(signal.reason);
     let entry = entries.get(key);
@@ -36,27 +42,46 @@ export function createRequestCache({
         promise: Promise.resolve(),
       };
       const owned = entry;
-      const timer = setTimeout(
-        () =>
-          controller.abort(
-            new DOMException("요청 시간이 초과되었습니다.", "TimeoutError"),
-          ),
-        timeoutMs,
-      );
-      const aborted = new Promise<never>((_, reject) =>
-        controller.signal.addEventListener(
-          "abort",
-          () => reject(controller.signal.reason),
-          { once: true },
-        ),
-      );
-      owned.promise = Promise.race([
-        run(
-          () => Promise.race([Promise.resolve().then(() => loader(controller.signal)), aborted]),
-          controller.signal,
-        ),
-        aborted,
-      ])
+      const attempt = async () => {
+        controller.signal.throwIfAborted();
+        const current = new AbortController();
+        const cancel = () => current.abort(controller.signal.reason);
+        controller.signal.addEventListener("abort", cancel, { once: true });
+        // Queue wait and network work each have a bounded, independent budget.
+        let timer = setTimeout(() => current.abort(
+          new DOMException("조회 요청이 많아 대기 시간이 초과되었습니다.", "TimeoutError"),
+        ), queueTimeoutMs);
+        const aborted = new Promise<never>((_, reject) =>
+          current.signal.addEventListener("abort", () => reject(current.signal.reason), { once: true }),
+        );
+        try {
+          return await Promise.race([
+            run(() => {
+              clearTimeout(timer);
+              timer = setTimeout(() => current.abort(
+                new DOMException("요청 시간이 초과되었습니다.", "TimeoutError"),
+              ), timeoutMs);
+              return Promise.race([Promise.resolve().then(() => loader(current.signal)), aborted]);
+            }, current.signal),
+            aborted,
+          ]);
+        } finally {
+          clearTimeout(timer);
+          controller.signal.removeEventListener("abort", cancel);
+        }
+      };
+      const load = async () => {
+        for (let failures = 0; ; failures++) {
+          try { return await attempt(); }
+          catch (error) {
+            controller.signal.throwIfAborted();
+            if (!retry || failures >= retry.limit || !retry.when(error)) throw error;
+            retry.onRetry?.(error);
+            await delay(retry.delayMs, controller.signal);
+          }
+        }
+      };
+      owned.promise = load()
         .then((value) => {
           if (controller.signal.aborted) throw controller.signal.reason;
           owned.completed = true;
@@ -66,8 +91,7 @@ export function createRequestCache({
         .catch((error) => {
           if (entries.get(key) === owned) entries.delete(key);
           throw error;
-        })
-        .finally(() => clearTimeout(timer));
+        });
       entries.set(key, owned);
       for (const [oldKey, old] of entries) {
         if (entries.size <= maxEntries) break;
@@ -110,4 +134,16 @@ export function createRequestCache({
     },
     size: () => entries.size,
   };
+}
+
+function delay(ms: number, signal: AbortSignal): Promise<void> {
+  signal.throwIfAborted();
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", cancel);
+      resolve();
+    }, ms);
+    const cancel = () => { clearTimeout(timer); reject(signal.reason); };
+    signal.addEventListener("abort", cancel, { once: true });
+  });
 }

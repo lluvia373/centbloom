@@ -1,7 +1,7 @@
 "use client";
 import {
   addCalendarDays,
-  buildMoneyWeightedReturnSeries,
+  buildSecuritiesReturnSeries,
   calculatePerformanceMetrics,
   findInactivePeriods,
 } from "@/lib/performance";
@@ -41,7 +41,7 @@ export function usePerformanceRange(
     const definition = RANGES.find((item) => item.key === range);
     const candidate =
       definition && "days" in definition
-        ? addCalendarDays(effectiveEnd, -definition.days)
+        ? addCalendarDays(effectiveEnd, -(definition.days - 1))
         : firstDate;
     return candidate < firstDate ? firstDate : candidate;
   }, [customStart, effectiveEnd, firstDate, range]);
@@ -54,7 +54,7 @@ export function usePerformanceRange(
     [effectiveEnd, effectiveStart, points],
   );
   const normalizedPoints = useMemo(
-    () => buildMoneyWeightedReturnSeries(selectedPoints, transactions),
+    () => buildSecuritiesReturnSeries(selectedPoints, transactions),
     [selectedPoints, transactions],
   );
   const metrics = useMemo(
@@ -75,7 +75,7 @@ export function usePerformanceRange(
     selectedPoints.length > 0 &&
     selectedPoints.every((point) => !point.active) &&
     !transactions.some((transaction) =>
-      transaction.date > selectedPoints[0].date &&
+      transaction.date >= selectedPoints[0].date &&
       transaction.date <= selectedPoints[selectedPoints.length - 1].date,
     );
 

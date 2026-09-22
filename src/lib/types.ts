@@ -86,6 +86,8 @@ export interface PortfolioPerformancePoint {
   date: string;
   cutoffAt: string;
   assetValueKRW: number;
+  /** Securities held before this date's trades; never includes sale proceeds as cash. */
+  openingValueKRW?: number;
   twrIndex: number;
   netFlowKRW: number;
   cumulativeNetFlowKRW: number;

@@ -8,7 +8,19 @@ export function createPool(limit: number) {
     if (signal?.aborted)
       throw signal.reason ?? new DOMException("Aborted", "AbortError");
     if (running >= limit)
-      await new Promise<void>((resolve) => waiting.push(resolve));
+      await new Promise<void>((resolve, reject) => {
+        const enter = () => {
+          signal?.removeEventListener("abort", abort);
+          resolve();
+        };
+        const abort = () => {
+          const index = waiting.indexOf(enter);
+          if (index !== -1) waiting.splice(index, 1);
+          reject(signal?.reason ?? new DOMException("Aborted", "AbortError"));
+        };
+        waiting.push(enter);
+        signal?.addEventListener("abort", abort, { once: true });
+      });
     else running++;
     try {
       if (signal?.aborted)

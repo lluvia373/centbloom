@@ -6,6 +6,7 @@ const {
   addCalendarDays,
   buildDailyPerformance,
   buildMoneyWeightedReturnSeries,
+  buildSecuritiesReturnSeries,
   calculatePerformanceMetrics,
   normalizePerformancePoints,
 } = loadTypescript('src/lib/performance.ts');
@@ -195,4 +196,116 @@ test('series converts each selected transaction once even for a long selected pe
   assert.equal(priceReads, transactions.length);
   const metrics = calculatePerformanceMetrics(points, transactions, points[0].date, points.at(-1).date);
   assert.equal(series.at(-1).portfolioReturn, metrics.moneyWeightedReturn);
+});
+
+function cashlessHistory(transactions, prices, endDate, fxByCurrency = {}) {
+  return buildDailyPerformance({ transactions, trackingStartDate: transactions.map(tx => tx.date).sort()[0],
+    endDate, pricesBySymbol: prices, fxByCurrency, strict: true });
+}
+
+function assertSecuritiesEndpoints(points, transactions) {
+  const series = buildSecuritiesReturnSeries(points, transactions);
+  for (let index = 0; index < points.length; index++) {
+    const metrics = calculatePerformanceMetrics(points, transactions, points[0].date, points[index].date);
+    assert.equal(series[index].portfolioReturn, metrics.securitiesReturn);
+    assert.equal(series[index].periodProfitKRW, metrics.profitKRW);
+  }
+  return series;
+}
+
+test('cashless purchase, double, complete sale leaves zero holdings and keeps the million-won gain', () => {
+  const trades = [transaction('2026-01-01', 'buy', 1_000_000), transaction('2026-01-03', 'sell', 2_000_000)];
+  const points = cashlessHistory(trades, { QA: [{date:'2026-01-01',close:1_000_000},{date:'2026-01-02',close:2_000_000}] }, '2026-01-06');
+  assert.deepEqual(Array.from(points,p=>p.assetValueKRW),[1_000_000,2_000_000,0,0,0,0]);
+  assert.deepEqual(Array.from(points,p=>p.cumulativeProfitKRW),[0,1_000_000,1_000_000,1_000_000,1_000_000,1_000_000]);
+  assert.deepEqual(Array.from(assertSecuritiesEndpoints(points,trades),p=>p.portfolioReturn),[0,100,100,100,100,100]);
+  const onlyAfterSale=calculatePerformanceMetrics(points,trades,'2026-01-04','2026-01-06');
+  assert.equal(onlyAfterSale.profitKRW,0);assert.equal(onlyAfterSale.securitiesReturn,null);
+});
+
+test('cashless added capital and subsequent flat days cannot change an earned ten percent', () => {
+  const trades=[transaction('2026-01-01','buy',1_000_000),transaction('2026-01-03','buy',1_000_000,{symbol:'OTHER'})];
+  const points=cashlessHistory(trades,{QA:[{date:'2026-01-01',close:1_000_000},{date:'2026-01-02',close:1_100_000}],OTHER:[{date:'2026-01-03',close:1_000_000}]},'2026-01-08');
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.equal(points.at(-1).assetValueKRW,2_100_000);
+  for(const p of series.slice(1)){assertClose(p.portfolioReturn,10);assert.equal(p.periodProfitKRW,100_000);}
+});
+
+test('cashless first-day gain and both transaction fees remain in lifetime profit', () => {
+  const trades=[transaction('2026-01-01','buy',100,{fee:2}),transaction('2026-01-02','sell',120,{fee:3})];
+  const points=cashlessHistory(trades,{QA:[{date:'2026-01-01',close:110}]},'2026-01-04');
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.equal(points[0].openingValueKRW,0);assert.equal(points[0].netFlowKRW,102);
+  assert.equal(series[0].periodProfitKRW,8);assertClose(series[0].portfolioReturn,8/102*100);
+  assert.equal(series.at(-1).periodProfitKRW,15);assertClose(series.at(-1).portfolioReturn,15/102*100);
+});
+
+test('cashless same-day round trip uses recorded fills without market prices and includes start-date trades', () => {
+  const trades=[transaction('2026-01-01','buy',100,{fee:1}),transaction('2026-01-01','sell',120,{fee:2})];
+  const points=cashlessHistory(trades,{},'2026-01-03');
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.deepEqual(Array.from(points,p=>p.assetValueKRW),[0,0,0]);
+  for(const p of series){assert.equal(p.periodProfitKRW,17);assertClose(p.portfolioReturn,17/101*100);}
+});
+
+test('cashless partial sales and re-entry preserve gains and compound only invested days', () => {
+  const trades=[transaction('2026-01-01','buy',100,{quantity:10}),
+    transaction('2026-01-02','sell',110,{quantity:5}),transaction('2026-01-03','sell',120,{quantity:5}),
+    transaction('2026-01-06','buy',100,{quantity:2})];
+  const points=cashlessHistory(trades,{QA:[{date:'2026-01-01',close:100},{date:'2026-01-02',close:110},{date:'2026-01-03',close:120},{date:'2026-01-06',close:110}]},'2026-01-08');
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.equal(series[2].periodProfitKRW,150);assertClose(series[2].portfolioReturn,20);
+  assertClose(series[4].portfolioReturn,20);assertClose(series[5].portfolioReturn,32);
+  assert.equal(series.at(-1).periodProfitKRW,170);
+  const entryOnly=calculatePerformanceMetrics(points,trades,'2026-01-06','2026-01-08');
+  assert.equal(entryOnly.profitKRW,20);assertClose(entryOnly.securitiesReturn,10);
+});
+
+test('cashless selected dates include their trading day and use the prior closing holdings value', () => {
+  const trades=[transaction('2026-01-01','buy',100),transaction('2026-01-03','sell',150)];
+  const points=cashlessHistory(trades,{QA:[{date:'2026-01-01',close:110},{date:'2026-01-02',close:120}]},'2026-01-04');
+  const onlySale=calculatePerformanceMetrics(points,trades,'2026-01-03','2026-01-03');
+  assert.equal(onlySale.startValueKRW,120);assert.equal(onlySale.endValueKRW,0);
+  assert.equal(onlySale.profitKRW,30);assertClose(onlySale.securitiesReturn,25);
+  const selected=assertSecuritiesEndpoints(points.slice(1),trades);
+  assert.equal(selected.at(-1).periodProfitKRW,40);assertClose(selected.at(-1).portfolioReturn,150/110*100-100);
+});
+
+test('cashless foreign fills retain transaction FX and evaluate only remaining shares at daily FX', () => {
+  const trades=[transaction('2026-01-01','buy',100,{currency:'USD',fxRateToKRW:1300}),
+    transaction('2026-01-02','sell',120,{currency:'USD',fxRateToKRW:1400})];
+  const before=structuredClone(trades);
+  const points=cashlessHistory(trades,{QA:[{date:'2026-01-01',close:110}]},'2026-01-03',{USD:[{date:'2026-01-01',close:1350}]});
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.equal(series[0].periodProfitKRW,18500);
+  assert.equal(series.at(-1).periodProfitKRW,38000);assertClose(series.at(-1).portfolioReturn,38000/130000*100);
+  assert.deepEqual(trades,before);
+});
+
+test('cashless zero-capital days are unavailable while a total loss is not reset by re-entry', () => {
+  const points=[{...point('2026-01-01',100),openingValueKRW:100},{...point('2026-01-02',0),openingValueKRW:100},
+    {...point('2026-01-03',0),openingValueKRW:0},{...point('2026-01-04',110),openingValueKRW:0}];
+  const trades=[transaction('2026-01-04','buy',100)];
+  assert.deepEqual(Array.from(assertSecuritiesEndpoints(points,trades),p=>p.portfolioReturn),[0,-100,-100,-100]);
+  assertClose(calculatePerformanceMetrics(points,trades,'2026-01-04','2026-01-04').securitiesReturn,10);
+  const empty=[{...point('2026-01-01',0),openingValueKRW:0}];
+  assert.equal(assertSecuritiesEndpoints(empty,[])[0].portfolioReturn,null);
+});
+
+test('cashless invalid capital or returns cannot silently become a valid percentage', () => {
+  for(const bad of [NaN,Infinity,-1]){
+    const points=[{...point('2026-01-01',100),openingValueKRW:100}, {...point('2026-01-02',bad),openingValueKRW:100}];
+    assert.equal(buildSecuritiesReturnSeries(points,[]).at(-1).portfolioReturn,null);
+  }
+});
+
+test('a truncated legacy history does not invent its missing first opening valuation',()=>{
+  const trades=[transaction('2026-01-01','buy',100),transaction('2026-01-03','buy',50,{quantity:1})];
+  const points=buildDailyPerformance({transactions:trades,trackingStartDate:'2026-01-03',endDate:'2026-01-04',
+    pricesBySymbol:{QA:[{date:'2026-01-03',close:70}]},fxByCurrency:{},strict:true});
+  assert.equal(points[0].openingValueKRW,undefined);assert.equal(points[0].cumulativeProfitKRW,0);
+  assert.equal(points[0].netFlowKRW,0);
+  const series=assertSecuritiesEndpoints(points,trades);
+  assert.deepEqual(Array.from(series,p=>p.portfolioReturn),[0,0]);
+  assert.equal(series.at(-1).periodProfitKRW,0);
 });

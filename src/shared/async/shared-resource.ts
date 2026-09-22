@@ -20,7 +20,8 @@ export function createSharedResource<I, R>(
     if (entry.controller || !entry.listeners.size) return;
     const controller = new AbortController();
     entry.controller = controller;
-    entry.state = { ...entry.state, loading: true, error: null };
+    // A retry is not recovery: keep the last failure until a complete load succeeds.
+    entry.state = { ...entry.state, loading: true };
     emit(entry);
     try {
       const value = await load(entry.input, controller.signal);

@@ -1,30 +1,6 @@
 .pageHeading :global(.page-heading) {
   margin-bottom: var(--cf-space-3);
 }
-.pageHeading :global(.page-heading-title) {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cf-space-3);
-}
-.performanceButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--cf-space-8);
-  padding: var(--cf-space-1) var(--cf-space-3);
-  border: 1px solid var(--cf-color-line);
-  border-radius: var(--cf-radius-control);
-  background: var(--cf-color-surface);
-  color: var(--cf-color-ink);
-  font-size: var(--cf-text-label);
-  line-height: var(--cf-leading-label);
-}
-.performanceButton:hover { background: var(--cf-color-soft); }
-.performanceButton:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
-@media (pointer: coarse) {
-  .performanceButton { min-height: calc(var(--cf-space-12) - var(--cf-space-1)); }
-}
 .concentration {
   container-type: inline-size;
   margin-bottom: var(--cf-space-4);
@@ -86,7 +62,7 @@
 .allocationPageActions button:hover:not(:disabled) { background: var(--cf-color-soft); }
 .allocationPageActions button:disabled { opacity: 0.35; cursor: default; }
 .allocationPageActions button:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
-.performance { margin-top: var(--cf-space-6); scroll-margin-top: calc(var(--cf-space-12) * 3); }
+.performance { scroll-margin-top: calc(var(--cf-space-12) * 3); }
 .performance:focus { outline: none; }
 .holdings { container-type: inline-size; }
 .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--cf-space-3); margin-bottom: var(--cf-space-2); }

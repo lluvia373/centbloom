@@ -14,12 +14,17 @@ const history = createSharedResource(loadPerformance, {
   error: null,
 } as HistoryResult);
 export function usePerformanceHistory() {
-  const { user } = useAuth();
-  const { transactions, revision, status } = useTransactions();
+  const { user, loading: authLoading } = useAuth();
+  const { transactions, revision, status, error: ledgerError } = useTransactions();
   const today = useKstDate();
   const userId = user?.id ?? null;
   const key = JSON.stringify([userId, revision, today]);
-  const enabled = status !== "loading" && !!today;
+  const ledgerKnown = revision !== "";
+  const inputsReady = !authLoading && status !== "loading" && !!today;
+  const enabled = inputsReady && ledgerKnown;
+  const initialLedgerError = inputsReady && !ledgerKnown && status === "failed"
+    ? ledgerError ?? "거래 기록을 불러오지 못했습니다."
+    : null;
   const subscribe = useCallback(
     (listener: () => void) =>
       !enabled
@@ -33,12 +38,14 @@ export function usePerformanceHistory() {
   );
   const state = useSyncExternalStore(
     subscribe,
-    () => history.snapshot(key),
+    () => enabled ? history.snapshot(key) : history.initial,
     () => history.initial,
   );
   return {
     ...state.value,
-    loading: state.loading,
-    error: state.error ?? state.value.error,
+    scopeKey: key,
+    loading: initialLedgerError ? false : state.loading,
+    refreshError: initialLedgerError ?? state.error,
+    error: initialLedgerError ?? state.error ?? state.value.error,
   };
 }

@@ -9,7 +9,7 @@ import type {
 
 const DAY_MS = 86_400_000;
 const VALUE_EPSILON = 0.01;
-export const PERFORMANCE_CALCULATION_VERSION = 3;
+export const PERFORMANCE_CALCULATION_VERSION = 4;
 
 export interface BuildPerformanceInput {
   transactions: Transaction[];
@@ -24,6 +24,7 @@ export interface BuildPerformanceInput {
 }
 
 export interface PerformanceMetrics {
+  securitiesReturn: number | null;
   operatingReturn: number | null;
   moneyWeightedReturn: number | null;
   profitKRW: number;
@@ -79,7 +80,7 @@ export function buildDailyPerformance({
   const last = points.at(-1);
   let twrIndex = last?.twrIndex ?? 100;
   let cumulativeNetFlowKRW = last?.cumulativeNetFlowKRW ?? 0;
-  let initialValueKRW = points[0]?.assetValueKRW ?? 0;
+  let initialValueKRW = points[0]?.openingValueKRW ?? points[0]?.assetValueKRW ?? 0;
   const sorted = [...transactions].sort(
     (a, b) =>
       a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
@@ -91,6 +92,7 @@ export function buildDailyPerformance({
   const dailyRates = new Map(Object.entries(fxByCurrency)
     .map(([currency, values]) => [currency, new Map(values.map(point => [point.date, point]))]));
   const flows = new Map<string, number>();
+  const purchases = new Map<string, number>();
   // Preserve input order for daily floating-point flow accumulation.
   for (const tx of transactions) {
     if (
@@ -98,7 +100,9 @@ export function buildDailyPerformance({
       (!tx.currency || (tx.currency !== "KRW" && !(tx.fxRateToKRW! > 0)))
     )
       throw new Error("거래 환율 보완이 필요합니다.");
-    flows.set(tx.date, (flows.get(tx.date) ?? 0) + transactionFlowKRW(tx));
+    const amount = transactionFlowKRW(tx);
+    flows.set(tx.date, (flows.get(tx.date) ?? 0) + amount);
+    if (tx.type === "buy") purchases.set(tx.date, (purchases.get(tx.date) ?? 0) + amount);
   }
 
   for (
@@ -147,21 +151,17 @@ export function buildDailyPerformance({
 
     const netFlowKRW = flows.get(date) ?? 0;
 
-    if (points.length === 0) {
-      initialValueKRW = assetValueKRW;
-    } else {
-      const previous = points[points.length - 1];
-      if (previous.assetValueKRW > VALUE_EPSILON) {
-        const dailyReturn =
-          (assetValueKRW - previous.assetValueKRW - netFlowKRW) /
-          previous.assetValueKRW;
-        if (Number.isFinite(dailyReturn)) {
-          twrIndex *= Math.max(0, 1 + dailyReturn);
-        }
-      }
-    }
+    // A truncated legacy caller has no opening valuation. Keep its first close
+    // as a baseline instead of manufacturing one. The service starts at the
+    // earliest trade, so production histories include that first trading day.
+    const startsWithExistingPositions = points.length === 0 && sorted.some(tx => tx.date < date);
+    const openingValueKRW = points.at(-1)?.assetValueKRW ?? (startsWithExistingPositions ? assetValueKRW : 0);
+    if (points.length === 0) initialValueKRW = openingValueKRW;
+    const buyAmount = purchases.get(date) ?? 0;
+    const factor = securitiesGrowthFactor(openingValueKRW, assetValueKRW, buyAmount, buyAmount - netFlowKRW);
+    if (!startsWithExistingPositions && factor != null) twrIndex *= factor;
 
-    const performanceFlow = points.length === 0 ? 0 : netFlowKRW;
+    const performanceFlow = startsWithExistingPositions ? 0 : netFlowKRW;
     cumulativeNetFlowKRW += performanceFlow;
     const cumulativeProfitKRW =
       assetValueKRW - initialValueKRW - cumulativeNetFlowKRW;
@@ -170,6 +170,7 @@ export function buildDailyPerformance({
       date,
       cutoffAt: kstCutoffAt(date),
       assetValueKRW,
+      ...(!startsWithExistingPositions ? { openingValueKRW } : {}),
       twrIndex,
       netFlowKRW: performanceFlow,
       cumulativeNetFlowKRW,
@@ -194,6 +195,7 @@ export function calculatePerformanceMetrics(
   );
   if (selected.length === 0) {
     return {
+      securitiesReturn: null,
       operatingReturn: null,
       moneyWeightedReturn: null,
       profitKRW: 0,
@@ -204,24 +206,82 @@ export function calculatePerformanceMetrics(
 
   const first = selected[0];
   const last = selected[selected.length - 1];
-  const operatingReturn =
-    first.twrIndex > 0 ? (last.twrIndex / first.twrIndex - 1) * 100 : null;
-  const { profitKRW, moneyWeightedReturn } = createMoneyWeightedCalculator(
+  const period = buildSecuritiesReturnSeries(selected, transactions).at(-1)!;
+  const { moneyWeightedReturn } = createMoneyWeightedCalculator(
     first,
     transactions,
     last.date,
   )(last);
 
   return {
-    operatingReturn,
+    securitiesReturn: period.portfolioReturn,
+    operatingReturn: period.portfolioReturn,
     moneyWeightedReturn,
-    profitKRW,
-    startValueKRW: first.assetValueKRW,
+    profitKRW: period.periodProfitKRW,
+    startValueKRW: first.openingValueKRW ?? first.assetValueKRW,
     endValueKRW: last.assetValueKRW,
   };
 }
 
-/** Cumulative, nonannualized Modified Dietz returns from the selected first day. */
+/**
+ * Daily-linked securities return. Purchases enter at the beginning of each day;
+ * net sale proceeds leave at its end. These are dated trades, not timed flows.
+ * An empty holding period preserves past results but invents no cash balance.
+ */
+export function buildSecuritiesReturnSeries(
+  points: PortfolioPerformancePoint[],
+  transactions: Transaction[],
+) {
+  if (points.length === 0) return [];
+  const first = points[0];
+  const inclusive = first.openingValueKRW != null;
+  const startValue = first.openingValueKRW ?? first.assetValueKRW;
+  const flows = transactions
+    .filter(tx => (inclusive ? tx.date >= first.date : tx.date > first.date) && tx.date <= points.at(-1)!.date)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(tx => ({ date: tx.date, type: tx.type, amount: transactionFlowKRW(tx) }));
+  let cursor = 0;
+  let previousValue = startValue;
+  let netFlow = 0;
+  let growth = 1;
+  let invested = startValue > VALUE_EPSILON;
+  let invalid = !Number.isFinite(startValue) || startValue < 0;
+  return points.map(point => {
+    let buys = 0;
+    let sales = 0;
+    while (cursor < flows.length && flows[cursor].date <= point.date) {
+      const flow = flows[cursor++];
+      if (flow.type === "buy") buys += flow.amount;
+      else sales -= flow.amount;
+      netFlow += flow.amount;
+    }
+    const capital = previousValue + buys;
+    const factor = securitiesGrowthFactor(previousValue, point.assetValueKRW, buys, sales);
+    const empty = capital === 0 && point.assetValueKRW === 0 && sales === 0;
+    if (factor == null && !empty) invalid = true;
+    if (capital > VALUE_EPSILON) invested = true;
+    if (factor != null) growth *= factor;
+    const result = (growth - 1) * 100;
+    const portfolioReturn = !invalid && invested && Number.isFinite(result) ? result : null;
+    previousValue = point.assetValueKRW;
+    return {
+      ...point,
+      portfolioReturn,
+      periodProfitKRW: point.assetValueKRW - startValue - netFlow,
+    };
+  });
+}
+
+function securitiesGrowthFactor(opening: number, closing: number, buys: number, sales: number) {
+  const capital = opening + buys;
+  const recovered = closing + sales;
+  if (![opening, closing, buys, sales, capital, recovered].every(Number.isFinite) ||
+      opening < 0 || closing < 0 || buys < 0 || capital <= VALUE_EPSILON || recovered < 0) return null;
+  const factor = recovered / capital;
+  return Number.isFinite(factor) ? factor : null;
+}
+
+/** @deprecated Legacy nonannualized Modified Dietz; the product uses buildSecuritiesReturnSeries. */
 export function buildMoneyWeightedReturnSeries(
   points: PortfolioPerformancePoint[],
   transactions: Transaction[],

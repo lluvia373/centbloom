@@ -34,8 +34,9 @@ test('pence history values shares and partial sales in won without a hundredfold
     assert.equal(points[0].assetValueKRW, 3200);
     assert.equal(points[1].assetValueKRW, 1920);
     close(points[1].netFlowKRW, -1840);
-    close(points[1].cumulativeProfitKRW, 560);
-    close(points[1].twrIndex, 117.5);
+    close(points[0].cumulativeProfitKRW, -80);
+    close(points[1].cumulativeProfitKRW, 480);
+    close(points[1].twrIndex, 3760 / 3280 * 100);
   }
 });
 

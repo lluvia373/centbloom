@@ -20,7 +20,7 @@ export function planHistoryRequests(
   const relevant = transactions.filter(
     (tx) => held.has(tx.symbol) || (tx.date >= next && tx.date <= today),
   );
-  const symbols = [...new Set(relevant.map((tx) => tx.symbol))];
+  const symbols = closingSymbols(transactions, next, today);
   const fallbackStart = addCalendarDays(
     relevant.reduce((date, tx) => (tx.date < date ? tx.date : date), next),
     -7,
@@ -32,6 +32,21 @@ export function planHistoryRequests(
       ...activeFxRanges(transactions, next, fxEnd),
     ] as HistoryRequest[],
   };
+}
+
+/** A same-day completed round trip needs its fills, not an unused closing quote. */
+function closingSymbols(transactions: Transaction[], start: string, end: string) {
+  const ordered = transactions.filter(tx => tx.date <= end).sort((a, b) =>
+    a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt));
+  const boundaries = [...new Set([start, ...ordered.filter(tx => tx.date >= start).map(tx => tx.date)])].sort();
+  const positions = createHoldingAccumulator();
+  const symbols = new Set<string>();
+  let cursor = 0;
+  for (const date of boundaries) {
+    while (cursor < ordered.length && ordered[cursor].date <= date) positions.apply(ordered[cursor++]);
+    for (const holding of positions.holdings()) symbols.add(holding.symbol);
+  }
+  return [...symbols];
 }
 
 /** End-of-day valuations need FX only while a position in that currency remains open. */

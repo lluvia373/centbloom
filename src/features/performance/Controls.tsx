@@ -1,20 +1,16 @@
 "use client";
 
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 
 export { DateField } from "./DateField";
 
 export function PerformanceSummary({
   profitKRW,
-  returnPercent,
   inactive = false,
 }: {
   profitKRW: number;
-  returnPercent: number | null;
   inactive?: boolean;
 }) {
-  const hasReturn = returnPercent != null && Number.isFinite(returnPercent);
-  const returnLabel = inactive ? "미운용" : hasReturn ? formatPercent(returnPercent) : "수익률 계산 불가";
   return (
     <dl className="performance-metrics">
       <div>
@@ -23,10 +19,7 @@ export function PerformanceSummary({
           <span className={`performance-metric-amount ${valueTone(profitKRW)}`}>
             {Number.isFinite(profitKRW) ? `${profitKRW > 0 ? "+" : ""}${formatCurrency(profitKRW, "KRW")}` : "계산 불가"}
           </span>
-          <span className={`performance-metric-return ${inactive || !hasReturn ? "text-cf-muted" : valueTone(returnPercent)}`}>
-            {hasReturn && !inactive && <span className="sr-only">기간 수익률 </span>}
-            {returnLabel}
-          </span>
+          {inactive && <span className="performance-metric-return text-cf-muted">미운용</span>}
         </dd>
       </div>
     </dl>
