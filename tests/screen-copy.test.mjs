@@ -49,7 +49,7 @@ test('daily summary: mixed FX dates stay out of the caption and a calculation fa
  assert.match(missing,/현재 환율 미확인/); assert.doesNotMatch(missing,/오늘 00:00 기준|일별 환율 적용|최종 수신 환율 적용|<details\b|<summary\b/);
 });
 test('missing performance and failed performance remain distinct, with one visible error',()=>{
- let error=null; const overrides={'@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>({points:[],loading:false,error,trackingStartedAt:null})},'@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,loading:false})},'@/features/market/use-stock-search':{useStockSearch:()=>({results:[],loading:false})},'@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarkSeries:null,benchmarkLoading:false,benchmarkError:null})}};
+ let error=null; const overrides={'@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>({points:[],loading:false,error,refreshError:error,scopeKey:'copy-test',trackingStartedAt:null})},'@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,currentUsdKrwRate:null,loading:false})},'@/features/market/use-stock-search':{useStockSearch:()=>({results:[],loading:false})},'@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarks:[],retry:()=>{}})}};
  const {PerformanceAnalytics}=loadTypescript('src/components/PerformanceAnalytics.tsx',overrides);
  assert.match(render(PerformanceAnalytics),/성과 기록 없음/);
  error='격리된 조회 오류';const html=render(PerformanceAnalytics);assert.equal(html.split(error).length-1,1);assert.match(html,/role="alert"/);assert.doesNotMatch(html,/기록 없음/);
@@ -206,6 +206,7 @@ test('portfolio overview: summary and one focusable performance section precede 
 });
 
 test('portfolio overview: the embedded graph keeps period controls and loading states without a second heading',()=>{
+ const {PORTFOLIO_LINE}=loadTypescript('src/features/performance/Charts.tsx');
  const points=[
   {date:'2026-09-17',cutoffAt:'2026-09-17T14:59:59Z',assetValueKRW:140000,twrIndex:100,netFlowKRW:0,cumulativeNetFlowKRW:70000,cumulativeProfitKRW:70000,active:true,final:true},
   {date:'2026-09-18',cutoffAt:'2026-09-18T14:59:59Z',assetValueKRW:147000,twrIndex:105,netFlowKRW:0,cumulativeNetFlowKRW:70000,cumulativeProfitKRW:77000,active:true,final:true},
@@ -213,10 +214,10 @@ test('portfolio overview: the embedded graph keeps period controls and loading s
  let history={points,loading:false,error:null,refreshError:null,scopeKey:'layout-test'};
  const {PerformanceAnalytics}=loadTypescript('src/components/PerformanceAnalytics.tsx',{
   '@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>history},
-  '@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null})},
+  '@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,currentUsdKrwRate:null})},
   '@/features/market/use-stock-search':{useStockSearch:()=>({results:[],loading:false})},
-  '@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarkSeries:null,benchmarkLoading:false,benchmarkError:null})},
-  '@/features/performance/Charts':{AssetChart:()=>createElement('div',null,'ASSET_GRAPH_ONCE'),ReturnChart:()=>createElement('div',null,'RETURN_GRAPH')},
+  '@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarks:[],retry:()=>{}})},
+  '@/features/performance/Charts':{PORTFOLIO_LINE,AssetChart:()=>createElement('div',null,'ASSET_GRAPH_ONCE'),ReturnChart:()=>createElement('div',null,'RETURN_GRAPH')},
  });
  const checkFrame=(html)=>{
   assert.equal(html.split('class="performance-panel"').length-1,1);
@@ -239,7 +240,7 @@ test('portfolio overview: the embedded graph keeps period controls and loading s
  history={...history,loading:false};
  const empty=render(PerformanceAnalytics);checkFrame(empty);
  assert.match(empty,/성과 기록 없음/);assert.doesNotMatch(empty,/ASSET_GRAPH_ONCE|성과 조회 실패/);
- history={...history,error:'LAYOUT_DATA_ERROR'};
+ history={...history,error:'LAYOUT_DATA_ERROR',refreshError:'LAYOUT_DATA_ERROR'};
  const failed=render(PerformanceAnalytics);checkFrame(failed);
  assert.match(failed,/성과 조회 실패/);assert.match(failed,/role="alert"/);assert.equal(failed.split('LAYOUT_DATA_ERROR').length-1,1);assert.doesNotMatch(failed,/ASSET_GRAPH_ONCE|성과 기록 없음/);
 });
@@ -262,7 +263,9 @@ test('portfolio summary: shared heading keeps the title action separate from pri
 });
 
 test('integrated asset history preserves flow records but only displays holdings and explicit USD conversion',()=>{
+ const {PORTFOLIO_LINE}=loadTypescript('src/features/performance/Charts.tsx');
  let currency='USD';
+ let currentUsdKrwRate=1400;
  let chartProps;
  let summary={holdings:[{currency:'KRW',valuationAvailable:true,gainAvailable:true,currentFxRateToKRW:1,marketValueKRW:280000,marketValueUSD:200}],stockPriceImpactKRW:10000,fxImpactKRW:-2000};
  const points=[
@@ -270,11 +273,11 @@ test('integrated asset history preserves flow records but only displays holdings
   {date:'2026-09-18',cutoffAt:'2026-09-18T14:59:59Z',assetValueKRW:280000,twrIndex:105,netFlowKRW:70000,cumulativeNetFlowKRW:140000,cumulativeProfitKRW:140000,active:true,final:true},
  ];
  const {PerformanceAnalytics}=loadTypescript('src/components/PerformanceAnalytics.tsx',{
-  '@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>({points,loading:false,error:null,trackingStartedAt:'2026-09-17T00:00:00Z'})},
-  '@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:currency}),usePortfolioMarket:()=>({summary})},
+  '@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>({points,loading:false,error:null,refreshError:null,scopeKey:'currency-test',trackingStartedAt:'2026-09-17T00:00:00Z'})},
+  '@/hooks/usePortfolio':{useTransactions:()=>({transactions:[]}),usePreferences:()=>({displayCurrency:currency}),usePortfolioMarket:()=>({summary,currentUsdKrwRate})},
   '@/features/market/use-stock-search':{useStockSearch:()=>({results:[],loading:false})},
-  '@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarkSeries:null,benchmarkLoading:false,benchmarkError:null})},
-  '@/features/performance/Charts':{AssetChart:(props)=>{chartProps=props;return null;},ReturnChart:()=>null},
+  '@/features/performance/use-benchmark-series':{useBenchmarkSeries:()=>({benchmarks:[],retry:()=>{}})},
+  '@/features/performance/Charts':{PORTFOLIO_LINE,AssetChart:(props)=>{chartProps=props;return null;},ReturnChart:()=>null},
  });
  const dollars=render(PerformanceAnalytics);
  assert.equal(chartProps.currency,'USD');
@@ -284,6 +287,7 @@ test('integrated asset history preserves flow records but only displays holdings
  assert.match(dollars,/USD · 현재 환율 환산/);assert.match(dollars,/원화 기준/);
  assert.match(dollars,/보유자산 추이/);assert.doesNotMatch(dollars,/누적 순투입금|보유분 평가손익 · KRW/);
  summary={holdings:[{currency:'USD',valuationAvailable:true,gainAvailable:false,currentFxRateToKRW:0,marketValueKRW:0,marketValueUSD:200}],stockPriceImpactKRW:999999,fxImpactKRW:999999};
+ currentUsdKrwRate=null;
  const missingFx=render(PerformanceAnalytics);
  assert.equal(chartProps.currency,'KRW');assert.equal(chartProps.data[1].assetValue,280000);
  assert.match(missingFx,/달러 환율 확인 필요/);assert.doesNotMatch(missingFx,/보유분 평가손익 · KRW|999,999/);
@@ -295,7 +299,7 @@ test('integrated asset chart only plots held assets and labels their exact toolt
  const lines=[];const areas=[];let tooltip;
  const wrap=({children})=>createElement('div',null,children);
  const {AssetChart}=loadTypescript('src/features/performance/Charts.tsx',{
-  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,LineChart:wrap,CartesianGrid:()=>null,XAxis:()=>null,YAxis:()=>null,ReferenceArea:()=>null,Area:(props)=>{areas.push(props);return null;},Line:(props)=>{lines.push(props);return null;},Tooltip:(props)=>{tooltip=props;return null;}},
+  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,LineChart:wrap,CartesianGrid:()=>null,XAxis:()=>null,YAxis:()=>null,ReferenceArea:()=>null,ReferenceLine:()=>null,ReferenceDot:()=>null,Area:(props)=>{areas.push(props);return null;},Line:(props)=>{lines.push(props);return null;},Tooltip:(props)=>{tooltip=props;return null;}},
  });
  render(AssetChart,{data:[{date:'2026-09-18',assetValue:200,cumulativeNetFlow:100}],inactivePeriods:[],currency:'USD'});
  assert.equal(areas[0].dataKey,'assetValue');assert.equal(areas[0].dot.r,4);assert.equal(lines.length,0);
