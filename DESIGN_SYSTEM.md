@@ -237,7 +237,18 @@
 | `--cf-color-allocation-15` | `#a6a9b0` | 자산 구성 종목 구분 15 |
 | `--cf-color-allocation-16` | `#5b2b57` | 자산 구성 종목 구분 16 |
 | `--cf-color-chart` | `#3b8879` | 주요 차트 계열; 장식에 사용하지 않음 |
-| `--cf-color-comparison-1` ~ `12` | `#6979b8`, `#a87c45`, `#986eaa`, `#4b8da9`, `#bc7467`, `#7d8d44`, `#bb6890`, `#4d6593`, `#9b653b`, `#756199`, `#61817b`, `#8b6b70` | 수익률 비교 계열 구분. 색·이름·선 강조를 함께 사용하며 등락색과 구분 |
+| `--cf-color-comparison-1` | `#6979b8` | 수익률 비교 계열 1. 색·이름·선 강조를 함께 사용하며 등락색과 구분 |
+| `--cf-color-comparison-2` | `#a87c45` | 수익률 비교 계열 2 |
+| `--cf-color-comparison-3` | `#986eaa` | 수익률 비교 계열 3 |
+| `--cf-color-comparison-4` | `#4b8da9` | 수익률 비교 계열 4 |
+| `--cf-color-comparison-5` | `#bc7467` | 수익률 비교 계열 5 |
+| `--cf-color-comparison-6` | `#7d8d44` | 수익률 비교 계열 6 |
+| `--cf-color-comparison-7` | `#bb6890` | 수익률 비교 계열 7 |
+| `--cf-color-comparison-8` | `#4d6593` | 수익률 비교 계열 8 |
+| `--cf-color-comparison-9` | `#9b653b` | 수익률 비교 계열 9 |
+| `--cf-color-comparison-10` | `#756199` | 수익률 비교 계열 10 |
+| `--cf-color-comparison-11` | `#61817b` | 수익률 비교 계열 11 |
+| `--cf-color-comparison-12` | `#8b6b70` | 수익률 비교 계열 12 |
 | `--cf-color-brand` | `#bca26a` | 작은 브랜드 강조; 로고 원본 재색칠용 아님 |
 
 모든 금융 등락·개인 손익은 market-up(빨강)/market-down(파랑)으로 통일한다(D017). Tailwind의 text-cf-market-up/down과 금융 positive/negative 클래스도 같은 토큰으로 연결한다. 0은 중립색이며 상승 화살표를 표시하지 않는다. 성공/오류 알림은 positive(초록)/negative(빨강) 토큰을 쓴다. 색만으로 부호를 전달하지 않는다. 종목 상세의 기간 등락률과 가격선은 같은 기간 방향색을 쓴다. 여러 종목·비교 대상·자산 추이의 계열 구분색은 등락 판정과 별개다.
