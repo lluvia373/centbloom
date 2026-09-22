@@ -92,11 +92,11 @@ test('references include selected first-day movement and never use its closing p
 
 function createStoreHarness(react){
  const requests=[];
- const module=loadTypescript('src/features/performance/use-benchmark-series.ts',{
+ const benchmarkModule=loadTypescript('src/features/performance/use-benchmark-series.ts',{
   '@/lib/stock-api':{getChartSeries:(symbol,start,end,signal)=>new Promise((resolve,reject)=>requests.push({symbol,start,end,signal,resolve,reject}))},
   ...(react?{react}:{}),
  });
- return {...module,requests};
+ return {...benchmarkModule,requests};
 }
 
 test('selection deduplicates symbols and preserves completed and pending requests when adding or reordering',async()=>{
