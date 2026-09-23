@@ -16,11 +16,11 @@ export function HoldingsComposition({ allocation, activeId, id, loading }: {
   loading?: boolean;
 }) {
   let offset = 0;
-  const segments = allocation.segments.map(segment => {
-    const result = { ...segment, start: offset };
+  const segments: (typeof allocation.segments[number] & { start: number })[] = [];
+  for (const segment of allocation.segments) {
+    segments.push({ ...segment, start: offset });
     offset += segment.weight;
-    return result;
-  });
+  }
   const active = segments.find(segment => segment.key === activeId);
   const featured = active ?? segments[0];
   return <figure className={styles.composition} data-unavailable={!allocation.available || undefined}>

@@ -41,12 +41,13 @@ function hookHarness() {
   return {
     react,
     frame() {
-      return {
+      const frame = {
         slots: [], effects: [], index: 0,
-        render(Component, props) { active = this; this.index = 0; return Component(props); },
-        flush() { for (const effect of this.effects.splice(0)) effect(); },
-        unmount() { for (const slot of this.slots) slot?.cleanup?.(); },
+        render(Component, props) { active = frame; frame.index = 0; return Component(props); },
+        flush() { for (const effect of frame.effects.splice(0)) effect(); },
+        unmount() { for (const slot of frame.slots) slot?.cleanup?.(); },
       };
+      return frame;
     },
   };
 }

@@ -38,7 +38,8 @@ function harness({ save = async () => null, marketState } = {}) {
     '@/lib/markets': { discoveryStocks: () => [stock, secondStock] },
     '@/lib/format': format,
   });
-  return { calls, switchAccount: () => generation++, render() { cursor = 0; return useTransactionEntry('AAPL'); } };
+  function TransactionEntryHarness() { cursor = 0; return useTransactionEntry('AAPL'); }
+  return { calls, switchAccount: () => generation++, render: TransactionEntryHarness };
 }
 
 test('extracted entry preserves numeric validation and never calls storage for invalid input', async () => {
