@@ -14,7 +14,7 @@
   display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--cf-radius-pill);
   background: var(--cf-color-soft); border: 1px solid var(--cf-color-line); font-size: var(--cf-text-label); font-weight: var(--cf-weight-semibold);
 }
-.unreadDot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; background: var(--cf-color-positive); border-radius: var(--cf-radius-pill); box-shadow: 0 0 0 2px var(--cf-color-canvas); }
+.unreadDot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; background: var(--cf-color-positive); border-radius: var(--cf-radius-pill); outline: 2px solid var(--cf-color-canvas); }
 .panel {
   position: absolute; z-index: 50; top: calc(100% + var(--cf-space-2)); right: 0;
   width: min(380px, calc(100vw - var(--cf-space-8))); max-height: calc(100dvh - 100px); overflow: auto;
