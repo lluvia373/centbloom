@@ -53,7 +53,14 @@ function parseDocumentationMap(root, source) {
       || table[1]?.length !== columns.length || !table[1].every((cell) => /^:?-{3,}:?$/.test(cell))) {
     return { rows, errors: [owner + ": " + heading + " requires columns " + columns.join(" | ")] };
   }
-  for (const cells of table.slice(2)) {
+  for (let index = 2; index < table.length; index += 1) {
+    const cells = table[index];
+    if (cells.join("|") === columns.join("|")
+        && table[index + 1]?.length === columns.length
+        && table[index + 1].every((cell) => /^:?-{3,}:?$/.test(cell))) {
+      index += 1;
+      continue;
+    }
     const name = plain(cells[0] ?? "");
     const label = owner + ": " + heading + " [" + (name || "unnamed") + "]";
     if (cells.length !== columns.length || cells.some((cell) => !cell)) {

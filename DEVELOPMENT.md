@@ -43,7 +43,7 @@ npm run docs:guide -- src/features/performance/Controls.tsx
 
 ### 로그인 복귀·구루·알림의 시작점
 
-| 기능 | 명세 | 디자인 | 구현 | 좁은 검증 |
+| 기능 | 기능 명세 | 디자인 기준 | 구현·확장 시작점 | 검증 |
 | --- | --- | --- | --- | --- |
 | 로그인 원래 작업 복귀 | [로그인 경계](./PRODUCT_SPEC.md#공개-홈과-로그인-경계) | [입력·빈 상태](./DESIGN_SYSTEM.md#기능-유형별-화면-기준) | [복귀 허용 목록](./src/features/auth/login-return.ts), [관심 저장 진입](./src/app/save-interest/[symbol]/page.tsx), [저장 확인](./src/features/watchlist/SaveInterest.tsx), useAuth·AuthGate·기존 거래/관심 저장소 | [복귀](./tests/login-return.test.mjs), [인증](./tests/auth-loading.test.mjs), [계정 요청](./tests/session-request.test.mjs)의 해당 사례 |
 | 공개 구루 자료 | [구루 목표/현재 범위](./PRODUCT_SPEC.md#구루-포트폴리오--계획) | [구루/알림](./DESIGN_SYSTEM.md#구루와-앱-안-알림) | [gurus](./src/features/gurus), [목록](./src/app/gurus/page.tsx), [상세](./src/app/gurus/[slug]/page.tsx). model은 공시 검증·불변 버전 승인, catalog는 직접 확인한 과거 SEC 자료만 소유 | [원문/부분/정정/늦은 공시](./tests/gurus.test.mjs), [공개/개인 경계·화면 출력](./tests/guru-notifications-ui.test.mjs) |

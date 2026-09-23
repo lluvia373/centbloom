@@ -182,6 +182,19 @@ test("feature guide maps connect specification, design, code and tests with CRLF
   assert.match(result.output, /검증:.*tests\/watchlist\.test\.mjs/);
 });
 
+test("feature map accepts grouped tables without treating repeated headers as features", (t) => {
+  const root = featureFixture(t);
+  replace(root, "DEVELOPMENT.md", featureRow, [featureRow, "", "### 다른 기능", "",
+    "| 기능 | 기능 명세 | 디자인 기준 | 구현·확장 시작점 | 검증 |",
+    "| :--- | ---: | :---: | --- | --- |", featureRow.replace("관심종목 |", "기능 |"),
+  ].join("\n"));
+  const result = run(root);
+  assert.equal(result.code, 0, result.output);
+  const guide = run(root, "--guide", "기능");
+  assert.equal(guide.code, 0, guide.output);
+  assert.match(guide.output, /^기능: 기능\n/);
+});
+
 for (const [description, before, after, failure] of [
   ["duplicate feature names", featureRow, featureRow + "\n" + featureRow, /duplicate feature name/],
   ["missing design guidance", "[목록 디자인](./DESIGN_SYSTEM.md#목록)", "화면을 확인", /디자인 기준 requires/],
