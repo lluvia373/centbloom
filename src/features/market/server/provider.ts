@@ -1,16 +1,10 @@
 import { createRequestCache } from "@/shared/async/request-cache";
 import YahooFinance from "yahoo-finance2";
+import { createProviderFetch } from "./provider-fetch";
 // One client/queue per server instance. No network work runs at module initialization.
 export const yahoo = new YahooFinance({
   queue: { concurrency: 4 },
-  fetch: (input, init) =>
-    fetch(input, {
-      ...init,
-      signal: AbortSignal.any([
-        ...(init?.signal ? [init.signal] : []),
-        AbortSignal.timeout(15_000),
-      ]),
-    }),
+  fetch: createProviderFetch(),
 });
 export const providerRequests = createRequestCache({
   concurrency: 4,

@@ -15,7 +15,10 @@ function render(quotes={},failedSymbols=[]) {
 
 test('index strip requests the exact indices and never invents prices during loading or failure',()=>{
  const {html,symbols}=render({},['^KS11']);
- assert.deepEqual(symbols,['^GSPC','^IXIC','^NDX','^DJI','^RUT','^SOX','^VIX','^KS11','^KQ11','^N225','^HSI','000001.SS','^STOXX50E','^GDAXI','^FTSE','^TNX','DX-Y.NYB','KRW=X']);
+ assert.deepEqual(symbols,['^GSPC','^IXIC','^NDX','^DJI','^RUT','^SOX','^VIX','^KS11','^KQ11','^N225','^HSI','000001.SS','^STOXX50E','^GDAXI','^FTSE','^TNX','DX-Y.NYB','USDKRW=X']);
+ const {tickerInstruments}=loadTypescript('src/features/market/ticker-instruments.ts');
+ assert.equal(tickerInstruments.find(item=>item.label==='USD/KRW').symbol,'USDKRW=X');
+ assert.equal(symbols.filter(symbol=>symbol.endsWith('=X')).length,1);
  assert.match(html,/조회 불가/);
  assert.match(html,/시세 불러오는 중/);
  assert.doesNotMatch(html,/<strong/);
@@ -24,7 +27,7 @@ test('index strip requests the exact indices and never invents prices during loa
 
 test('index strip distinguishes gains, losses, flat prices and failed refreshes with quote timestamps',()=>{
  const quote={price:1234.56,changePercent:1.23,quotedAt:'2026-09-04T06:30:00Z',marketState:'CLOSED',delayMinutes:20};
- const {html}=render({'^KS11':quote,'^KQ11':{...quote,changePercent:-2.34},'^GSPC':{...quote,changePercent:0},'KRW=X':quote},['^KS11']);
+ const {html}=render({'^KS11':quote,'^KQ11':{...quote,changePercent:-2.34},'^GSPC':{...quote,changePercent:0},'USDKRW=X':quote},['^KS11']);
  assert.match(html,/1,234.56/);
  assert.match(html,/\+1.23%/);
  assert.match(html,/-2.34%/);

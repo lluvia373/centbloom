@@ -18,7 +18,7 @@ export const tickerInstruments = [
   { symbol: "^FTSE", label: "FTSE 100" },
   { symbol: "^TNX", label: "미국 10년물", note: "국채 수익률 · 변동폭은 bp (1bp = 0.01%p)" },
   { symbol: "DX-Y.NYB", label: "달러 인덱스" },
-  { symbol: "KRW=X", label: "USD/KRW" },
+  { symbol: "USDKRW=X", label: "USD/KRW" },
 ];
 export const tickerSymbols = tickerInstruments.map(({ symbol }) => symbol);
 const priceFormat = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

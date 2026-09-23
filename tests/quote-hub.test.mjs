@@ -160,18 +160,24 @@ test('transient failures use one shared 1s, 2s, 5s recovery sequence then normal
   assert.equal(calls.filter(call => call.symbol === 'FAIL').at(-1).at, 69_000);
 });
 
-test('permanent 404 and invalid responses do not enter early recovery', async t => {
+test('permanent 404, rate-limit 429 and invalid responses do not enter early recovery', async t => {
   const { createQuoteHub, advance } = recoveryClock(t), calls = [];
   const hub = createQuoteHub(async symbol => {
     calls.push({ symbol, at: Date.now() });
+    if (symbol === 'LIMITED') throw new Error('rate limited', { cause: 429 });
     throw symbol === 'MISSING' ? new Error('missing', { cause: 404 }) : new Error('invalid price');
   });
-  const stop = hub.subscribe(['MISSING', 'INVALID'], () => {}); t.after(stop);
+  const stop = hub.subscribe(['MISSING', 'LIMITED', 'INVALID'], () => {}); t.after(stop);
   await advance(0); await advance(29_999);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
   await advance(1);
-  assert.equal(calls.length, 4);
-  assert.ok(calls.slice(2).every(call => call.at === 31_000));
+  assert.equal(calls.length, 5);
+  assert.ok(calls.slice(3).every(call => call.at === 31_000));
+  assert.equal(calls.filter(call => call.symbol === 'LIMITED').length, 1);
+  await advance(29_999);
+  assert.equal(calls.filter(call => call.symbol === 'LIMITED').length, 1);
+  await advance(1);
+  assert.deepEqual(calls.filter(call => call.symbol === 'LIMITED').map(call => call.at), [1_000, 61_000]);
 });
 
 test('recovery retains confirmed data and the failure until success, then resets its backoff', async t => {

@@ -20,6 +20,14 @@ export function getMidnightBaseline(symbol: string, date: string, signal?: Abort
     (s) => json<MidnightBaseline>(`/api/baseline/${encodeURIComponent(symbol)}?date=${encodeURIComponent(date)}`, s),
     { signal, ttlMs: 60_000, timeoutMs: 60_000 });
 }
+type RetryAfterError = Error & { retryAfterMs?: number };
+function parseRetryAfter(value: string | null): number | undefined {
+  if (!value?.trim()) return undefined;
+  const header = value.trim();
+  const delay = /^\d+$/.test(header) ? Number(header) * 1_000
+    : /[A-Za-z]/.test(header) ? Date.parse(header) - Date.now() : NaN;
+  return Number.isFinite(delay) ? Math.max(0, delay) : undefined;
+}
 async function json<T>(url: string, signal: AbortSignal): Promise<T> {
   let res: Response;
   try { res = await fetch(url, { signal, cache: "no-store" }); }
@@ -29,11 +37,13 @@ async function json<T>(url: string, signal: AbortSignal): Promise<T> {
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(
+    const failure: RetryAfterError = new Error(
       body && typeof body === "object" && "error" in body && typeof body.error === "string"
         ? body.error : `시장 데이터 조회에 실패했습니다. (HTTP ${res.status})`,
       { cause: res.status },
     );
+    if (res.status === 429) failure.retryAfterMs = parseRetryAfter(res.headers.get("Retry-After"));
+    throw failure;
   }
   try { return await res.json(); }
   catch (error) {
@@ -64,7 +74,7 @@ function recoverableRequest<T>(
     retry: {
       limit: 1, delayMs: 500,
       when: error => error instanceof Error && (error.name === "TimeoutError" || error.cause === "network" ||
-        (typeof error.cause === "number" && [408, 429, 500, 502, 503, 504].includes(error.cause))),
+        (typeof error.cause === "number" && [408, 500, 502, 503, 504].includes(error.cause))),
       onRetry: error => diagnostic("market_request_retry", error),
     },
   }).catch(error => {
@@ -72,8 +82,9 @@ function recoverableRequest<T>(
     diagnostic("market_request_failed", error);
     const detail = error instanceof Error ? error.message : "시장 데이터 조회 실패";
     // Keep the status for the suspended-listing 404 fallback; never return partial data.
-    const failure = new Error(`${label}: ${detail}`, { cause: error instanceof Error ? error.cause : undefined });
+    const failure: RetryAfterError = new Error(`${label}: ${detail}`, { cause: error instanceof Error ? error.cause : undefined });
     if (error instanceof Error && error.name === "TimeoutError") failure.name = error.name;
+    if (error instanceof Error) failure.retryAfterMs = (error as RetryAfterError).retryAfterMs;
     throw failure;
   });
 }

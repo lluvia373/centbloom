@@ -154,14 +154,26 @@ test('server diagnostics classify provider failures without emitting cookies, UR
   try {
     const { marketResponseError } = loadTypescript('src/features/market/server/http.ts', {
       './provider': { MarketError },
-      'next/server': { NextResponse: { json: (data, options) => ({ data, status: options.status }) } },
+      'next/server': { NextResponse: { json: (data, options) => ({ data, status: options.status, headers: options.headers }) } },
     });
     const result = marketResponseError(new Error('Failed to get crumb, status 429, cookie=private-secret https://private.test/?token=secret'));
-    assert.equal(result.status, 502);
+    assert.equal(result.status, 429);
+    assert.equal(result.headers['Retry-After'], '60');
     assert.equal(logs[0][1].reason, 'provider-rate-limit');
     assert.equal(logs[0][1].upstreamStatus, 429);
     marketResponseError(new Error('Cannot perform I/O on behalf of a different request. private-user'));
     assert.equal(logs[1][1].reason, 'worker-request-context');
     assert.doesNotMatch(JSON.stringify(logs), /private|secret|https|cookie/);
+    const limited = new Error('provider refused request');
+    limited.code = 429;
+    limited.retryAfterSeconds = 120;
+    limited.providerEndpoint = 'auth';
+    const known = marketResponseError(limited);
+    assert.equal(known.status, 429);
+    assert.equal(known.headers['Retry-After'], '120');
+    assert.equal(logs[2][1].providerEndpoint, 'auth');
+    const unrelated = marketResponseError(new Error('provider unavailable'));
+    assert.equal(unrelated.status, 502);
+    assert.equal(unrelated.headers['Retry-After'], undefined);
   } finally { console.warn = original; }
 });

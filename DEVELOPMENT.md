@@ -86,7 +86,7 @@ PRODUCT_SPEC의 기존 절을 먼저 보완한다. 새 독립 기능만 다음 �
 
 ## 실행 흐름과 외부 사용 창구
 
-시세 대기/복구를 바꿀 때는 기존 `shared/async/pool`·`request-cache`, `market/quote-hub`·`quote-batch`·`server/quote`·`server/chart`·`midnight-price`를 수정한다. quote-batch는 전송만 묶고 저장·폴링 수명은 기존 캐시/hub가 소유한다. 검색 우선순위와 취소는 [요청 검사](./tests/request-priority.test.mjs), 종목별 수명/1·2·5초 실패 복구는 [공유 시세](./tests/quote-hub.test.mjs), 묶음 전송은 위 클라이언트/서버 검사, 동일 구간 공유는 [서버 캐시](./tests/market-server-cache.test.mjs), 한국 마감 경계는 [마감 검사](./tests/midnight-closing-auction.test.mjs), 성과 사본 저장 시간 초과는 [저장 검사](./tests/performance-save.test.mjs)가 시작점이다. 별도 시세 저장소나 무제한 병렬 조회를 추가하지 않는다.
+시세 대기/복구를 바꿀 때는 기존 `shared/async/pool`·`request-cache`, `market/quote-hub`·`quote-batch`·`server/quote`·`server/chart`·`midnight-price`를 수정한다. quote-batch는 전송만 묶고 저장·폴링 수명은 기존 캐시/hub가 소유한다. 공급원 429의 경로별 유예는 [provider-fetch](./src/features/market/server/provider-fetch.ts)·[제한 회귀](./tests/provider-rate-limit.test.mjs), HTTP 상태/Retry-After 전달은 server/http, 브라우저 대기는 stock-api/quote-hub가 담당한다. 검색 우선순위와 취소는 [요청 검사](./tests/request-priority.test.mjs), 종목별 수명/실패 복구는 [공유 시세](./tests/quote-hub.test.mjs), 묶음·호출 제한은 위 클라이언트/서버 검사, 동일 구간 공유는 [서버 캐시](./tests/market-server-cache.test.mjs), 한국 마감 경계는 [마감 검사](./tests/midnight-closing-auction.test.mjs), 성과 사본 저장 시간 초과는 [저장 검사](./tests/performance-save.test.mjs)가 시작점이다. 별도 시세 저장소나 무제한 병렬 조회를 추가하지 않는다.
 
 ```text
 app/layout.tsx → AuthProvider → AuthGate → PortfolioProvider → Header/PageFrame/페이지

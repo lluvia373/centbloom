@@ -195,3 +195,91 @@ test('batch upstream failure preserves its HTTP cause and retries only once', as
   await advance(0); await advance(500); await rejected;
   assert.equal(calls, 2);
 });
+
+test('batch rate-limit 429 preserves its cause without an immediate transport retry', async t => {
+  const advance = clock(t); let calls = 0;
+  const { getQuotes } = api(t, async () => {
+    calls++; return new Response(JSON.stringify({ error: 'provider rate limit' }), { status: 429 });
+  });
+  const rejected = assert.rejects(getQuotes(['A']), error => error.cause === 429);
+  await advance(0); await rejected;
+  assert.equal(calls, 1);
+  await advance(30_000);
+  assert.equal(calls, 1);
+});
+
+test('rate-limit Retry-After seconds and HTTP dates survive the client error wrapper', async t => {
+  clock(t);
+  let retryAfter;
+  const { getQuotes } = api(t, async () => new Response(JSON.stringify({ error: 'limited' }), {
+    status: 429, headers: retryAfter == null ? {} : { 'Retry-After': retryAfter },
+  }));
+  for (const [header, expected] of [
+    ['120', 120_000], [new Date(Date.now() + 90_000).toUTCString(), 90_000],
+    ['0', 0], ['-1', undefined], ['invalid', undefined], [undefined, undefined],
+  ]) {
+    retryAfter = header;
+    await assert.rejects(getQuotes(['A']), error => error.cause === 429 && error.retryAfterMs === expected);
+  }
+});
+
+test('rate-limit Retry-After guards the complete batch-to-hub path until expiry without shortening long cooldowns', async t => {
+  const advance = clock(t);
+  let retryAfter, calls = 0;
+  const { getQuotes, getQuote } = api(t, async url => {
+    calls++;
+    return calls === 2 ? new Response(JSON.stringify({ error: 'limited' }), {
+      status: 429, headers: retryAfter == null ? {} : { 'Retry-After': retryAfter },
+    }) : response(result(symbolsIn(url)));
+  });
+  const { createQuoteHub } = loadTypescript('src/features/market/quote-hub.ts');
+  for (const [header, wait] of [['60', 60_000], ['120', 120_000], [undefined, 60_000], ['invalid', 60_000], ['2147484', 2_147_484_000]]) {
+    retryAfter = header; calls = 0;
+    const hub = createQuoteHub(batchLoader(getQuotes, getQuote));
+    // A distinct key prevents a prior iteration's successful five-second cache from hiding its transport.
+    const symbol = `CASE${wait}${header ?? 'DEFAULT'}`.toUpperCase();
+    const stop = hub.subscribe([symbol], () => {});
+    await advance(0); await advance(0);
+    const confirmed = hub.snapshot([symbol]).quotes[symbol];
+    assert.equal(confirmed.price, 100);
+    await advance(5_000);
+    const refresh = hub.refresh(); await advance(0); await advance(0); await refresh;
+    assert.equal(calls, 2);
+    assert.equal(hub.snapshot([symbol]).quotes[symbol], confirmed);
+    assert.deepEqual(Array.from(hub.snapshot([symbol]).failedSymbols), [symbol]);
+    await advance(wait - 1);
+    await hub.refresh(); // Manual refresh and visibility changes must not bypass the provider's cooldown.
+    hub.setVisible(false); hub.setVisible(true); await advance(0);
+    assert.equal(calls, 2, String(header));
+    await advance(1); await advance(0);
+    assert.equal(calls, 3, String(header));
+    assert.deepEqual(Array.from(hub.snapshot([symbol]).failedSymbols), []);
+    stop();
+  }
+});
+
+test('header and later portfolio subscriptions share one canonical USD FX request', async t => {
+  const advance = clock(t), calls = [], fx = deferred();
+  let fxSignal;
+  const { getQuotes, getQuote } = api(t, async (url, options) => {
+    calls.push(String(url));
+    if (String(url).startsWith('/api/quote/')) { fxSignal = options.signal; return fx.promise; }
+    return response(result(symbolsIn(url)));
+  });
+  const { tickerSymbols } = loadTypescript('src/features/market/ticker-instruments.ts');
+  const { createQuoteHub } = loadTypescript('src/features/market/quote-hub.ts');
+  const hub = createQuoteHub(batchLoader(getQuotes, getQuote));
+  const stopHeader = hub.subscribe(tickerSymbols, () => {});
+  let stopPortfolio = () => {};
+  t.after(() => { stopHeader(); stopPortfolio(); fx.resolve(response(quote('USDKRW=X', { currency: 'KRW' }))); });
+  await advance(0); await advance(0);
+  stopPortfolio = hub.subscribe(['AAPL', 'USDKRW=X'], () => {});
+  await advance(0); await advance(0);
+  assert.deepEqual(calls.filter(url => url.startsWith('/api/quote/')), ['/api/quote/USDKRW%3DX']);
+  assert.equal(calls.filter(url => url.startsWith('/api/quotes?')).length, 2);
+  stopHeader(); assert.equal(fxSignal.aborted, false);
+  fx.resolve(response(quote('USDKRW=X', { currency: 'KRW', price: 1400 })));
+  await advance(0);
+  assert.equal(hub.snapshot(['AAPL', 'USDKRW=X']).quotes['USDKRW=X'].price, 1400);
+  assert.equal(calls.filter(url => url.startsWith('/api/quote/')).length, 1);
+});
