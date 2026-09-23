@@ -1,8 +1,9 @@
 "use client";
 import { createQuoteHub } from "@/features/market/quote-hub";
-import { getQuote } from "@/lib/stock-api";
+import { createQuoteBatch } from "@/features/market/quote-batch";
+import { getQuote, getQuotes } from "@/lib/stock-api";
 import { useCallback, useSyncExternalStore } from "react";
-const hub = createQuoteHub(getQuote);
+const hub = createQuoteHub(createQuoteBatch(getQuotes, getQuote));
 let consumers = 0;
 const visibility = () => hub.setVisible(document.visibilityState === "visible");
 export function useLiveQuotes(

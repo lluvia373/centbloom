@@ -33,6 +33,14 @@ npx wrangler login
 - Git Builds: centbloom만 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
 - 로컬 전체 검사는 [README 검증](./README.md#검증)에 따라 pre-push 훅에 모으며 개발 중에는 변경 부분만 빠르게 확인한다. 배포 CI의 prepare는 로컬 훅 설치를 건너뛴다. 배포 환경에서 하는 검사와 OpenNext 빌드는 환경이 다른 필수 확인이므로 로컬 중복 검사로 간주해 제거하지 않는다.
 
+## 문서 전용 변경
+
+- 앱에서 사용하지 않는 루트 개발 문서만 바뀌면 로컬 pre-push는 문서 연결 검사만 실행한다. 정확한 허용 목록은 [deployment-docs-only.json](./scripts/deployment-docs-only.json) 하나로 관리한다. `.md` 전체·폴더 전체를 제외하지 않는다. 화면에서 읽거나 빌드 입력으로 쓰게 된 문서는 목록과 원격 제외 설정에서 먼저 제거한다.
+- 훅은 마지막 커밋만 보지 않고 푸시 대상의 **원격 기준 커밋부터 현재 HEAD까지** 비교한다. 코드·설정·검사기·의존성·SQL·허용 목록 자체가 섞이면 기존 전체 검사를 유지한다. 새 브랜치·태그·원격 기준 부재·비정상 이력·차이 확인 실패·빈 차이는 전체 검사로 돌아간다. 미커밋 변경 차단은 문서 전용 푸시에도 적용하고, 수동 `npm run check:push`는 항상 전체 검사다.
+- Cloudflare의 centbloom → Settings → Build → Build watch paths에서 Includes는 `*`, Excludes는 JSON의 정확한 파일 경로로 맞춘다. 기존 빌드·배포 명령, 브랜치, 캐시, 환경 변수·권한은 바꾸지 않는다. 제외 설정은 Git 파일 변경만으로 적용되지 않으므로 저장 뒤 재조회하고 실제 적용 여부는 [진행판](./PROJECT_STATUS.md#환경별-진행-상태)에 기록한다.
+- [Cloudflare 경로 판정](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/)은 제외되지 않은 변경이 하나라도 있으면 빌드한다. 빈 변경 이벤트·3,000개 이상 파일·20개 이상 커밋은 경로 판정을 생략하고 빌드하므로 모든 문서 푸시의 생략을 보장하지 않는다. 수동 재배포는 이 최적화와 별개다.
+- 배포 후 결과 문서만 갱신할 때는 문서 검사·저장으로 끝내며, 새 앱 배포를 기다리거나 완료 보고를 위해 상태 문서를 다시 반복 갱신하지 않는다. 배포 설정 자체를 고친 커밋은 문서 전용이 아니므로 전체 검사 대상이다. 검사 로그는 성공 요약과 실패한 부분만 확인하고 동일 조건의 성공 검사를 수동으로 반복하지 않는다. 토큰·시간 절감률은 실측 없이 주장하지 않는다.
+
 ## 일별 환율 공통 저장소
 
 - 기존 NEWS_CACHE 바인딩 안의 `fx:ecb-krw:v1:` 전용 키를 사용한다. 뉴스 키·개인 계좌·Supabase 테이블을 수정하지 않으며 새로운 유료 서비스나 저장소를 개설하지 않는다. 운영 KV 사용량은 기존 계정 할당량과 합산된다.

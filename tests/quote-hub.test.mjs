@@ -118,3 +118,111 @@ test('removing all consumers aborts every pending symbol and prevents late publi
   assert.equal(requests.length, 2);
   assert.equal(Object.keys(hub.snapshot(['A', 'B']).quotes).length, 0);
 });
+
+function recoveryClock(t) {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1_000 });
+  // Load after installing the clock so the existing VM helper receives its timers.
+  const { createQuoteHub } = loadTypescript('src/features/market/quote-hub.ts');
+  const advance = async ms => {
+    t.mock.timers.tick(ms);
+    for (let turn = 0; turn < 12; turn++) await Promise.resolve();
+  };
+  return { createQuoteHub, advance };
+}
+
+test('transient failures use one shared 1s, 2s, 5s recovery sequence then normal polling', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const hub = createQuoteHub(async symbol => {
+    calls.push({ symbol, at: Date.now() });
+    if (symbol === 'FAIL') throw new Error('upstream unavailable', { cause: 502 });
+    return quote(symbol);
+  });
+  const stopA = hub.subscribe(['FAIL', 'OK'], () => {}), stopB = hub.subscribe(['FAIL'], () => {});
+  t.after(() => { stopA(); stopB(); });
+  await advance(0);
+  assert.deepEqual(calls, [{ symbol: 'FAIL', at: 1_000 }, { symbol: 'OK', at: 1_000 }]);
+  await advance(999); assert.equal(calls.length, 2);
+  await advance(1);
+  await advance(2_000);
+  await advance(5_000);
+  assert.deepEqual(calls.filter(call => call.symbol === 'FAIL').map(call => call.at), [1_000, 2_000, 4_000, 9_000]);
+  await advance(21_999);
+  assert.equal(calls.filter(call => call.symbol === 'FAIL').length, 4);
+  await advance(1);
+  assert.deepEqual(calls.filter(call => call.symbol === 'OK').map(call => call.at), [1_000, 31_000]);
+  await advance(7_999);
+  assert.equal(calls.filter(call => call.symbol === 'FAIL').length, 4);
+  await advance(1);
+  assert.deepEqual(calls.filter(call => call.symbol === 'FAIL').map(call => call.at), [1_000, 2_000, 4_000, 9_000, 39_000]);
+  await advance(29_999);
+  assert.equal(calls.filter(call => call.symbol === 'FAIL').length, 5);
+  await advance(1);
+  assert.equal(calls.filter(call => call.symbol === 'FAIL').at(-1).at, 69_000);
+});
+
+test('permanent 404 and invalid responses do not enter early recovery', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const hub = createQuoteHub(async symbol => {
+    calls.push({ symbol, at: Date.now() });
+    throw symbol === 'MISSING' ? new Error('missing', { cause: 404 }) : new Error('invalid price');
+  });
+  const stop = hub.subscribe(['MISSING', 'INVALID'], () => {}); t.after(stop);
+  await advance(0); await advance(29_999);
+  assert.equal(calls.length, 2);
+  await advance(1);
+  assert.equal(calls.length, 4);
+  assert.ok(calls.slice(2).every(call => call.at === 31_000));
+});
+
+test('recovery retains confirmed data and the failure until success, then resets its backoff', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), gate = deferred();
+  let calls = 0;
+  const confirmed = { ...quote('A'), quotedAt: '2026-09-23T00:00:00Z', fetchedAt: '2026-09-23T00:00:01Z' };
+  const hub = createQuoteHub(async () => {
+    calls++;
+    if (calls === 1) return confirmed;
+    if (calls === 3) return gate.promise;
+    throw new Error('offline', { cause: 'network' });
+  });
+  const stop = hub.subscribe(['A'], () => {}); t.after(() => { stop(); gate.resolve(confirmed); });
+  await advance(0);
+  await hub.refresh();
+  assert.equal(hub.snapshot(['A']).quotes.A, confirmed);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), ['A']);
+  await advance(1_000);
+  assert.equal(calls, 3);
+  assert.equal(hub.snapshot(['A']).refreshing, true);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), ['A']);
+  assert.equal(hub.snapshot(['A']).quotes.A.quotedAt, confirmed.quotedAt);
+  gate.resolve({ ...confirmed, price: 200 }); await advance(0);
+  assert.equal(hub.snapshot(['A']).quotes.A.price, 200);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), []);
+  await hub.refresh();
+  assert.equal(calls, 4);
+  await advance(999); assert.equal(calls, 4);
+  await advance(1); assert.equal(calls, 5, 'success resets the next recovery delay to one second');
+});
+
+test('hidden and released subscriptions suppress scheduled recovery, and shared manual recovery stays deduplicated', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), gate = deferred();
+  const requests = [];
+  const hub = createQuoteHub(async (symbol, signal) => {
+    requests.push({ symbol, signal });
+    if (requests.length === 1) throw new DOMException('timed out', 'TimeoutError');
+    return gate.promise;
+  });
+  const stopA = hub.subscribe(['A'], () => {}), stopB = hub.subscribe(['A'], () => {});
+  t.after(() => { stopA(); stopB(); gate.resolve(quote('A')); });
+  await advance(0);
+  hub.setVisible(false); await advance(10_000);
+  assert.equal(requests.length, 1);
+  hub.setVisible(true); await advance(0);
+  assert.equal(requests.length, 2);
+  await hub.refresh();
+  assert.equal(requests.length, 2);
+  stopA(); assert.equal(requests[1].signal.aborted, false);
+  stopB(); assert.equal(requests[1].signal.aborted, true);
+  gate.resolve(quote('A')); await advance(60_000);
+  assert.equal(requests.length, 2);
+  assert.equal(Object.keys(hub.snapshot(['A']).quotes).length, 0);
+});

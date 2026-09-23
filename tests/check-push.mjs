@@ -30,19 +30,41 @@ export function pushCheckCommands(root) {
   ];
 }
 
+function isDocumentationOnly(root, changes, git) {
+  if (!changes?.length) return false;
+  try {
+    const documents = JSON.parse(readFileSync(resolve(root, "scripts/deployment-docs-only.json"), "utf8"));
+    if (!Array.isArray(documents) || !documents.length
+      || !documents.every((path) => typeof path === "string" && /^[A-Z_]+\.md$/.test(path))) return false;
+    const allowed = new Set(documents);
+    return changes.every(({ localRef, localOid, remoteRef, remoteOid }) => {
+      if (!localRef.startsWith("refs/heads/") || !remoteRef.startsWith("refs/heads/") || /^0+$/.test(remoteOid)) return false;
+      git("rev-parse", `${remoteOid}^{commit}`);
+      git("merge-base", "--is-ancestor", remoteOid, localOid);
+      // Compare the entire outgoing range; disabling renames exposes both source and destination paths.
+      const paths = git("diff", "--name-only", "-z", "--no-renames", remoteOid, localOid, "--");
+      return paths.endsWith("\0") && paths.slice(0, -1).split("\0").every((path) => allowed.has(path));
+    });
+  } catch {
+    // A missing baseline, unreadable policy or failed diff must never skip application checks.
+    return false;
+  }
+}
+
 export function checkPush({ cwd = process.cwd(), updates, env = process.env, execute = spawnSync, log = console.log } = {}) {
   const changes = updates?.filter(({ localOid, remoteOid }) => !/^0+$/.test(localOid) && localOid !== remoteOid);
   if (changes?.length === 0) {
     log("[push check] No new objects to check (deletion or unchanged refs).");
     return;
   }
-  const git = (...args) => {
+  const gitOutput = (...args) => {
     const result = execute("git", args, { cwd, env, encoding: "utf8", windowsHide: true });
     if (result.error || result.status !== 0) {
       throw new Error(`Git inspection failed: ${result.error?.message ?? result.stderr?.trim() ?? args.join(" ")}`);
     }
-    return result.stdout.trim();
+    return result.stdout;
   };
+  const git = (...args) => gitOutput(...args).trim();
   const root = git("rev-parse", "--show-toplevel");
   const localGitVariables = git("rev-parse", "--local-env-vars").split(/\r?\n/);
   env = { ...env };
@@ -62,7 +84,10 @@ export function checkPush({ cwd = process.cwd(), updates, env = process.env, exe
     }
   };
   assertUnchanged();
-  for (const [label, args] of pushCheckCommands(root)) {
+  const docsOnly = isDocumentationOnly(root, changes, gitOutput);
+  const commands = docsOnly ? [["Documentation", ["tests/check-docs.mjs"]]] : pushCheckCommands(root);
+  if (docsOnly) log("[push check] Only allowlisted documentation changed across all outgoing refs; checking documentation.");
+  for (const [label, args] of commands) {
     log(`[push check] ${label}`);
     const result = execute(process.execPath, args, { cwd: root, env, stdio: "inherit", windowsHide: true });
     if (result.error || result.status !== 0) {
@@ -70,7 +95,7 @@ export function checkPush({ cwd = process.cwd(), updates, env = process.env, exe
     }
   }
   assertUnchanged();
-  log("[push check] All checks passed for the current committed HEAD.");
+  log(`[push check] ${docsOnly ? "Documentation checks" : "All checks"} passed for the current committed HEAD.`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

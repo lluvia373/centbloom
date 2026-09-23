@@ -1,6 +1,7 @@
 import { createRequestCache } from "@/shared/async/request-cache";
 import type { MidnightBaseline } from "@/features/market/baseline";
 import type { IntradayRange, IntradaySeries } from "@/features/market/intraday";
+import type { QuoteBatchResult } from "@/features/market/quote-batch";
 import { FX_HISTORY_MAX_CARRY_DAYS, fxToday, shiftFxDate, validFxDate, type DailyFxSeries } from "@/features/market/fx-history";
 import { BASE_CURRENCY, normalizeCurrency } from "./currency";
 import type { MarketFilter } from "./markets";
@@ -47,7 +48,7 @@ function recoverableRequest<T>(
   key: string,
   label: string,
   loader: (signal: AbortSignal) => Promise<T>,
-  options: { signal?: AbortSignal; ttlMs: number; timeoutMs?: number },
+  options: { signal?: AbortSignal; ttlMs: number; timeoutMs?: number; priority?: "normal" | "interactive" },
 ): Promise<T> {
   const diagnostic = (event: string, error: unknown) => console.warn(event, {
     request: key,
@@ -71,7 +72,9 @@ function recoverableRequest<T>(
     diagnostic("market_request_failed", error);
     const detail = error instanceof Error ? error.message : "시장 데이터 조회 실패";
     // Keep the status for the suspended-listing 404 fallback; never return partial data.
-    throw new Error(`${label}: ${detail}`, { cause: error instanceof Error ? error.cause : undefined });
+    const failure = new Error(`${label}: ${detail}`, { cause: error instanceof Error ? error.cause : undefined });
+    if (error instanceof Error && error.name === "TimeoutError") failure.name = error.name;
+    throw failure;
   });
 }
 export function searchStocks(
@@ -109,6 +112,35 @@ export function getQuote(
     },
     { signal, ttlMs: 5_000, timeoutMs: symbol.endsWith("=X") ? 60_000 : 20_000 },
   );
+}
+export function getQuotes(symbols: string[], signal?: AbortSignal): Promise<QuoteBatchResult> {
+  const requested = [...new Set(symbols.map(symbol => symbol.trim().toUpperCase()))].sort();
+  if (!requested.length || requested.length > 50 || requested.some(symbol =>
+    !/^[A-Z0-9.^=_-]{1,40}$/.test(symbol) || symbol.endsWith("=X")))
+    return Promise.reject(new Error("묶음 시세의 종목 목록이 올바르지 않습니다.", { cause: 400 }));
+  const params = new URLSearchParams({ symbols: requested.join(",") });
+  const key = `quotes:${requested.join(",")}`;
+  return recoverableRequest(key, "묶음 시세 조회", async s => {
+    const result = await json<QuoteBatchResult>(`/api/quotes?${params}`, s);
+    if (!result || typeof result.quotes !== "object" || !result.quotes || Array.isArray(result.quotes) ||
+      typeof result.errors !== "object" || !result.errors || Array.isArray(result.errors))
+      throw new Error("묶음 시세 응답을 확인하지 못했습니다.", { cause: 502 });
+    const quotes: QuoteBatchResult["quotes"] = {}, errors: QuoteBatchResult["errors"] = {};
+    for (const symbol of requested) {
+      const hasQuote = Object.hasOwn(result.quotes, symbol), hasError = Object.hasOwn(result.errors, symbol);
+      const quote = result.quotes[symbol], error = result.errors[symbol];
+      if (hasQuote && !hasError && quote && quote.symbol === symbol && Number.isFinite(quote.price) &&
+        quote.price > 0 && /^(?:[A-Z]{3}|GBp)$/.test(quote.currency)) quotes[symbol] = quote;
+      else if (hasError && !hasQuote && error && typeof error.message === "string" && error.message.trim() &&
+        Number.isInteger(error.status) && error.status >= 400 && error.status <= 599) errors[symbol] = error;
+      else errors[symbol] = { message: `${symbol} 시세의 종목·통화·가격을 확인하지 못했습니다.`, status: 502 };
+    }
+    return { quotes, errors };
+  }, { signal, ttlMs: 5_000, timeoutMs: 20_000, priority: "interactive" }).then(result => {
+    // Partial successes may display immediately, but a failed member must not be cached.
+    if (Object.keys(result.errors).length) marketRequests.invalidate(key);
+    return result;
+  });
 }
 export function getChart(
   symbol: string,

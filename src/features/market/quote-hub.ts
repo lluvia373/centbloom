@@ -5,6 +5,8 @@ type QuoteState = {
   checkedAt: number | null;
   refreshing: boolean;
   version: number;
+  failures: number;
+  nextAttemptAt: number;
 };
 export interface QuoteView {
   quotes: Record<string, StockQuote>;
@@ -20,6 +22,11 @@ const EMPTY: QuoteView = {
   loading: false,
   refreshing: false,
 };
+const RECOVERY_DELAYS = [1_000, 2_000, 5_000];
+function transientFailure(error: unknown) {
+  return error instanceof Error && (error.name === "TimeoutError" || error.cause === "network" ||
+    (typeof error.cause === "number" && [408, 429, 500, 502, 503, 504].includes(error.cause)));
+}
 
 /** One timer and one request per symbol, independent of the number of consumers. */
 export function createQuoteHub(
@@ -43,8 +50,7 @@ export function createQuoteHub(
   };
   const scheduleNext = () => {
     const next = wanted().filter((symbol) => !requests.has(symbol)).map((symbol) => {
-      const checkedAt = states.get(symbol)?.checkedAt;
-      return checkedAt ? Math.max(0, interval - (Date.now() - checkedAt)) : 0;
+      return Math.max(0, (states.get(symbol)?.nextAttemptAt ?? 0) - Date.now());
     });
     clearTimeout(timer);
     if (next.length) schedule(Math.min(...next));
@@ -54,8 +60,7 @@ export function createQuoteHub(
     const symbols = wanted().filter(
       (s) =>
         !requests.has(s) && (force ||
-        !states.get(s)?.checkedAt ||
-        Date.now() - states.get(s)!.checkedAt! >= interval),
+        (states.get(s)?.nextAttemptAt ?? 0) <= Date.now()),
     );
     if (!symbols.length) {
       scheduleNext();
@@ -71,6 +76,8 @@ export function createQuoteHub(
         checkedAt: old?.checkedAt ?? null,
         refreshing: true,
         version: (old?.version ?? 0) + 1,
+        failures: old?.failures ?? 0,
+        nextAttemptAt: old?.nextAttemptAt ?? 0,
       });
       return { symbol: s, controller };
     });
@@ -81,23 +88,33 @@ export function createQuoteHub(
         try {
           controller.signal.throwIfAborted();
           const quote = await load(symbol, controller.signal);
-          if (current())
+          if (current()) {
+            const now = Date.now();
             states.set(symbol, {
               quote,
               failed: false,
-              checkedAt: Date.now(),
+              checkedAt: now,
               refreshing: false,
               version: (states.get(symbol)?.version ?? 0) + 1,
+              failures: 0,
+              nextAttemptAt: now + interval,
             });
-        } catch {
+          }
+        } catch (error) {
           if (current()) {
             const old = states.get(symbol)!;
+            const failures = Math.min(old.failures + 1, RECOVERY_DELAYS.length + 1);
+            const delay = transientFailure(error) ? RECOVERY_DELAYS[failures - 1] ?? interval : interval;
+            const now = Date.now();
             states.set(symbol, {
               ...old,
               failed: true,
-              checkedAt: Date.now(),
+              checkedAt: now,
               refreshing: false,
               version: old.version + 1,
+              failures,
+              // Recover after the transport's own retry, without fast polling forever.
+              nextAttemptAt: now + Math.min(interval, delay),
             });
           }
         } finally {
