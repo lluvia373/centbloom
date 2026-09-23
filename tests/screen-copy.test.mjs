@@ -283,7 +283,8 @@ test('portfolio overview: the embedded graph keeps period controls and loading s
  const ready=render(PerformanceAnalytics);checkFrame(ready);
  assert.equal(ready.split('ASSET_GRAPH_ONCE').length-1,1);assert.doesNotMatch(ready,/RETURN_GRAPH/);
  assert.match(ready,/role="group" aria-label="조회 기간"/);assert.match(ready,/role="group" aria-label="조회 날짜"/);
- for(const label of ['1주','1개월','3개월','올해','1년','전체'])assert.ok(ready.includes(`>${label}</button>`));
+ for(const label of ['1일','5일','1개월','3개월','올해','1년','전체'])assert.ok(ready.includes(`>${label}</button>`));
+ assert.doesNotMatch(ready,/>1주<\/button>/);
  for(const label of ['시작일','종료일']){
   const inputId=ready.match(new RegExp(`<label for="([^"]+)"[^>]*>${label}</label>`))?.[1];
   assert.ok(inputId);assert.ok(ready.includes(`<input id="${inputId}"`));

@@ -16,6 +16,11 @@ const trade = (changes = {}) => ({
 });
 const sell = trade({ id: 'sell', type: 'sell', date: '2026-09-21', price: 2_000_000, createdAt: '2026-09-21T00:00:00.000Z' });
 const add = (records, record) => applyCommand(records, { type: 'add', transaction: record }).transactions;
+const usdConversionQuote = {
+  symbol: 'USDKRW=X', name: 'USDKRW=X', price: 1400, currency: 'KRW', change: 0, changePercent: 0,
+  quotedAt: '2026-09-22T00:00:00.000Z', fetchedAt: '2026-09-22T00:01:00.000Z',
+  marketState: 'REGULAR', source: 'yahoo-quote',
+};
 
 test('holdings-only lifecycle: one million doubles, full sale leaves zero assets without deleting trades', () => {
   const records = add([], trade());
@@ -132,11 +137,28 @@ test('USD history can keep its conversion quote after full sale without blocking
   assert.equal(pending.market.loading, false);
   assert.equal(pending.market.currentUsdKrwRate, null);
   assert.deepEqual(pending.calls.filter(call => call.enabled).flatMap(call => call.symbols), ['USDKRW=X']);
-  const confirmed = marketProvider(ledger, 'USD', { quotes: { 'USDKRW=X': { price: 1400 } } })();
+  const confirmed = marketProvider(ledger, 'USD', { quotes: { 'USDKRW=X': usdConversionQuote },
+    checkedAt: Date.parse(usdConversionQuote.fetchedAt) })();
   assert.equal(confirmed.market.currentUsdKrwRate, 1400);
   const failed = marketProvider(ledger, 'USD', { failedSymbols: ['USDKRW=X'] })();
   assert.equal(failed.market.summary.totalValue, 0);
   assert.match(failed.market.marketDataError, /업데이트하지 못했습니다/);
+});
+
+test('zero holdings do not allow unverified or valuation-only FX into current USD history conversion', () => {
+  const ledger = { transactions: [trade(), sell], revision: 'sold', status: 'ready' };
+  for (const quote of [
+    { price: 1400 },
+    { ...usdConversionQuote, quotedAt: undefined },
+    { ...usdConversionQuote, quotedAt: '2026-09-21T00:00:00.000Z' },
+    { ...usdConversionQuote, fx: { method: 'direct', components: [], valuationOnly: true } },
+  ]) {
+    const { market } = marketProvider(ledger, 'USD', { quotes: { 'USDKRW=X': quote },
+      checkedAt: Date.parse(usdConversionQuote.fetchedAt) })();
+    assert.equal(market.currentUsdKrwRate, null);
+    assert.equal(market.summary.totalValue, 0);
+    assert.equal(market.loading, false);
+  }
 });
 
 test('confirmed empty holdings show zero asset and unrealized amounts without an invented return percentage', () => {
