@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
+import { useMarketClock } from "@/features/market/use-market-clock";
 import { ChevronDown } from "lucide-react";
 import { calendars, rankMarketSessions, visibleMarketSessions, sessionTransition, kstTimelineDay, timelineHours } from "@/features/market/schedule";
 import { MarketSessionCard } from "./MarketSessionCard";
@@ -8,24 +9,7 @@ import styles from "./MarketSessions.module.css";
 export function MarketSessions({ initialNow }: { initialNow: number }) {
   const chartId = useId();
   const [expanded, setExpanded] = useState(false);
-  const [now, setNow] = useState(initialNow);
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | undefined;
-    const resume = () => {
-      if (timer) clearInterval(timer);
-      timer = undefined;
-      if (document.visibilityState !== "hidden") {
-        setNow(Date.now());
-        timer = setInterval(() => setNow(Date.now()), 30_000);
-      }
-    };
-    resume();
-    document.addEventListener("visibilitychange", resume);
-    return () => {
-      if (timer) clearInterval(timer);
-      document.removeEventListener("visibilitychange", resume);
-    };
-  }, []);
+  const now = useMarketClock(initialNow);
   const ranked = rankMarketSessions(calendars, now);
   const rows = visibleMarketSessions(ranked);
   const us = rows.find(item => item.calendar.id === "US")!;

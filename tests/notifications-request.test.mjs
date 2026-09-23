@@ -15,7 +15,10 @@ function setup(t, response = () => new Promise(() => {})) {
     const call = { name, payload }; calls.push(call);
     const task = response(call);
     const builder = {
-      select() { return this; }, eq() { return this; }, maybeSingle() { return this; },
+      select(columns) { call.columns=columns;return this; },
+      eq(column,value) { (call.equals??=[]).push([column,value]);return this; },
+      is(column,value) { call.is=[column,value];return this; },
+      limit(value) { call.limit=value;return this; }, maybeSingle() { return this; },
       abortSignal(signal) { call.signal = signal; return this; },
       setHeader(name, value) { call[name] = value; return this; },
       then(resolve, reject) { return Promise.resolve(task).then(resolve, reject); },
@@ -34,7 +37,7 @@ function setup(t, response = () => new Promise(() => {})) {
 }
 
 for (const [method, args] of [
-  ['visit', ['visit-id']], ['list', []], ['markRead', ['event-id']],
+  ['visit', ['visit-id']], ['list', []], ['hasUnread', []], ['markRead', ['event-id']],
   ['follow', ['request-id', 'guru', true]], ['followed', ['guru']],
 ]) {
   test(`${method} bounds an unresponsive request without aborting its caller`, async t => {
@@ -96,4 +99,24 @@ test('account changes still reject otherwise successful responses without caller
   const rejected = assert.rejects(pending, /계정이 변경/);
   await settle(); state.setAccount('B'); wait.resolve({ data: { active: true }, error: null });
   await rejected;
+});
+
+test('unread presence checks the owning account across all deliveries, not the latest page', async t => {
+  const state=setup(t,()=>({data:[{event_id:'older-than-first-50'}],error:null}));
+  assert.equal(await state.notificationRepository('A',new AbortController().signal).hasUnread(),true);
+  assert.equal(state.calls[0].name,'account_notifications');
+  assert.equal(state.calls[0].columns,'event_id');
+  assert.deepEqual(state.calls[0].equals,[['user_id','A']]);
+  assert.deepEqual(state.calls[0].is,['read_at',null]);
+  assert.equal(state.calls[0].limit,1);
+});
+
+test('an empty unread query means none; failed or malformed results never mean none', async t => {
+  let response={data:[],error:null};
+  const state=setup(t,()=>response),repo=state.notificationRepository('A',new AbortController().signal);
+  assert.equal(await repo.hasUnread(),false);
+  response={data:null,error:{code:'42501',message:'denied'}};
+  await assert.rejects(repo.hasUnread(),/새 알림 여부/);
+  response={data:null,error:null};
+  await assert.rejects(repo.hasUnread(),/새 알림 여부/);
 });

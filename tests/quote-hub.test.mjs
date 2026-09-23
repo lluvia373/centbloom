@@ -232,3 +232,173 @@ test('hidden and released subscriptions suppress scheduled recovery, and shared 
   assert.equal(requests.length, 2);
   assert.equal(Object.keys(hub.snapshot(['A']).quotes).length, 0);
 });
+
+test('re-entry reuses a normal public quote immediately without restarting its refresh interval', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t);
+  let calls = 0;
+  const confirmed = { ...quote('A'), quotedAt: '1970-01-01T00:00:00Z', fetchedAt: '1970-01-01T00:00:01Z' };
+  const hub = createQuoteHub(async () => { calls++; return { ...confirmed, fetchedAt: new Date().toISOString() }; });
+  let stop = hub.subscribe(['A'], () => {}); t.after(() => stop());
+  await advance(0);
+  const first = hub.snapshot(['A']);
+  stop(); await advance(10_000);
+  assert.equal(calls, 1, 'no polling when there are no consumers');
+  assert.equal(hub.snapshot(['A']).quotes.A, first.quotes.A, 'React can read retained data before subscribing');
+  assert.equal(hub.snapshot(['A']).loading, false);
+  assert.equal(hub.snapshot(['A']).refreshing, false);
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.equal(calls, 1);
+  assert.equal(hub.snapshot(['A']).checkedAt, first.checkedAt);
+  assert.equal(hub.snapshot(['A']).quotes.A.quotedAt, confirmed.quotedAt);
+  await advance(19_999); assert.equal(calls, 1);
+  await advance(1); assert.equal(calls, 2, 'refresh is due at the original deadline, not 30s after re-entry');
+});
+
+test('expired retained data disappears before re-subscription and late cancellation cannot refresh it', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), pending = [];
+  const hub = createQuoteHub((symbol, signal) => {
+    const completion = deferred(); pending.push({ signal, ...completion }); return completion.promise;
+  });
+  let stop = hub.subscribe(['A'], () => {});
+  t.after(() => { stop(); pending.forEach(request => request.resolve(quote('A'))); });
+  await advance(0); pending[0].resolve(quote('A')); await advance(0);
+  const old = hub.snapshot(['A']).quotes.A;
+  const refreshing = hub.refresh(); await advance(0);
+  stop(); assert.equal(pending[1].signal.aborted, true);
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.equal(hub.snapshot(['A']).quotes.A, old);
+  assert.equal(hub.snapshot(['A']).refreshing, false);
+  pending[1].resolve(quote('A', 1)); await refreshing;
+  assert.equal(hub.snapshot(['A']).quotes.A, old);
+  stop(); await advance(30_000);
+  assert.equal(pending.length, 2);
+  assert.equal(hub.snapshot(['A']).quotes.A, undefined);
+  assert.equal(hub.snapshot(['A']).loading, true);
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.equal(pending.length, 3);
+  assert.equal(hub.snapshot(['A']).quotes.A, undefined);
+  pending[2].resolve(quote('A', 200)); await advance(0);
+  assert.equal(hub.snapshot(['A']).quotes.A.price, 200);
+});
+
+test('original fetchedAt bounds reuse and already expired responses never become normal cold-screen data', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const valid = { ...quote('A'), fetchedAt: '1970-01-01T00:00:00Z', quotedAt: '1969-12-31T23:59:00Z', fx: { valuationOnly: true } };
+  const hub = createQuoteHub(async symbol => { calls.push(symbol); return symbol === 'A' ? valid : { ...quote(symbol), fetchedAt: '1969-12-31T23:59:30Z' }; });
+  let stop = hub.subscribe(['A', 'EXPIRED'], () => {}); t.after(() => stop());
+  await advance(0);
+  assert.equal(hub.snapshot(['A']).quotes.A, valid, 'provider timestamps and valuation-only metadata are untouched');
+  assert.equal(hub.snapshot(['EXPIRED']).quotes.EXPIRED, undefined);
+  assert.deepEqual(Array.from(hub.snapshot(['EXPIRED']).failedSymbols), ['EXPIRED']);
+  await advance(0); assert.equal(calls.length, 2, 'expired responses do not create an immediate retry loop');
+  stop(); await advance(28_999);
+  assert.equal(hub.snapshot(['A']).quotes.A, valid);
+  await advance(1);
+  assert.equal(hub.snapshot(['A']).quotes.A, undefined, 'original fetch expires at 30s, not receipt time plus 30s');
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.equal(hub.snapshot(['A']).quotes.A, undefined);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), ['A']);
+  assert.equal(calls.length, 3);
+  await advance(0); assert.equal(calls.length, 3);
+});
+
+test('repeated expired responses use 1/2/5-second recovery before returning to the normal interval', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const hub = createQuoteHub(async () => {
+    calls.push(Date.now());
+    return { ...quote('EXPIRED'), fetchedAt: '1969-12-31T23:59:30Z' };
+  });
+  const stop = hub.subscribe(['EXPIRED'], () => {}); t.after(stop);
+  await advance(0);
+  assert.deepEqual(calls, [1_000]);
+  for (const [delay, expected] of [[1_000, 2_000], [2_000, 4_000], [5_000, 9_000], [30_000, 39_000]]) {
+    const count = calls.length;
+    await advance(delay - 1);
+    assert.equal(calls.length, count);
+    await advance(1);
+    assert.equal(calls.at(-1), expected);
+    assert.equal(calls.length, count + 1);
+  }
+  assert.equal(hub.snapshot(['EXPIRED']).quotes.EXPIRED, undefined);
+  assert.deepEqual(Array.from(hub.snapshot(['EXPIRED']).failedSymbols), ['EXPIRED']);
+});
+
+test('one released symbol is retained while other consumers remain, without hidden polling', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const hub = createQuoteHub(async symbol => { calls.push(symbol); return quote(symbol); });
+  let stopA = hub.subscribe(['A'], () => {}), stopB = hub.subscribe(['B'], () => {});
+  t.after(() => { stopA(); stopB(); });
+  await advance(0); stopA();
+  hub.setVisible(false); await advance(10_000);
+  stopA = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.deepEqual(calls, ['A', 'B']);
+  assert.equal(hub.snapshot(['A']).quotes.A.price, 100);
+  hub.setVisible(true); await advance(0);
+  assert.deepEqual(calls, ['A', 'B']);
+  stopA(); stopB(); await advance(60_000);
+  assert.deepEqual(calls, ['A', 'B']);
+});
+
+test('re-entry preserves transient failure backoff rather than restarting fast recovery', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const hub = createQuoteHub(async () => { calls.push(Date.now()); throw new Error('offline', { cause: 'network' }); });
+  let stop = hub.subscribe(['A'], () => {}); t.after(() => stop());
+  await advance(0); stop(); await advance(500);
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.deepEqual(calls, [1_000]);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), ['A']);
+  await advance(500); stop(); await advance(500);
+  stop = hub.subscribe(['A'], () => {}); await advance(0);
+  assert.deepEqual(calls, [1_000, 2_000]);
+  await advance(1_500);
+  assert.deepEqual(calls, [1_000, 2_000, 4_000]);
+});
+
+test('re-entry and manual refresh cannot bypass a retained 429 deadline or hide its previous-price error', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t);
+  let calls = 0;
+  const confirmed = quote('A');
+  const hub = createQuoteHub(async () => {
+    calls++;
+    if (calls === 2) { const failure = new Error('limited', { cause: 429 }); failure.retryAfterMs = 120_000; throw failure; }
+    return confirmed;
+  });
+  let stop = hub.subscribe(['A'], () => {}); t.after(() => stop());
+  await advance(0); await hub.refresh(); stop(); await advance(30_000);
+  const previous = hub.snapshot(['A']);
+  assert.equal(previous.quotes.A, confirmed);
+  assert.deepEqual(Array.from(previous.failedSymbols), ['A']);
+  stop = hub.subscribe(['A'], () => {}); await advance(0); await hub.refresh();
+  assert.equal(calls, 2);
+  hub.setVisible(false); await advance(89_999);
+  hub.setVisible(true); await advance(0); assert.equal(calls, 2);
+  await advance(1); assert.equal(calls, 3);
+  assert.deepEqual(Array.from(hub.snapshot(['A']).failedSymbols), []);
+});
+
+test('inactive quote retention is bounded without dropping active holdings or live rate-limit guards', async t => {
+  const { createQuoteHub, advance } = recoveryClock(t), calls = [];
+  const symbols = Array.from({ length: 300 }, (_, index) => `S${index}`);
+  let limited = false;
+  const hub = createQuoteHub(async symbol => {
+    calls.push(symbol);
+    if (limited) throw new Error('limited', { cause: 429 });
+    return quote(symbol);
+  });
+  let stop = hub.subscribe(symbols, () => {}); t.after(() => stop());
+  await advance(0);
+  assert.equal(Object.keys(hub.snapshot(symbols).quotes).length, 300, 'active holdings are not capped');
+  stop();
+  assert.equal(Object.keys(hub.snapshot(symbols).quotes).length, 256);
+  assert.equal(hub.snapshot(['S0']).quotes.S0, undefined);
+  assert.equal(hub.snapshot(['S299']).quotes.S299.price, 100);
+  stop = hub.subscribe(symbols, () => {}); await advance(0);
+  assert.equal(calls.length, 344, 'only 44 evicted symbols reload');
+  limited = true; await hub.refresh(); stop();
+  const retained = hub.snapshot(symbols);
+  assert.equal(Object.keys(retained.quotes).length, 256);
+  assert.equal(retained.failedSymbols.length, 300, 'only minimal guard metadata survives beyond the quote limit');
+  assert.equal(hub.snapshot(['S44']).quotes.S44, undefined);
+  stop = hub.subscribe(['S44'], () => {}); await advance(0); await hub.refresh();
+  assert.equal(calls.length, 644, 'evicting a price never bypasses the rate-limit deadline');
+});

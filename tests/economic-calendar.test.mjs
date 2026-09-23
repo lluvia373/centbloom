@@ -54,6 +54,7 @@ test("home shows upcoming releases and real recent results with direct links, wi
  const events=marketEvents.map(scheduleRelease);
  const cpi=events.find(event=>event.id==="cpi-09");
  Object.assign(cpi,{actual:"0.4",previous:"0.1",unit:"%",detail:"8월 CPI · 전월 대비"});
+ Object.assign(events.find(event=>event.id==="ppi-09"),{actual:"0",previous:"0.1",unit:"%"});
  const earnings=(symbol,at)=>({...scheduleRelease({id:"earnings:"+symbol,at,title:symbol+" 실적 발표",detail:"분기 실적",source:{label:"기업",url:""}}),
   kind:"earnings",seriesKey:"earnings:"+symbol,earnings:{symbol,currency:"USD",eps:{actual:null,forecast:null,previous:null},revenue:{actual:null,forecast:null,previous:null}}});
  events.push(earnings("AAPL","2026-09-14T00:00:00Z"),earnings("OTHER","2026-09-15T00:00:00Z"));
@@ -69,13 +70,28 @@ test("home shows upcoming releases and real recent results with direct links, wi
  assert.deepEqual(queries,["agenda=2026-09-13"]);
  assert.match(html,/다가오는 일정/);assert.match(html,/KST/);
  assert.match(html,/aria-label="예정된 발표"/);assert.match(html,/aria-label="최근 발표"/);
- assert.equal((html.match(/<li\b/g)||[]).length,6);
+ assert.equal((html.match(/<li\b/g)||[]).length,4);
  assert.match(html,/AAPL 실적 발표/);assert.match(html,/관심종목/);
  assert.doesNotMatch(html,/OTHER 실적 발표|연준 기자회견|미국 기업 재고/);
  assert.match(html,/href="\/calendar\/retail-09\?from=%2F"/);
  assert.match(html,/href="\/calendar\/cpi-09\?from=%2F"/);
+ assert.doesNotMatch(html,/href="\/calendar\/ppi-09/);
  assert.match(html,/0\.4 %/);assert.match(html,/이전보다/);assert.match(html,/0\.3%p/);
+ assert.match(html,/data-compact="true"/);
+ assert.doesNotMatch(html,/class="observation"/);
  assert.doesNotMatch(html,/aria-pressed=|0건|2건|<dialog|target="_blank"|중요/);
+});
+
+test("compact agenda keeps actual, forecast, previous values and units while default agenda keeps its explanation",()=>{
+ const {UpcomingCalendar}=loadTypescript("src/features/calendar/UpcomingCalendar.tsx",{"./upcoming-calendar.module.css":styles});
+ const release={...scheduleRelease(marketEvents[0]),actual:"0",forecast:"0.3",previous:"0.2",unit:"%",detail:"발표 해석 문구"};
+ const props={upcoming:[],recent:[release]};
+ const compact=renderToStaticMarkup(React.createElement(UpcomingCalendar,{...props,compact:true}));
+ assert.match(compact,/발표<\/dt><dd>0 %/);assert.match(compact,/예상<\/dt><dd>0\.3 %/);assert.match(compact,/이전<\/dt><dd>0\.2 %/);
+ assert.match(compact,/0\.2%p 낮음/);assert.doesNotMatch(compact,/발표 해석 문구/);
+ assert.match(compact,/href="\/calendar\//);
+ const standard=renderToStaticMarkup(React.createElement(UpcomingCalendar,props));
+ assert.match(standard,/발표 해석 문구/);assert.doesNotMatch(standard,/data-compact/);
 });
 
 test("calendar details are public while unrelated nested/private paths remain protected",()=>{

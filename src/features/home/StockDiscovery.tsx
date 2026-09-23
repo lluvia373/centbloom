@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useStockSearch } from "@/features/market/use-stock-search";
 import { AssetAvatar } from "@/components/AssetAvatar";
 import styles from "./stock-discovery.module.css";
-export function StockDiscovery({ expanded = false }: { expanded?: boolean }) {
+export function StockDiscovery({ expanded = false, compact = false }: { expanded?: boolean; compact?: boolean }) {
   const { user, loading: authLoading } = useAuth();
   const { record } = useRecentSearches(authLoading ? null : user?.id ?? null);
   const [query, setQuery] = useState("");
@@ -30,7 +30,7 @@ export function StockDiscovery({ expanded = false }: { expanded?: boolean }) {
         <Search size={20} />
         <input
           aria-label="종목 정보 검색"
-          placeholder="종목명·티커로 정보 찾기"
+          placeholder={compact ? "종목명 또는 티커" : "종목명·티커로 정보 찾기"}
           value={query}
           onFocus={() => setFocused(true)}
           onChange={(event) => setQuery(event.target.value)}

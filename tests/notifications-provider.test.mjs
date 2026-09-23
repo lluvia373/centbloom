@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import * as jsxRuntime from 'react/jsx-runtime';
+import ts from 'typescript';
 import { loadTypescript } from './load-typescript.mjs';
 
 // The existing TypeScript loader and hook-mock pattern let us explicitly order
@@ -63,6 +67,7 @@ test('auth restoration and account changes retain the page reconciliation slot a
     './repository': { notificationRepository: (userId, signal) => ({
       visit: async id => { visits.push({ userId, signal, id }); return { since: null, visitedAt: '2026-09-23T00:00:00Z' }; },
       list: async () => [{ event_id: userId }],
+      hasUnread: async () => true,
     }) },
   });
   const children = { type: 'stateful-page', key: null, props: {} };
@@ -112,8 +117,8 @@ test('auth restoration and account changes retain the page reconciliation slot a
   assert.equal(visits[2].signal.aborted, true);
 });
 
-test('late visit or list completion after account cleanup cannot publish another account or start another query', async () => {
-  for (const waitingAt of ['visit', 'list']) {
+test('late visit, list or unread completion after account cleanup cannot publish another account or start another query', async () => {
+  for (const waitingAt of ['visit', 'list', 'unread']) {
     const hooks = hookHarness(), parent = hooks.frame(), wait = deferred();
     let auth = { configured: true, loading: false, user: { id: 'A' } }, listCalls = 0, signal;
     const { NotificationProvider } = loadTypescript('src/features/notifications/NotificationProvider.tsx', {
@@ -124,6 +129,7 @@ test('late visit or list completion after account cleanup cannot publish another
         return {
           visit: () => waitingAt === 'visit' ? wait.promise : Promise.resolve({ since: null, visitedAt: 'now' }),
           list: () => { listCalls++; return wait.promise; },
+          hasUnread: () => waitingAt === 'unread' ? wait.promise : Promise.resolve(true),
         };
       } },
     });
@@ -136,7 +142,115 @@ test('late visit or list completion after account cleanup cannot publish another
     assert.equal(signal.aborted, true);
     wait.resolve(waitingAt === 'visit' ? { since: null, visitedAt: 'late' } : [{ event_id: 'old-A' }]);
     await settle();
-    assert.equal(listCalls, waitingAt === 'visit' ? 0 : 1);
+    assert.equal(listCalls, 1, 'initial list starts independently, but no post-visit read starts after cleanup');
     assert.equal(render().props.value, null);
   }
+});
+
+function accountHarness(repository,document) {
+  const hooks=hookHarness(),parent=hooks.frame();
+  const overrides={
+    react:hooks.react,
+    'react/jsx-runtime':jsxRuntime,
+    '@/hooks/useAuth':{useAuth:()=>({configured:true,loading:false,user:{id:'A'}})},
+    './repository':{notificationRepository:repository},
+  };
+  const path='src/features/notifications/NotificationProvider.tsx';
+  let exports;
+  if(document){
+    // This one browser-lifecycle test supplies a document to the isolated module;
+    // the shared TypeScript loader intentionally has no browser globals.
+    exports={};
+    const {outputText}=ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}});
+    runInNewContext(outputText,{exports,require:name=>overrides[name],document,crypto,AbortController,console});
+  }else exports=loadTypescript(path,overrides);
+  const {NotificationProvider}=exports;
+  const render=()=>parent.render(NotificationProvider,{children:'page'});
+  const worker=render().props.children[1],frame=hooks.frame();
+  frame.render(worker.type,worker.props);frame.flush();
+  return {
+    inbox(){frame.render(worker.type,worker.props);frame.flush();return render().props.value;},
+    unmount(){frame.unmount();},
+  };
+}
+
+test('existing rows appear before the visit finishes, then newly delivered rows and unread presence are refreshed', async () => {
+  const visit=deferred(),ids=[];
+  let synchronized=false,listCalls=0;
+  const state=accountHarness(()=>({
+    visit:id=>{ids.push(id);return visit.promise;},
+    list:async()=>{listCalls++;return [{event_id:synchronized?'new-event':'saved-event',read_at:synchronized?null:'read'}];},
+    hasUnread:async()=>synchronized,
+  }));
+  await settle();
+  assert.equal(state.inbox().items[0].event_id,'saved-event');
+  assert.equal(state.inbox().ready,true);
+  assert.equal(state.inbox().pending,true);
+  synchronized=true;visit.resolve({since:'2026-09-22',visitedAt:'2026-09-23'});await settle();
+  assert.equal(state.inbox().items[0].event_id,'new-event');
+  assert.equal(state.inbox().hasUnread,true);
+  assert.equal(state.inbox().pending,false);
+  assert.equal(listCalls,2);
+  state.inbox().reload();await settle();
+  assert.equal(listCalls,3,'subsequent refresh has one post-sync read, not two');
+  assert.equal(ids[0],ids[1],'refresh does not advance the visit baseline');
+  state.unmount();
+});
+
+test('unread state is independent of the displayed 50 rows and a query failure stays unknown', async () => {
+  let fails=false;
+  const state=accountHarness(()=>({
+    visit:async()=>({since:null,visitedAt:'now'}),
+    list:async()=>Array.from({length:50},(_,index)=>({event_id:String(index),read_at:'read'})),
+    hasUnread:async()=>{if(fails)throw new Error('unread lookup failed');return true;},
+  }));
+  await settle();
+  assert.equal(state.inbox().hasUnread,true,'an older unread event exists beyond the loaded page');
+  assert.equal(state.inbox().more,true);
+  fails=true;state.inbox().reload();await settle();
+  const inbox=state.inbox();
+  assert.equal(inbox.items.length,50);
+  assert.equal(inbox.ready,true);
+  assert.equal(inbox.error,null,'unread status failure does not hide the readable list');
+  assert.equal(inbox.hasUnread,null);
+  assert.equal(inbox.unreadError,'unread lookup failed');
+  state.unmount();
+});
+
+test('failed read saves can be retried, successful saves recheck all unread events and ignore duplicate clicks', async () => {
+  const row={event_id:'visible',read_at:null};
+  let fails=true,readCalls=0,presenceCalls=0;
+  const state=accountHarness(()=>({
+    visit:async()=>({since:null,visitedAt:'now'}),
+    list:async()=>[row],
+    hasUnread:async()=>{presenceCalls++;return true;},
+    markRead:async()=>{readCalls++;if(fails)throw new Error('save failed');},
+  }));
+  await settle();state.inbox().markRead(row);await settle();
+  assert.equal(state.inbox().items[0].read_at,null);
+  assert.equal(state.inbox().error,'save failed');
+  fails=false;const before=presenceCalls;
+  state.inbox().markRead(row);await settle();
+  assert.ok(state.inbox().items[0].read_at);
+  assert.equal(state.inbox().hasUnread,true,'reading the last visible event cannot clear older unread events');
+  assert.equal(state.inbox().error,null);
+  assert.equal(presenceCalls,before+1);
+  state.inbox().markRead(row);await settle();
+  assert.equal(readCalls,2,'a stale UI callback cannot repeat a confirmed successful save');
+  state.unmount();
+});
+
+test('returning to a visible tab refreshes the same visit, without polling or a listener left after cleanup', async () => {
+  const listeners=new Map(),ids=[];
+  const document={visibilityState:'hidden',addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
+  const state=accountHarness(()=>({
+    visit:async id=>{ids.push(id);return {since:null,visitedAt:'now'};},
+    list:async()=>[],hasUnread:async()=>false,
+  }),document);
+  await settle();
+  listeners.get('visibilitychange')();await settle();
+  assert.equal(ids.length,1,'hidden tabs do not request updates');
+  document.visibilityState='visible';listeners.get('visibilitychange')();await settle();
+  assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);
+  state.unmount();assert.equal(listeners.size,0);
 });

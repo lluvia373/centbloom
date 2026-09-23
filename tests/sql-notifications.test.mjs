@@ -43,6 +43,13 @@ test('notification SQL: account isolation, no-baseline/no-data silence, follows,
  await assert.rejects(db.query('select public.record_notification_event($1)',[JSON.stringify({...same,title:'changed'})]),/identity conflict/);
  for(let i=0;i<51;i++)await event('many-'+i);
  await account(a);await visit();const page=await list();assert.equal(page.length,50);const rest=await list(page.at(-1).delivered_at,page.at(-1).event_id);assert.ok(rest.length>0);assert.ok(rest.every(r=>!page.some(p=>p.event_id===r.event_id)));
+ // The header badge asks for existence across every delivery, not this page.
+ for(const item of page)await rpc('select public.mark_notification_read($1) value',[item.event_id]);
+ assert.ok((await list()).every(item=>item.read_at));
+ const unread=async userId=>(await db.query('select event_id from public.account_notifications where user_id=$1 and read_at is null limit 1',[userId])).rows;
+ assert.equal((await unread(a)).length,1,'an unread event beyond the first 50 still lights the badge');
+ await account(b);assert.equal((await unread(a)).length,0,'RLS rejects another account even with its explicit user ID');
+ assert.equal((await unread(b)).length,0);
  await db.exec('reset role;set role anon');await assert.rejects(visit(),/permission denied/);await assert.rejects(list(),/permission denied/);
  }finally{await db.close();}
 });

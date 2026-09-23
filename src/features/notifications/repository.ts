@@ -10,7 +10,7 @@ export interface VisitWindow { since: string | null; visitedAt: string }
 export function notificationRepository(userId: string, signal: AbortSignal) {
   const client = getSupabaseBrowserClient();
   if (!client) throw new Error("알림을 저장하려면 계정 연결이 필요합니다.");
-  // One operation (including visit → list and session recovery) shares one deadline.
+  // One operation (including visit, list and session recovery) shares one deadline.
   const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   const rpc = async <T>(name: string, payload: Record<string, unknown>): Promise<T> => {
     const result = await runSupabaseRequest(client, userId, s => client.rpc(name,payload).abortSignal(s),requestSignal);
@@ -20,6 +20,13 @@ export function notificationRepository(userId: string, signal: AbortSignal) {
   return {
     visit: (id: string) => rpc<VisitWindow>("visit_notifications",{p_visit:id}),
     list: (before?: NotificationItem) => rpc<NotificationItem[]>("read_notifications",{p_before:before?.delivered_at??null,p_before_id:before?.event_id??null}),
+    hasUnread: async () => {
+      const result = await runSupabaseRequest(client, userId, s => client
+        .from("account_notifications").select("event_id")
+        .eq("user_id", userId).is("read_at", null).limit(1).abortSignal(s), requestSignal);
+      if (result.error || !Array.isArray(result.data)) throw new Error("새 알림 여부를 확인하지 못했습니다.");
+      return result.data.length > 0;
+    },
     markRead: (id:string) => rpc<void>("mark_notification_read",{p_event:id}),
     follow: (id:string,guru:string,active:boolean) => rpc<boolean>("set_guru_follow",{p_request:id,p_guru:guru,p_active:active}),
     followed: async (guru:string) => {

@@ -22,9 +22,62 @@ const store = createPollingStore<string, WatchedStockReport | null>(async (symbo
   return fetchPreparedFeed<WatchedStockReport | null>("/api/stock-report?symbol=" + encodeURIComponent(symbol), combined, request);
 });
 const emptyReports: Record<string, WatchedStockReport> = {};
+// Keep just the last watched response set across a route change. Reports contain
+// public stock facts only, and their original expiry still applies.
+let recentReports = emptyReports;
 const emptyViews: PollingView<WatchedStockReport | null>[] = [];
 let consumers = 0;
 const visibility = () => store.setVisible(document.visibilityState === "visible");
+
+export function getCachedStockReport(symbol: string, now = Date.now()) {
+  const current = store.snapshot(symbol).data;
+  const report = current === undefined ? recentReports[symbol] : current;
+  return report && report.expiresAt > now ? report : undefined;
+}
+
+/** A truthful single-stock view over the same prepared-report store used at home. */
+export function createStockReportObserver(symbol: string, source = store, now = Date.now, initialData = getCachedStockReport(symbol)) {
+  let current: PollingView<WatchedStockReport | null> | undefined;
+  let view = source.empty;
+  let expired = false;
+  const listeners = new Set<() => void>();
+  return {
+    subscribe(listener: () => void) {
+      if (consumers++ === 0) { document.addEventListener("visibilitychange", visibility); visibility(); }
+      listeners.add(listener);
+      const stop = source.subscribe(symbol, listener);
+      return () => {
+        listeners.delete(listener);
+        stop();
+        if (--consumers === 0) document.removeEventListener("visibilitychange", visibility);
+      };
+    },
+    snapshot() {
+      const next = source.snapshot(symbol);
+      const data = next.data === undefined ? initialData : next.data;
+      const hasExpired = !!data && data.expiresAt <= now();
+      if (current !== next || expired !== hasExpired) {
+        current = next;
+        expired = hasExpired;
+        view = hasExpired ? { ...next, data: undefined, failed: true } : data !== next.data ? { ...next, data } : next;
+      }
+      return view;
+    },
+    refresh: () => { listeners.forEach(listener => listener()); void source.refresh(symbol); },
+  };
+}
+
+export function useStockReport(symbol: string) {
+  const observer = useMemo(() => createStockReportObserver(symbol), [symbol]);
+  const view = useSyncExternalStore(observer.subscribe, observer.snapshot, () => store.empty);
+  const expiresAt = view.data?.expiresAt;
+  useEffect(() => {
+    if (!expiresAt) return;
+    const timer = setTimeout(observer.refresh, Math.max(0, expiresAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [expiresAt, observer]);
+  return { ...view, retry: observer.refresh };
+}
 
 /** Cache immutable snapshots at the external-store boundary, including report expiry. */
 export function createWatchedReportObserver(key: string, source = store, now = Date.now) {
@@ -75,6 +128,7 @@ export function useWatchedReports(symbols: string[]) {
   const key = [...new Set(symbols)].sort().join("|");
   const observer = useMemo(() => createWatchedReportObserver(key), [key]);
   const reports = useSyncExternalStore(observer.subscribe, observer.snapshot, () => emptyReports);
+  useEffect(() => { if (Object.keys(reports).length) recentReports = reports; }, [reports]);
   const expiry = Math.min(...Object.values(reports).map(report => report.expiresAt));
   useEffect(() => {
     if (!Number.isFinite(expiry)) return;

@@ -20,8 +20,30 @@ test("short and failed lists retain honest states and no unnecessary expand cont
  const empty=renderTable({data:null,failed:true});assert.match(empty,/종목을 가져오지 못/);assert.doesNotMatch(empty,/더 보기/);
 });
 test("market ranking presents volume first and removes redundant heading copy",()=>{
- const {MarketMovers}=loadTypescript("src/features/home/MarketMovers.tsx",{"./home.module.css":styles,"./DiscoveryShortcuts":{DiscoveryShortcuts:()=>null},"./MoverTable":{MoverTable:({kind})=>React.createElement("p",null,kind)}});
+ const {MarketMovers}=loadTypescript("src/features/home/MarketMovers.tsx",{"./home.module.css":styles,"./market-movers.module.css":styles,"./DiscoveryShortcuts":{DiscoveryShortcuts:()=>null},"./MoverTable":{MoverTable:({kind})=>React.createElement("p",null,kind)}});
  const html=renderToStaticMarkup(React.createElement(MarketMovers));assert.ok(html.indexOf(">active<")<html.indexOf(">gainers<"));assert.match(html,/종목 순위/);assert.doesNotMatch(html,/지금 움직이는|한국 · 해외|미국 주식|순위 기준/);
+});
+
+test("compact home rankings mount only the selected category without a viewport subscription and keep every category reachable",()=>{
+ for(const selected of ["active","gainers","losers"]){
+  let next;
+  const {MarketMovers}=loadTypescript("src/features/home/MarketMovers.tsx",{
+   react:{...React,useState:()=>[selected,value=>{next=value;}],useId:()=>"rank-list",useSyncExternalStore:(subscribe,_,serverSnapshot)=>{
+    // The compact path must work without a window or media query, on both renders.
+    const unsubscribe=subscribe(()=>{});assert.equal(typeof unsubscribe,"function");unsubscribe();return serverSnapshot();
+   }},
+   "./home.module.css":styles,"./market-movers.module.css":styles,
+   "./MoverTable":{MoverTable:({kind})=>React.createElement("p",{"data-ranking":kind},kind)},
+  });
+  const element=MarketMovers({compact:true});
+  const html=renderToStaticMarkup(element);
+  assert.equal((html.match(/data-ranking=/g)||[]).length,1);
+  assert.match(html,new RegExp('data-ranking="'+selected+'"'));
+  assert.equal((html.match(/aria-controls="rank-list"/g)||[]).length,3);
+  assert.equal((html.match(/aria-pressed="true"/g)||[]).length,1);
+  assert.match(html,/거래량/);assert.match(html,/상승/);assert.match(html,/하락/);
+  for(const button of element.props.actions.props.children){button.props.onClick();assert.equal(next,button.key);}
+ }
 });
 
 test("rank movement remains accessible without displaying internal refresh metadata",()=>{

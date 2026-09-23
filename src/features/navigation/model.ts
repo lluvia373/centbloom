@@ -3,7 +3,6 @@ import { rankingPages } from "@/features/market/ranking-pages";
 export const primaryNavigation = [
   { href: "/", label: "시장", area: "market" },
   { href: "/portfolio", label: "내 투자", area: "investment" },
-  { href: "/settings", label: "설정", area: "settings" },
 ] as const;
 
 export const investmentNavigation = [

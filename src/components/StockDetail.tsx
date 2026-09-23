@@ -6,6 +6,7 @@ import { PriceChange } from "@/components/PriceChange";
 import { QuoteStatus } from "@/components/QuoteStatus";
 import { StockChart } from "@/components/StockChart";
 import { MarketNews } from "@/features/home/MarketNews";
+import { MarketMovementEvidence } from "@/features/market/MarketMovementEvidence";
 import { WatchStockButton } from "@/features/watchlist/WatchStockButton";
 import { useLiveQuotes } from "@/hooks/useLiveQuotes";
 import { formatCompactNumber,formatCurrency } from "@/lib/format";
@@ -20,7 +21,7 @@ import Link from "next/link";
 
 export function StockDetail({ symbol, initialNews }: { symbol: string; initialNews?: NewsFeed | null }) {
   const live=useLiveQuotes([symbol]);const quote=live.quotes[symbol];
-  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={symbol} symbol={symbol} currency={quote?.currency??''} />{quote&&<StockStats quote={quote}/>}<MarketNews key={symbol} symbol={symbol} initialData={initialNews}/></div>;
+  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={`chart:${symbol}`} symbol={symbol} currency={quote?.currency??''} /><MarketMovementEvidence key={`movement:${symbol}`} symbol={symbol}/>{quote&&<StockStats quote={quote}/>}<MarketNews key={`news:${symbol}`} symbol={symbol} initialData={initialNews}/></div>;
 }
 function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof useLiveQuotes> }) {
   const { quotes, loading, refreshing, failedSymbols, refresh } = live;

@@ -27,3 +27,11 @@
 .metricLabel { margin: 0 0 var(--cf-space-2); }
 .notice { margin: 0 0 var(--cf-space-3); font-size: var(--cf-text-label); line-height: var(--cf-leading-body); color: var(--cf-color-muted); }
 .notice button { min-height: 44px; color: var(--cf-color-ink); text-decoration: underline; text-underline-offset: var(--cf-space-1); }
+.eventLink:focus-visible, .allLink:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
+.agenda[data-compact="true"] .eventLink { padding-block: var(--cf-space-3); }
+.agenda[data-compact="true"] .item:first-child .eventLink { padding-top: var(--cf-space-1); }
+.agenda[data-compact="true"] .item:last-child .eventLink { padding-bottom: var(--cf-space-1); }
+.agenda[data-compact="true"] .recent { margin-top: var(--cf-space-4); padding-top: var(--cf-space-3); }
+.agenda[data-compact="true"] .values { display: flex; flex-wrap: wrap; gap: var(--cf-space-2) var(--cf-space-3); padding: 0; background: none; }
+.agenda[data-compact="true"] .values > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--cf-space-1); min-width: 0; }
+.agenda[data-compact="true"] .values dd { margin: 0; font-size: var(--cf-text-label); }

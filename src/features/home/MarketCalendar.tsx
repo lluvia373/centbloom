@@ -26,6 +26,6 @@ export function MarketCalendar({ now }: { now: number }) {
     {feed.failed && <p className={calendarStyles.notice} role="status">
       일정을 새로 불러오지 못했어요. <button type="button" onClick={feed.retry}>다시 시도</button>
     </p>}
-    <UpcomingCalendar {...agenda} />
+    <UpcomingCalendar upcoming={agenda.upcoming.slice(0, 3)} recent={agenda.recent.slice(0, 1)} compact />
   </HomeSection>;
 }

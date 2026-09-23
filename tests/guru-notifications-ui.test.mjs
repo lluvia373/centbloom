@@ -26,6 +26,7 @@ test('notification empty, disconnected, failure, read and unread states have dis
  assert.match(html(),/계정 연결이 필요/);
  state={items:[],ready:true,error:null,pending:false,more:false,reload(){},next(){},markRead(){}};
  assert.match(html(),/새로 확인된 알림이 없습니다/);assert.doesNotMatch(html(),/읽음 표시|더 보기/);
+ state.pending=true;assert.match(html(),/알림 확인 중/);assert.doesNotMatch(html(),/새로 확인된 알림이 없습니다/);state.pending=false;
  state.error='연결 실패';assert.match(html(),/role="alert"/);assert.doesNotMatch(html(),/새로 확인된 알림이 없습니다/);
  state.error=null;state.items=[{event_id:'one',kind:'guru_filing',subject_id:'pershing-square',title:'새 보유 공시',source_url:'https://www.sec.gov/Archives/edgar/example',occurred_at:'2026-09-22T00:00:00Z',read_at:null}];
  assert.match(html(),/읽음 표시/);assert.equal((html().match(/새 보유 공시/g)||[]).length,1);

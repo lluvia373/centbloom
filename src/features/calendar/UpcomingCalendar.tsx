@@ -32,7 +32,7 @@ function Comparison({ event, released }: { event: Release; released: boolean }) 
   })}</div>;
 }
 
-function AgendaItem({ event, released = false }: { event: Release; released?: boolean }) {
+function AgendaItem({ event, released = false, compact = false }: { event: Release; released?: boolean; compact?: boolean }) {
   return <li className={styles.item}>
     <Link href={eventHref(event, "/")} prefetch={false} className={styles.eventLink}>
       <div className={styles.eventMeta}>
@@ -40,20 +40,20 @@ function AgendaItem({ event, released = false }: { event: Release; released?: bo
         {event.kind === "earnings" && <span className={styles.watchLabel}>관심종목</span>}
       </div>
       <div className={styles.titleRow}><h3>{event.title}</h3><ArrowUpRight size={16} aria-hidden="true" /></div>
-      <p className={styles.observation}>{released ? event.detail : agendaObservation(event)}</p>
+      {!compact && <p className={styles.observation}>{released ? event.detail : agendaObservation(event)}</p>}
       <Comparison event={event} released={released} />
     </Link>
   </li>;
 }
 
-export function UpcomingCalendar({ upcoming, recent }: { upcoming: Release[]; recent: Release[] }) {
-  return <div className={styles.agenda}>
+export function UpcomingCalendar({ upcoming, recent, compact = false }: { upcoming: Release[]; recent: Release[]; compact?: boolean }) {
+  return <div className={styles.agenda} data-compact={compact || undefined}>
     {upcoming.length > 0 && <ul className={styles.list} aria-label="예정된 발표">
-      {upcoming.map(event => <AgendaItem key={event.id} event={event} />)}
+      {upcoming.map(event => <AgendaItem key={event.id} event={event} compact={compact} />)}
     </ul>}
     {recent.length > 0 && <section className={styles.recent} aria-label="최근 발표">
       <div className={styles.recentHeading}>최근 발표</div>
-      <ul className={styles.list}>{recent.map(event => <AgendaItem key={event.id} event={event} released />)}</ul>
+      <ul className={styles.list}>{recent.map(event => <AgendaItem key={event.id} event={event} released compact={compact} />)}</ul>
     </section>}
   </div>;
 }

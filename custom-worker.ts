@@ -6,6 +6,8 @@ import { refreshScheduledNews } from "./src/features/market/server/news-refresh"
 
 import { refreshScheduledWatchedReports } from "./src/features/market/server/watched-report-refresh";
 import { refreshScheduledFxHistory } from "./src/features/market/server/fx-history-store";
+// Inactive without the explicit namespace binding and feature flag described in CLOUDFLARE.md.
+export { MarketQuotes } from "./src/features/market/server/prepared-worker";
 
 export default {
   fetch: handler.fetch,

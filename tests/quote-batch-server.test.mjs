@@ -22,7 +22,8 @@ function server(handler = symbols => symbols.map(symbol => row(symbol)), now = D
       return handler(symbols, signal);
     } },
   };
-  return { calls, provider, ...loadTypescript('src/features/market/server/quote.ts', { './provider': provider }) };
+  const source = loadTypescript('src/features/market/server/quote-source.ts', { './provider': provider });
+  return { calls, provider, ...source, fetchQuotes: source.fetchProviderQuotes, fetchQuote: source.fetchProviderQuote };
 }
 
 test('batch symbols normalize and deduplicate, while invalid, empty and FX groups fail before provider work', async () => {

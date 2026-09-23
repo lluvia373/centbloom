@@ -293,21 +293,6 @@
   color: var(--cf-color-muted);
 }
 
-.workspaceGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: var(--cf-space-6);
-  align-items: start;
-}
-.eventColumn {
-  min-width: 0;
-}
-.researchRail {
-  display: grid;
-  gap: var(--cf-space-4);
-  min-width: 0;
-}
-
 .deskAction {
   display: flex;
   align-items: center;
@@ -333,11 +318,6 @@
   .rankingGrid {
     gap: var(--cf-space-3);
   }
-  .workspaceGrid {
-    grid-template-columns: minmax(0, 1fr) 310px;
-    gap: var(--cf-space-4);
-  }
-
 }
 @media (max-width: 1000px) {
   .rankingGrid {
@@ -351,13 +331,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: var(--cf-space-6);
   }
-  .workspaceGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .researchRail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
 }
 @media (max-width: 760px) {
 
@@ -370,9 +343,6 @@
   }
   .rankingGrid > .moverPanel:last-child .movers {
     display: block;
-  }
-  .researchRail {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -438,8 +408,6 @@
   border-radius: var(--cf-radius-card); background: var(--cf-color-surface);
 }
 .sectionCard > .deskAction:first-child { border-top: 0; padding-top: 0; }
-
-.scheduleColumn { display: grid; gap: var(--cf-space-4); min-width: 0; align-content: start; }
 
 .volumeIcon {
   display: inline-block;

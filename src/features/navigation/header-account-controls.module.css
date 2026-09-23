@@ -1,0 +1,53 @@
+.controls { display: flex; position: relative; align-items: center; flex: none; gap: var(--cf-space-2); }
+.loading { flex: none; width: 96px; height: 44px; }
+.iconButton, .login {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none; height: 44px; min-width: 44px; border-radius: var(--cf-radius-control);
+  color: var(--cf-color-ink); position: relative;
+}
+.iconButton:hover, .iconButton[aria-expanded="true"], .login:hover { background: var(--cf-color-soft); }
+.iconButton:focus-visible, .login:focus-visible, .panel a:focus-visible, .panel button:focus-visible {
+  outline: 2px solid var(--cf-color-focus); outline-offset: 2px;
+}
+.login { padding-inline: var(--cf-space-4); background: var(--cf-color-surface); border: 1px solid var(--cf-color-line); font-size: var(--cf-text-label); font-weight: var(--cf-weight-medium); white-space: nowrap; }
+.avatar {
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--cf-radius-pill);
+  background: var(--cf-color-soft); border: 1px solid var(--cf-color-line); font-size: var(--cf-text-label); font-weight: var(--cf-weight-semibold);
+}
+.unreadDot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; background: var(--cf-color-positive); border-radius: var(--cf-radius-pill); box-shadow: 0 0 0 2px var(--cf-color-canvas); }
+.panel {
+  position: absolute; z-index: 50; top: calc(100% + var(--cf-space-2)); right: 0;
+  width: min(380px, calc(100vw - var(--cf-space-8))); max-height: calc(100dvh - 100px); overflow: auto;
+  background: var(--cf-color-surface); border: 1px solid var(--cf-color-line); border-radius: var(--cf-radius-card);
+  box-shadow: var(--cf-shadow-dialog); color: var(--cf-color-ink); font-size: var(--cf-text-label); line-height: var(--cf-leading-label);
+}
+.accountPanel { width: min(280px, calc(100vw - var(--cf-space-8))); padding: var(--cf-space-2); }
+.accountIdentity { display: grid; gap: var(--cf-space-1); padding: var(--cf-space-3) var(--cf-space-2); margin-bottom: var(--cf-space-1); border-bottom: 1px solid var(--cf-color-line); overflow-wrap: anywhere; }
+.accountIdentity strong { font-weight: var(--cf-weight-semibold); }
+.accountIdentity span { font-size: var(--cf-text-caption); color: var(--cf-color-muted); }
+.menuAction { display: flex; align-items: center; gap: var(--cf-space-3); width: 100%; min-height: 44px; text-align: left; padding: var(--cf-space-2); border-radius: var(--cf-radius-control); }
+.menuAction:hover { background: var(--cf-color-soft); }
+.panel button:disabled { opacity: .5; cursor: wait; }
+.panelHeading { display: flex; justify-content: space-between; align-items: center; gap: var(--cf-space-3); padding: var(--cf-space-2) var(--cf-space-4); border-bottom: 1px solid var(--cf-color-line); }
+.panelHeading strong { font-size: var(--cf-text-body); font-weight: var(--cf-weight-semibold); }
+.panelHeading a { display: inline-flex; align-items: center; min-height: 44px; gap: var(--cf-space-1); color: var(--cf-color-muted); }
+.empty { padding: var(--cf-space-8) var(--cf-space-4); color: var(--cf-color-muted); text-align: center; }
+.notice { padding: var(--cf-space-3) var(--cf-space-4); color: var(--cf-color-negative); }
+.notice p, .error { overflow-wrap: anywhere; }
+.notice button { color: var(--cf-color-ink); min-height: 44px; text-decoration: underline; text-underline-offset: var(--cf-space-1); }
+.error { padding: var(--cf-space-2); color: var(--cf-color-negative); }
+.notificationList { margin: 0; padding: 0; list-style: none; }
+.notificationList li { display: flex; align-items: center; gap: var(--cf-space-2); padding: var(--cf-space-3) var(--cf-space-4); }
+.notificationList li + li { border-top: 1px solid var(--cf-color-line); }
+.notificationList li > a { display: grid; flex: 1; min-width: 0; gap: var(--cf-space-2); min-height: 44px; align-content: center; }
+.notificationTitle { font-weight: var(--cf-weight-medium); overflow-wrap: anywhere; }
+.notificationMeta { font-size: var(--cf-text-caption); color: var(--cf-color-muted); }
+.markRead { flex: none; min-height: 44px; font-size: var(--cf-text-caption); color: var(--cf-color-muted); border-radius: var(--cf-radius-control); padding-inline: var(--cf-space-2); }
+.markRead:hover { background: var(--cf-color-soft); color: var(--cf-color-ink); }
+.mobileBell { display: none; }
+@media (max-width: 760px) {
+  .controls { gap: var(--cf-space-1); }
+  .loading { width: 92px; }
+  .desktopBell { display: none; }
+  .mobileBell { display: inline-flex; }
+}

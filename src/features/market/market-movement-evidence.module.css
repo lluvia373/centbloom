@@ -1,0 +1,37 @@
+.evidence { min-width: 0; padding: var(--cf-space-6); border: 1px solid var(--cf-color-line); border-radius: var(--cf-radius-card); background: var(--cf-color-surface); scroll-margin-top: calc(var(--cf-space-12) * 2); container-type: inline-size; }
+.evidence h2 { margin: 0 0 var(--cf-space-4); font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); line-height: var(--cf-leading-title); }
+.observation { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--cf-space-2) var(--cf-space-4); margin-bottom: var(--cf-space-6); }
+.observation p { margin: 0; font-size: var(--cf-text-body); font-weight: var(--cf-weight-medium); line-height: var(--cf-leading-body); }
+.observation > span { color: var(--cf-color-muted); font-size: var(--cf-text-caption); }
+.content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: var(--cf-space-8); }
+.comparisons { display: grid; gap: var(--cf-space-6); }
+.comparisons h3, .history h3 { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--cf-space-2); margin: 0 0 var(--cf-space-3); font-size: var(--cf-text-label); font-weight: var(--cf-weight-medium); line-height: var(--cf-leading-label); }
+.comparisons h3 span { font-variant-numeric: tabular-nums; }
+.comparison { display: grid; gap: var(--cf-space-2); margin: 0; font-variant-numeric: tabular-nums; }
+.comparison > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--cf-space-3); align-items: baseline; }
+.comparison dt { color: var(--cf-color-muted); font-size: var(--cf-text-caption); line-height: var(--cf-leading-body); }
+.comparison dd { margin: 0; font-size: var(--cf-text-body); font-weight: var(--cf-weight-semibold); }
+.comparison > div:last-child dd { color: var(--cf-color-muted); font-size: var(--cf-text-label); font-weight: var(--cf-weight-regular); }
+.reversal { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cf-space-3); font-size: var(--cf-text-label); line-height: var(--cf-leading-body); }
+.reversal > span { color: var(--cf-color-muted); }
+.reversal strong { font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); }
+.history { min-width: 0; }
+.history h3 > span { color: var(--cf-color-muted); font-weight: var(--cf-weight-regular); }
+.history ol { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--cf-space-1); padding: var(--cf-space-2) 0; margin: 0; }
+.history li { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: var(--cf-space-1); font-size: var(--cf-text-caption); font-variant-numeric: tabular-nums; }
+.history time, .history small { color: var(--cf-color-muted); font-size: var(--cf-text-caption); }
+.currentMove { background: var(--cf-color-soft); border-radius: var(--cf-radius-control); }
+.moveTrack { position: relative; width: 100%; height: calc(var(--cf-space-12) * 2); }
+.moveTrack::before { content: ""; position: absolute; top: 50%; width: 100%; border-top: 1px solid var(--cf-color-line); }
+.moveTrack i { position: absolute; left: 30%; width: 40%; }
+.moveUp { bottom: 50%; background: var(--cf-color-market-up); }
+.moveDown { top: 50%; background: var(--cf-color-market-down); }
+.up { color: var(--cf-color-market-up); }
+.down { color: var(--cf-color-market-down); }
+.neutral { color: var(--cf-color-muted); }
+.status { margin: 0; color: var(--cf-color-muted); font-size: var(--cf-text-label); line-height: var(--cf-leading-body); }
+.content + .status { margin-top: var(--cf-space-4); }
+.status button { min-height: 44px; padding-inline: var(--cf-space-2); color: var(--cf-color-ink); text-decoration: underline; text-underline-offset: var(--cf-space-1); cursor: pointer; }
+.status button:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
+@container (max-width: 580px) { .content { grid-template-columns: minmax(0, 1fr); gap: var(--cf-space-6); } }
+@media (max-width: 600px) { .evidence { padding: var(--cf-space-4); } }

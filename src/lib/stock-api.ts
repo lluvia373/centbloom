@@ -1,5 +1,6 @@
 import { createRequestCache } from "@/shared/async/request-cache";
 import type { MidnightBaseline } from "@/features/market/baseline";
+import { createBaselineCache } from "@/features/market/baseline-cache";
 import type { IntradayRange, IntradaySeries } from "@/features/market/intraday";
 import type { QuoteBatchResult } from "@/features/market/quote-batch";
 import { FX_HISTORY_MAX_CARRY_DAYS, fxToday, shiftFxDate, validFxDate, type DailyFxSeries } from "@/features/market/fx-history";
@@ -14,11 +15,20 @@ import type {
 } from "./types";
 
 export const marketRequests = createRequestCache();
-export function getMidnightBaseline(symbol: string, date: string, signal?: AbortSignal): Promise<MidnightBaseline> {
+const midnightBaselines = createBaselineCache();
+export async function getMidnightBaseline(symbol: string, date: string, signal?: AbortSignal): Promise<MidnightBaseline> {
+  signal?.throwIfAborted();
   symbol = symbol.trim().toUpperCase();
-  return marketRequests.request(`midnight:${symbol}:${date}`,
+  const cached = midnightBaselines.get(symbol, date);
+  if (cached) return cached;
+  const baseline = await marketRequests.request(`midnight:${symbol}:${date}`,
     (s) => json<MidnightBaseline>(`/api/baseline/${encodeURIComponent(symbol)}?date=${encodeURIComponent(date)}`, s),
-    { signal, ttlMs: 60_000, timeoutMs: 60_000 });
+    { signal, timeoutMs: 60_000 });
+  // Completed failures/unavailable values are not retained by the request cache.
+  // Only an uncancelled consumer may retain a successfully completed response.
+  signal?.throwIfAborted();
+  midnightBaselines.set(symbol, date, baseline);
+  return baseline;
 }
 type RetryAfterError = Error & { retryAfterMs?: number };
 function parseRetryAfter(value: string | null): number | undefined {
@@ -121,7 +131,9 @@ export function getQuote(
         throw new Error(`유효한 시세가 없습니다. (${symbol})`);
       return quote;
     },
-    { signal, ttlMs: 5_000, timeoutMs: symbol.endsWith("=X") ? 60_000 : 20_000 },
+    // The quote hub owns completed values using their original fetchedAt.
+    // Keep only in-flight sharing here, never a second receipt-time TTL.
+    { signal, ttlMs: 0, timeoutMs: symbol.endsWith("=X") ? 60_000 : 20_000 },
   );
 }
 export function getQuotes(symbols: string[], signal?: AbortSignal): Promise<QuoteBatchResult> {
@@ -147,11 +159,7 @@ export function getQuotes(symbols: string[], signal?: AbortSignal): Promise<Quot
       else errors[symbol] = { message: `${symbol} 시세의 종목·통화·가격을 확인하지 못했습니다.`, status: 502 };
     }
     return { quotes, errors };
-  }, { signal, ttlMs: 5_000, timeoutMs: 20_000, priority: "interactive" }).then(result => {
-    // Partial successes may display immediately, but a failed member must not be cached.
-    if (Object.keys(result.errors).length) marketRequests.invalidate(key);
-    return result;
-  });
+  }, { signal, ttlMs: 0, timeoutMs: 20_000, priority: "interactive" });
 }
 export function getChart(
   symbol: string,

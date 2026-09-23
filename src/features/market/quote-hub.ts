@@ -24,6 +24,7 @@ const EMPTY: QuoteView = {
   refreshing: false,
 };
 const RECOVERY_DELAYS = [1_000, 2_000, 5_000];
+const MAX_RETAINED_QUOTES = 256;
 function transientFailure(error: unknown) {
   return error instanceof Error && (error.name === "TimeoutError" || error.cause === "network" ||
     (typeof error.cause === "number" && [408, 500, 502, 503, 504].includes(error.cause)));
@@ -35,12 +36,31 @@ export function createQuoteHub(
   interval = 30_000,
 ) {
   const states = new Map<string, QuoteState>();
+  // Public quotes only, scoped to this browser module; never account data or persistent storage.
+  const retained = new Map<string, QuoteState>();
   const subscribers = new Map<() => void, string[]>();
   const views = new Map<string, { version: string; value: QuoteView }>();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const requests = new Map<string, AbortController>();
   let visible = true;
   const wanted = () => [...new Set([...subscribers.values()].flat())];
+  const pruneRetained = () => {
+    const now = Date.now();
+    for (const [symbol, state] of retained) {
+      // Normal prices expire at their original refresh deadline. Failures keep their
+      // retry sequence briefly; a live provider cooldown must never be evicted early.
+      const expiresAt = state.nextAttemptAt + (state.failed && !state.rateLimited ? interval : 0);
+      if (expiresAt <= now) retained.delete(symbol);
+    }
+    let slots = MAX_RETAINED_QUOTES;
+    for (const [symbol, state] of [...retained].reverse()) {
+      if (slots-- > 0) continue;
+      if (state.rateLimited) {
+        // Retain only the small retry guard under pressure, not another quote payload.
+        if (state.quote) retained.set(symbol, { ...state, quote: undefined, version: state.version + 1 });
+      } else retained.delete(symbol);
+    }
+  };
   const emit = (symbols: string[]) => {
     for (const [listener, list] of subscribers)
       if (list.some((s) => symbols.includes(s))) listener();
@@ -94,6 +114,12 @@ export function createQuoteHub(
           const quote = await load(symbol, controller.signal);
           if (current()) {
             const now = Date.now();
+            const fetchedAt = Date.parse(quote.fetchedAt ?? "");
+            const nextAttemptAt = Number.isFinite(fetchedAt) ? Math.min(now + interval, fetchedAt + interval) : now + interval;
+            // Reusing a server/client cached response must not restart its freshness window.
+            // A response can expire in transit. Recover through bounded backoff,
+            // without accepting stale data or starting an immediate response loop.
+            if (nextAttemptAt <= now) throw new Error("최근 시세 확인이 필요합니다.", { cause: 502 });
             states.set(symbol, {
               quote,
               failed: false,
@@ -101,7 +127,7 @@ export function createQuoteHub(
               refreshing: false,
               version: (states.get(symbol)?.version ?? 0) + 1,
               failures: 0,
-              nextAttemptAt: now + interval,
+              nextAttemptAt,
               rateLimited: false,
             });
           }
@@ -140,6 +166,12 @@ export function createQuoteHub(
   }
   return {
     subscribe(symbols: string[], listener: () => void) {
+      pruneRetained();
+      for (const symbol of symbols) {
+        const state = retained.get(symbol);
+        if (state && !states.has(symbol)) states.set(symbol, state);
+        retained.delete(symbol);
+      }
       subscribers.set(listener, symbols);
       schedule(0);
       return () => {
@@ -150,25 +182,32 @@ export function createQuoteHub(
             requests.delete(symbol);
             controller.abort();
           }
+        for (const [symbol, state] of states) {
+          if (keep.has(symbol)) continue;
+          states.delete(symbol);
+          if (state.checkedAt !== null) {
+            retained.delete(symbol);
+            retained.set(symbol, { ...state, refreshing: false, version: state.version + 1 });
+          }
+        }
+        pruneRetained();
+        views.clear();
         if (!subscribers.size) {
           clearTimeout(timer);
-          states.clear();
-          views.clear();
         } else {
-          for (const symbol of states.keys())
-            if (!keep.has(symbol)) states.delete(symbol);
-          views.clear();
           scheduleNext();
         }
       };
     },
     snapshot(symbols: string[]): QuoteView {
       if (!symbols.length) return EMPTY;
+      // React reads the snapshot before subscribing, so expiry must also be checked here.
+      pruneRetained();
       const key = symbols.join(",");
-      const version = symbols.map((s) => states.get(s)?.version ?? 0).join(",");
+      const list = symbols.map((s) => states.get(s) ?? retained.get(s));
+      const version = list.map((state) => state?.version ?? 0).join(",");
       const cached = views.get(key);
       if (cached?.version === version) return cached.value;
-      const list = symbols.map((s) => states.get(s));
       const quotes: Record<string, StockQuote> = {};
       symbols.forEach((s, i) => {
         if (list[i]?.quote) quotes[s] = list[i]!.quote!;

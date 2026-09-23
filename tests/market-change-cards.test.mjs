@@ -20,7 +20,7 @@ function render(items, { selected, page = 0, failed = false, partial = false, mi
     react: { ...React, useState: () => [state[stateIndex++], () => {}] },
     "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
-    "@/features/watchlist/WatchStockButton": { WatchStockButton: () => null },
+    "@/features/watchlist/WatchStockButton": { WatchStockButton: ({ name }) => React.createElement("button", { "aria-label": name + " 관심종목에 담기" }, "관심 저장") },
     "@/features/market/use-market-changes": { useMarketChanges: () => ({ data: missing ? null : { items, examined: items.length, partial }, failed, retry() {} }) },
     "@/hooks/useWatchlist": { useWatchlist: () => ({ items: watched.map(symbol => ({ symbol })) }) },
     "@/features/market/use-watched-reports": { useWatchedReports: () => reports },
@@ -31,29 +31,30 @@ function render(items, { selected, page = 0, failed = false, partial = false, mi
   return renderToStaticMarkup(React.createElement(MarketChanges));
 }
 
-test("maximum-breakout headline and comparison values use the same prior maximum; other cases retain average", () => {
+test("compact summary retains the observation and links the detailed evidence to the same stock", () => {
   const item = make("HPE");
   const html = render([item]);
-  assert.match(html, /직전 20거래일 최대 등락폭/);
-  assert.match(html, /<strong>7\.75%<\/strong>/);
-  assert.doesNotMatch(html, /<strong>3\.04%<\/strong>/);
-  for (const maximum of [undefined, 12.44, 12.435, 20]) {
-    const other = render([{ ...item, context: { ...item.context, previousMaxMove: maximum } }]);
-    assert.match(other, /직전 20거래일 평균 등락폭/);
-    assert.match(other, /<strong>3\.04%<\/strong>/);
-  }
+  assert.match(html, /최근 20거래일의 최대 등락폭을 넘었어요/);
+  assert.match(html, /이번 장 등락률/);
+  assert.match(html, /\+12\.44%/);
+  assert.match(html, /href="\/stock\/HPE"/);
+  assert.match(html, /href="\/stock\/HPE#market-movement"[^>]+aria-label="HPE 변화 근거 보기"/);
+  assert.match(html, /aria-label="HPE 관심종목에 담기"/);
+  assert.match(html, /href="https:\/\/example.com\/HPE"/);
+  assert.match(html, /Example News/);
+  assert.doesNotMatch(html, /직전 20거래일 최대 등락폭|직전 20거래일 평균 등락폭|7\.75%|3\.04%/);
   const combined = render([{ ...item, signals: [...item.signals, make("HPE", "volume").signals[0]] }], { selected: "price" });
   assert.match(combined, /큰 상승과 거래량 급증/);
-  assert.match(combined, /직전 20거래일 평균 등락폭/);
 });
 
-test("volume metric remains a ratio and six observed dates are visible without disclosure", () => {
+test("volume metric remains a ratio while six-session history is reached through the evidence link, not a disclosure", () => {
   const html = render([make("KHC", "volume")]);
   assert.match(html, /7\.4<small>배<\/small>/);
-  assert.match(html, /직전 5거래일 \+ 이번 장/);
-  assert.equal((html.match(/<time /g) ?? []).length, 6);
-  assert.doesNotMatch(html, /<details|<summary/);
-  assert.doesNotMatch(render([{ ...make("KHC"), context: { recentMoves: moves.slice(1) } }]), /<time /);
+  assert.match(html, /주가 <span class="up">\+12\.44%<\/span>/);
+  assert.match(html, /href="\/stock\/KHC#market-movement"/);
+  assert.doesNotMatch(html, /직전 5거래일|<time |<details|<summary/);
+  const encoded = render([make("BRK/B")]);
+  assert.match(encoded, /href="\/stock\/BRK%2FB#market-movement"/);
 });
 
 test("pagination, filter changes and shrinking feeds always show valid groups of three", () => {

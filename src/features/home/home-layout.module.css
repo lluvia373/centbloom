@@ -1,0 +1,25 @@
+.layout { display: grid; gap: var(--cf-space-6); align-items: start; }
+.utilities { display: grid; gap: var(--cf-space-6); }
+.slot { min-width: 0; }
+.slot:empty { display: none; }
+.slot > section { margin-block: 0; }
+
+@media (min-width: 1200px) {
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; }
+  .changes { grid-column: 1; grid-row: 1; }
+  .rankings { grid-column: 1; grid-row: 2; }
+  .news { grid-column: 1; grid-row: 3; }
+  .market { grid-column: 2; grid-row: 1; }
+  .calendar { grid-column: 2; grid-row: 2; }
+  .utilities { grid-column: 2; grid-row: 3; }
+  .layout[data-measured="true"] { display: block; position: relative; height: var(--home-height); }
+  .layout[data-measured="true"] > .slot { position: absolute; }
+  .layout[data-measured="true"] > :is(.changes, .rankings, .news) { left: 0; width: calc(100% - 340px - var(--cf-space-6)); }
+  .layout[data-measured="true"] > :is(.market, .calendar, .utilities) { right: 0; width: 340px; }
+  .market { top: var(--home-y-market); }
+  .changes { top: var(--home-y-changes); }
+  .rankings { top: var(--home-y-rankings); }
+  .calendar { top: var(--home-y-calendar); }
+  .news { top: var(--home-y-news); }
+  .utilities { top: var(--home-y-utilities); }
+}

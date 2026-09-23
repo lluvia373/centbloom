@@ -196,7 +196,8 @@ test("representative cards show the article directly; a researched empty feed re
   });
   const html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
   assert.match(html, /SELLAS announces clinical trial results/);
-  assert.match(html, /종목 뉴스/);
+  assert.match(html, /Source/);
+  assert.match(html, /href="\/stock\/SLS#market-movement"/);
   assert.doesNotMatch(html, /흐름 전환|함께 확인할 소식|<details|<summary/);
   assert.match(html, /https:\/\/example.com\/sellas/);
   assert.doesNotMatch(html, /종목에서 뉴스 확인|확인된 기사가 없|일부 비교 자료/);
@@ -204,7 +205,7 @@ test("representative cards show the article directly; a researched empty feed re
   assert.equal(renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data })), "");
 });
 
-test("history is visible without disclosure and longer card lists are paged three at a time", () => {
+test("summary cards link to detailed history and longer lists are paged three at a time", () => {
   const React = requireForRender("react");
   const { renderToStaticMarkup } = requireForRender("react-dom/server");
   const recentMoves = [-1.1, 1.3, -0.5, 0.8, 2.2].map((percent, index) => ({
@@ -226,9 +227,9 @@ test("history is visible without disclosure and longer card lists are paged thre
   });
   let html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
   assert.equal((html.match(/<article/g) ?? []).length, 3);
-  assert.equal((html.match(/<time /g) ?? []).length, 18);
-  assert.match(html, /직전 5거래일 \+ 이번 장/);
-  assert.match(html, /주가 등락률/);
+  assert.equal((html.match(/href="\/stock\/STOCK\d#market-movement"/g) ?? []).length, 3);
+  assert.doesNotMatch(html, /<time |직전 5거래일/);
+  assert.match(html, /이번 장 등락률/);
   assert.match(html, /이번 장/);
   assert.match(html, /다음 종목/);
   assert.doesNotMatch(html, /Company event 3|<details|<summary|aria-expanded|흐름 전환/);

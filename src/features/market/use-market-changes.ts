@@ -11,6 +11,15 @@ const store = createPollingStore<string, ResearchedChangesFeed>((key, signal) =>
     { signal, ttlMs: 0, timeoutMs: 60_000 }),
 );
 const key = "market-changes:us";
+// A bounded handoff of the latest public response, not a second polling store.
+// The home subscriber is gone by the time a stock-detail effect subscribes.
+let recentFeed: ResearchedChangesFeed | undefined;
+export function getCachedMarketChange(symbol: string, now = Date.now()) {
+  const feed = store.snapshot(key).data ?? recentFeed;
+  if (!feed || feed.expiresAt <= now) return undefined;
+  const item = feed.items.find(item => item.quote.symbol === symbol);
+  return item ? { item, expiresAt: feed.expiresAt } : undefined;
+}
 let consumers = 0;
 const visibility = () => store.setVisible(document.visibilityState === "visible");
 export function useMarketChanges(initialData?: ResearchedChangesFeed | null) {
@@ -39,5 +48,6 @@ export function useMarketChanges(initialData?: ResearchedChangesFeed | null) {
     return () => clearTimeout(timer);
   }, [expiresAt]);
   const data = view.data && view.data.expiresAt > expiredAt ? view.data : undefined;
+  useEffect(() => { if (data) recentFeed = data; }, [data]);
   return { ...view, data, failed: view.failed || (!!view.data && !data), retry: () => { void store.refresh(key); } };
 }

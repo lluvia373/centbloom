@@ -129,17 +129,94 @@ test('batch API validates identity, currency, positive prices and exactly one re
   assert.equal(Object.keys(output.quotes).length + Object.keys(output.errors).length, 8);
 });
 
-test('successful normalized batches share five-second cache while partial errors never block recovery', async t => {
-  const advance = clock(t); let count = 0, partial = false;
+test('normalized batches share in-flight work but completed responses never hide a fresh request or recovery', async t => {
+  clock(t); let count = 0, partial = false;
   const { getQuotes } = api(t, async url => {
     count++;
     return response(partial ? { quotes: {}, errors: { A: { message: 'temporarily unavailable', status: 503 } } } : result(symbolsIn(url)));
   });
-  await getQuotes([' a ', 'A']); await getQuotes(['A']); assert.equal(count, 1);
-  await advance(4_999); await getQuotes(['A']); assert.equal(count, 1);
-  await advance(1); partial = true; await getQuotes(['A']); assert.equal(count, 2);
+  const [first, same] = await Promise.all([getQuotes([' a ', 'A']), getQuotes(['A'])]);
+  assert.equal(count, 1); assert.equal(first, same);
+  await getQuotes(['A']); assert.equal(count, 2);
+  partial = true; await getQuotes(['A']); assert.equal(count, 3);
   partial = false; const recovered = await getQuotes(['A']);
-  assert.equal(count, 3); assert.equal(recovered.quotes.A.price, 100);
+  assert.equal(count, 4); assert.equal(recovered.quotes.A.price, 100);
+});
+
+test('single quotes share only an in-flight request, leaving completed retention to the quote hub', async t => {
+  clock(t); let count = 0;
+  const { getQuote } = api(t, async () => { count++; return response(quote('USDKRW=X', { currency: 'KRW' })); });
+  const [first, same] = await Promise.all([getQuote(' usdkrw=x '), getQuote('USDKRW=X')]);
+  assert.equal(count, 1); assert.equal(first, same);
+  await getQuote('USDKRW=X');
+  assert.equal(count, 2);
+});
+
+test('a prepared quote received at second 29 triggers a real batch and FX refresh at its original second-30 expiry', async t => {
+  const advance = clock(t), fetchedAt = Date.now(), calls = { batch: 0, fx: 0 };
+  const { getQuotes, getQuote } = api(t, async url => {
+    const kind = String(url).startsWith('/api/quote/') ? 'fx' : 'batch';
+    const count = ++calls[kind];
+    const value = symbol => quote(symbol, {
+      price: count === 1 ? 100 : 200,
+      currency: kind === 'fx' ? 'KRW' : 'USD',
+      fetchedAt: new Date(count === 1 ? fetchedAt : Date.now()).toISOString(),
+    });
+    return response(kind === 'fx' ? value('USDKRW=X') : {
+      quotes: Object.fromEntries(symbolsIn(url).map(symbol => [symbol, value(symbol)])), errors: {},
+    });
+  });
+  const { createQuoteHub } = loadTypescript('src/features/market/quote-hub.ts');
+  const hub = createQuoteHub(batchLoader(getQuotes, getQuote));
+  await advance(29_000);
+  const symbols = ['AAPL', 'USDKRW=X'];
+  const stop = hub.subscribe(symbols, () => {}); t.after(stop);
+  await advance(0); await advance(0);
+  assert.deepEqual(calls, { batch: 1, fx: 1 });
+  assert.equal(hub.snapshot(symbols).quotes.AAPL.price, 100);
+  assert.equal(hub.snapshot(symbols).quotes['USDKRW=X'].price, 100);
+  await advance(999);
+  assert.deepEqual(calls, { batch: 1, fx: 1 });
+  await advance(1); await advance(0);
+  assert.deepEqual(calls, { batch: 2, fx: 2 }, 'neither path replays a five-second receipt-time cache');
+  assert.equal(hub.snapshot(symbols).quotes.AAPL.price, 200);
+  assert.equal(hub.snapshot(symbols).quotes['USDKRW=X'].price, 200);
+  assert.deepEqual(Array.from(hub.snapshot(symbols).failedSymbols), []);
+});
+
+test('prepared quotes that expire in transit stay unavailable until a real bounded batch and FX retry recovers', async t => {
+  const advance = clock(t), fetchedAt = Date.now(), delivery = deferred(), calls = { batch: 0, fx: 0 };
+  const { getQuotes, getQuote } = api(t, async url => {
+    const kind = String(url).startsWith('/api/quote/') ? 'fx' : 'batch';
+    const count = ++calls[kind];
+    const value = symbol => quote(symbol, {
+      price: count === 1 ? 100 : 200,
+      currency: kind === 'fx' ? 'KRW' : 'USD',
+      fetchedAt: new Date(count === 1 ? fetchedAt : Date.now()).toISOString(),
+    });
+    const body = kind === 'fx' ? value('USDKRW=X') : {
+      quotes: Object.fromEntries(symbolsIn(url).map(symbol => [symbol, value(symbol)])), errors: {},
+    };
+    if (count === 1) await delivery.promise;
+    return response(body);
+  });
+  const { createQuoteHub } = loadTypescript('src/features/market/quote-hub.ts');
+  const hub = createQuoteHub(batchLoader(getQuotes, getQuote));
+  await advance(29_900);
+  const symbols = ['AAPL', 'USDKRW=X'];
+  const stop = hub.subscribe(symbols, () => {}); t.after(() => { stop(); delivery.resolve(); });
+  await advance(0); await advance(0);
+  assert.deepEqual(calls, { batch: 1, fx: 1 });
+  await advance(200); delivery.resolve(); await advance(0);
+  assert.deepEqual(Object.keys(hub.snapshot(symbols).quotes), [], 'in-transit expiry never becomes a normal value');
+  assert.deepEqual(Array.from(hub.snapshot(symbols).failedSymbols), symbols);
+  await advance(999);
+  assert.deepEqual(calls, { batch: 1, fx: 1 }, 'no immediate retry loop');
+  await advance(1); await advance(0);
+  assert.deepEqual(calls, { batch: 2, fx: 2 }, 'both paths retry after one second, not thirty');
+  assert.equal(hub.snapshot(symbols).quotes.AAPL.price, 200);
+  assert.equal(hub.snapshot(symbols).quotes['USDKRW=X'].price, 200);
+  assert.deepEqual(Array.from(hub.snapshot(symbols).failedSymbols), []);
 });
 
 test('invalid batch inputs never reach the transport', async t => {
@@ -236,7 +313,6 @@ test('rate-limit Retry-After guards the complete batch-to-hub path until expiry 
   for (const [header, wait] of [['60', 60_000], ['120', 120_000], [undefined, 60_000], ['invalid', 60_000], ['2147484', 2_147_484_000]]) {
     retryAfter = header; calls = 0;
     const hub = createQuoteHub(batchLoader(getQuotes, getQuote));
-    // A distinct key prevents a prior iteration's successful five-second cache from hiding its transport.
     const symbol = `CASE${wait}${header ?? 'DEFAULT'}`.toUpperCase();
     const stop = hub.subscribe([symbol], () => {});
     await advance(0); await advance(0);

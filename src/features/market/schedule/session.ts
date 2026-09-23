@@ -29,6 +29,25 @@ function nextOpening(calendar: ExchangeCalendar, date: string) {
   }
   return { skippedHoliday, skippedHolidayDate };
 }
+/** Last completed full cash-equity session; lunch breaks are not market closes. */
+export function getLastMarketClose(calendar: ExchangeCalendar, now: number): number | undefined {
+  if (!Number.isFinite(now)) return undefined;
+  const { date } = localParts(now, calendar.timeZone);
+  if (!known(calendar, date)) return undefined;
+  for (let offset = 0; offset <= 40; offset++) {
+    const day = addDays(date, -offset);
+    if (!known(calendar, day)) return undefined;
+    if (calendar.holidays[day] || isWeekend(day)) continue;
+    const override = calendar.overrides[day];
+    // A newer unverified session prevents calling an older close the latest one.
+    if (override && !override.windows) return undefined;
+    const last = (override?.windows ?? calendar.windows).at(-1);
+    if (!last) return undefined;
+    const closedAt = localInstant(day, last.end, calendar.timeZone);
+    if (closedAt <= now) return closedAt;
+  }
+  return undefined;
+}
 /** Published cash-equity schedule, not a real-time exchange halt feed. */
 export function getMarketSession(calendar: ExchangeCalendar, now: number): MarketSession {
   if (!Number.isFinite(now)) return {status:"unknown",label:"일정 확인 중",reason:"기준 시각 미제공"};

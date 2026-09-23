@@ -153,5 +153,18 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 - `wrangler.jsonc`의 `NEWS_CACHE` KV와 `custom-worker.ts`의 5분 Scheduled Handler를 사용한다. 홈 뉴스와 변화 카드의 종목별 조사는 독립적으로 실행하며 OpenNext fetch 처리를 유지한다. 운영 namespace ID는 설정 파일, 실제 활성 버전과 수집 검증은 PROJECT_STATUS를 따른다. 로컬은 로컬 저장소를 사용한다.
 - 개발 서버가 실행된 상태에서 `npm run news:prepare -- AAPL`로 홈 변화 카드·홈 뉴스와 지정 종목 뉴스를 준비한다. `npm run news:prepare -- --watch AAPL`은 브라우저 방문 없이 로컬 3000에 5분마다 준비 요청을 보낸다. 개발 서버가 닫히면 연결 실패 시 종료한다. 운영에서는 이 PC 프로세스가 아니라 Scheduled Handler를 사용한다.
 - 첫 수집·번역이 끝나야 빠른 최초 표시가 가능하다. 운영 전 홈과 주요 종목을 준비한 후 확인한다. KV 지역별 갱신 전파·최초 읽기 지연이 있어 0.5초를 저장소 설정만으로 보장하지 않는다. 모은 목록 6시간·성공 제목 7일 보존, 실제 수집 5분/화면 확인 1분을 구분한다. KV 읽기/쓰기·AI 사용량은 운영 활성화 전에 요금과 한도를 확인한다.
+
+## 공개 시세 사전 준비
+
+**현재 로컬 구현, 운영 비활성.** 새 리소스 생성·요금제 변경·운영 바인딩·배포를 하지 않았다. 개발 서버는 최근 조회된 종목을 자체 예약 실행으로 준비한다. 운영 후보는 `custom-worker.ts`가 내보내는 `MarketQuotes` Durable Object이며 KV의 지역별 전파에 현재가를 의존하지 않는다. 알고리즘·보관 기준은 [제품 명세](./PRODUCT_SPEC.md#화면-간-재사용과-서버-준비), 검증 상태는 PROJECT_STATUS를 따른다.
+
+- 공유 대상은 공개 종목별 현재가뿐이다. 가격은 메모리 최대 256개·원본 수신부터 30초, 사전 준비는 최근 5분 수요 중 50개까지다. 저장소에는 공개 종목과 마지막 조회 시각, 공급 제한 종료 시각만 남긴다. 계정·거래·보유 수량·계산 결과는 보내거나 저장하지 않는다. 재시작 시 가격은 다시 준비해야 한다.
+- 내부 바인딩 전용 `POST /quotes`는 외부 공개 API로 연결하지 않는다. `public-quotes-v1` 한 개체가 공유 수요를 처리한다. 갱신은 필요한 종목만, 실패 시 정상값으로 덮어쓰지 않으며 429의 Retry-After를 지킨다. 5분간 요청이 없으면 다음 수집을 중단한다. 기존 뉴스/일별 환율의 5분 Cron은 변경하지 않는다.
+- **활성화 전:** 시세 표시·단기 보관·선제 수집 권리 확인, 실제 계정의 Workers/DO 무료 한도 및 기존 사용량 확인, SQLite DO 생성/재시작/알람·호출량·한국 접근 지연을 검증한 뒤 별도 배포 승인을 받는다. 준비 50개는 비용 상한 보장이 아니며 방문 시 추가 조회·FX 하위 요청·기존 수집량도 계산해야 한다.
+- **설정안(미적용):** `wrangler.jsonc`의 `durable_objects.bindings`에 `{ "name": "MARKET_QUOTES", "class_name": "MarketQuotes" }`, 새 `migrations` 항목에 `{ "tag": "market-quotes-v1", "new_sqlite_classes": ["MarketQuotes"] }`를 추가한다. 승인된 운영 환경에 서버 변수 `MARKET_PREPARATION_ENABLED="true"`를 설정한다. 런타임의 `process.env`와 Cloudflare 바인딩 양쪽에서 활성 값을 확인해야 연결한다. NEXT_PUBLIC 변수나 브라우저 비밀 키는 쓰지 않는다.
+- **중단:** 활성 변수를 끄면 읽기는 기존 서버 인스턴스별 경로로 돌아간다. 새 수요가 끊긴 개체는 최대 5분 수요 만료 후 수집을 멈춘다. 즉시 수집 중단이 필요하면 개체 알람도 제거해야 한다. 저장된 개인 기록을 삭제할 필요는 없다.
+- **비용 판단:** 한 묶음을 25초마다 하루 종일 준비한다는 단순 계산은 하루 3,456회 실행이다(실측 아님). 실제 횟수는 수요 도착·실패·통화별 하위 요청과 저장/알람 쓰기에 따라 다르다. 무료 DO는 SQLite만 지원하며 공식 한도는 일 100,000 요청·13,000 GB-s, 저장소 일 5,000,000 행 읽기·100,000 행 쓰기다. 현재 계정의 잔여량/다른 기능과 합쳐 검증하기 전 무료로 계속 유지된다고 확정하지 않는다. 한 개체 위치는 지연을 추가할 수도 있어 전체 화면 거의 즉시 달성 근거로 쓰지 않는다.
+
+공식 근거(2026-09-23 확인): [알람·재시도](https://developers.cloudflare.com/durable-objects/api/alarms/), [무료 범위·저장소 과금](https://developers.cloudflare.com/durable-objects/platform/pricing/), [개체 위치](https://developers.cloudflare.com/durable-objects/reference/data-location/).
 - Windows에서는 일반 Next 빌드에 `--skipNextBuild`를 바로 적용하면 standalone 산출물이 없어 실패하므로 OpenNext 전체 빌드 또는 OpenNext와 같은 `NEXT_PRIVATE_STANDALONE=true` 빌드를 사용한다.
 - 작업별 시간 제한은 [뉴스 명세](./PRODUCT_SPEC.md#주요뉴스와-번역)와 [Cloudflare 실행 제한](https://developers.cloudflare.com/workers/platform/limits/#duration)을 대조한다. 수집 주기·KV 갱신·장기 안정성·여러 지역 속도의 실제 확인 결과는 [현재 제약](./PROJECT_STATUS.md#현재-제약)을 따른다.

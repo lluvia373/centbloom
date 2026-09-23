@@ -309,9 +309,9 @@ test('portfolio overview: the embedded graph keeps period controls and loading s
 test('portfolio summary: shared heading keeps the title action separate from primary controls',()=>{
  const {PageHeading}=loadTypescript('src/components/Header.tsx',{
   '@/features/navigation':{primaryNavigation:[],navigationArea:()=>null},
+  '@/features/navigation/HeaderAccountControls':{HeaderAccountControls:()=>null},
   '@/features/market/MarketHeader.module.css':{default:{}},
   '@/components/BrandMark':{BrandMark:()=>null},
-  '@/features/market/MarketTicker':{MarketTicker:()=>null},
   '@/features/home/StockDiscovery':{StockDiscovery:()=>null},
   '@/hooks/useAuth':{}, '@/hooks/usePortfolio':{},
  });

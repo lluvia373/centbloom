@@ -1,5 +1,5 @@
 export { calendars } from "./calendars";
-export { getMarketSession } from "./session";
+export { getMarketSession, getLastMarketClose } from "./session";
 export { formatKst } from "./time";
 
 export { rankMarketSessions, type RankedMarketSession } from "./priority";
