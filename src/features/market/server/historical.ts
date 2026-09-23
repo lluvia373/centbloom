@@ -2,10 +2,11 @@ import { addCalendarDays as addDays } from "@/lib/performance";
 import type { DayOHLC } from "@/lib/types";
 import { MarketError, providerRequests, yahoo } from "./provider";
 export function fetchHistorical(
-  symbol: string,
+  rawSymbol: string,
   date: string,
   signal?: AbortSignal,
 ): Promise<DayOHLC> {
+  const symbol = rawSymbol.trim().toUpperCase();
   return providerRequests.request(
     JSON.stringify(["historical", symbol, date]),
     async (signal) => {

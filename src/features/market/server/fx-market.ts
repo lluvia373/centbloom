@@ -1,5 +1,5 @@
 import type { MidnightBaseline } from "../baseline";
-import { FX_MINUTE, FX_LOOKBACK, fxCutoff, fxPair, sameFxPair, usdLeg, usableFxQuote, type FxEvidence } from "../fx";
+import { FX_MINUTE, FX_LOOKBACK, fxCutoff, fxPair, sameFxPair, usdLeg, usableFxQuote, usableValuationFxQuote, type FxEvidence } from "../fx";
 import type { StockQuote } from "@/lib/types";
 import { MarketError, providerRequests, yahoo } from "./provider";
 
@@ -98,7 +98,7 @@ export async function fetchFxQuote(symbol: string, signal?: AbortSignal, now = D
     const q = await yahoo.quote(symbol, { fields: ["symbol", "currency", "regularMarketPrice", "regularMarketTime", "regularMarketChange", "regularMarketChangePercent", "marketState"] }, { fetchOptions: { signal: s } });
     const at = q?.regularMarketTime?.getTime();
     if (!q || !sameFxPair(symbol, q.symbol) || q.currency !== fxPair(symbol)?.quote ||
-      at == null || !usableFxQuote(at, now, q.marketState))
+      at == null || !usableValuationFxQuote(at, now))
       throw new MarketError("현재 환율의 통화·기준 시각을 확인하지 못했습니다.");
     const closed = q.marketState === "CLOSED";
     // Valid pair/time metadata can report a special closure even if its price is missing.
@@ -114,16 +114,26 @@ export async function fetchFxQuote(symbol: string, signal?: AbortSignal, now = D
         components: [{ symbol, price: q.regularMarketPrice, sourceAt: new Date(at).toISOString() }] } } : {}) };
     return { quote, closed };
   }, { signal, ttlMs: 5_000, timeoutMs: 8_000 }), signal);
-  const direct = response?.quote;
-  if (direct && !direct.fx?.carried) return direct;
+  const candidate = response?.quote;
+  const direct = candidate && usableValuationFxQuote(Date.parse(candidate.quotedAt!), now) ? candidate : null;
+  const directCurrent = direct && usableFxQuote(Date.parse(direct.quotedAt!), now, direct.marketState);
+  const directResult: StockQuote | null = direct && !directCurrent ? { ...direct, fx: {
+    method: "direct", ...direct.fx, carried: true, valuationOnly: true,
+    components: direct.fx?.components ?? [{ symbol, price: direct.price, sourceAt: direct.quotedAt! }],
+  } } : direct;
+  if (direct && directCurrent && !direct.fx?.carried) return direct;
   const sample = await fetchFxMinute(symbol, now, signal);
   const marketState = cutoff.closed || response?.closed ? "CLOSED" : "REGULAR";
+  const sampleCurrent = sample && usableFxQuote(sample.at + FX_MINUTE, now, marketState);
   // A stale quote can lag behind the chart. Prefer the later observation; keep
   // the original decimal quote when both belong to the same completed minute.
-  if (direct && (!sample || sample.at <= Date.parse(direct.quotedAt!))) return direct;
-  if (!sample || !usableFxQuote(sample.at + FX_MINUTE, now, marketState))
+  // Prefer an eligible current observation, then the latest confirmed source.
+  if (directResult && (!sample || ((directCurrent || !sampleCurrent) && sample.at <= Date.parse(directResult.quotedAt!))))
+    return directResult;
+  if (!sample || !usableValuationFxQuote(sample.at + FX_MINUTE, now))
     throw new MarketError("현재 환율을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.", 503);
   return { symbol, name: symbol, price: sample.price, currency: fxPair(symbol)!.quote, change: 0, changePercent: 0,
     quotedAt: new Date(sample.at + FX_MINUTE).toISOString(), fetchedAt: new Date(now).toISOString(),
-    marketState, source: sample.fx.method === "usd-cross" ? "yahoo-usd-cross" : "yahoo-chart", fx: sample.fx };
+    marketState, source: sample.fx.method === "usd-cross" ? "yahoo-usd-cross" : "yahoo-chart",
+    fx: { ...sample.fx, ...(!sampleCurrent ? { carried: true, valuationOnly: true as const } : {}) } };
 }

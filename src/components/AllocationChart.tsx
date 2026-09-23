@@ -18,10 +18,11 @@ function slicePath(start: number, weight: number) {
   return `M 100,100 L ${point(start)} A 96,96 0 ${weight > 50 ? 1 : 0},1 ${point(start + weight)} Z`;
 }
 
-export function AllocationChart({ holdings, displayCurrency, loading }: {
+export function AllocationChart({ holdings, displayCurrency, loading, embedded = false }: {
   holdings: HoldingWithQuote[];
   displayCurrency: DisplayCurrency;
   loading?: boolean;
+  embedded?: boolean;
 }) {
   const patternId = useId().replaceAll(":", "");
   const [active, setActive] = useState<string | null>(null);
@@ -59,9 +60,9 @@ export function AllocationChart({ holdings, displayCurrency, loading }: {
   };
 
   return (
-    <section className={styles.concentration} aria-label="보유종목 구성">
+    <section className={`${styles.concentration} ${embedded ? styles.embeddedAllocation : ""}`} aria-label="보유종목 구성">
       <div className={styles.concentrationHeading}>
-        <h2>자산 구성 <span>{holdings.length}종목</span></h2>
+        {!embedded && <h2>자산 구성 <span>{holdings.length}종목</span></h2>}
         {allocation.available && (holdings.length > ALLOCATION_PAGE_SIZE || query) && (
           <label className={`${styles.search} ${styles.allocationSearch}`}>
             <Search size={14} aria-hidden="true" />

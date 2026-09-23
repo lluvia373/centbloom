@@ -86,22 +86,126 @@ test('comparison charts keep solid unsmoothed lines and highlight one without de
  assert.equal(plotted.length,3);assert.ok(plotted.every(line=>line.strokeOpacity===1));
 });
 
+test('asset chart fits its visible values and keeps endpoint date labels inside the plot',()=>{
+ let xAxis,yAxis,area;let references=[];
+ const wrap=({children})=>createElement('svg',null,children);
+ const {AssetChart}=loadTypescript('src/features/performance/Charts.tsx',{
+  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,CartesianGrid:()=>null,
+   XAxis:props=>{xAxis=props;return null;},YAxis:props=>{yAxis=props;return null;},
+   Area:props=>{area=props;return null;},Tooltip:()=>null,ReferenceArea:()=>null,
+   ReferenceLine:props=>{references.push(props);return null;},ReferenceDot:()=>null},
+ });
+ const data=[{date:'2026-09-16',assetValue:30_100_000},{date:'2026-09-22',assetValue:30_700_000}];
+ render(AssetChart,{data,inactivePeriods:[],currency:'KRW'});
+ assert.ok(yAxis.domain[0]>29_000_000);assert.equal(yAxis.allowDataOverflow,true);
+ assert.equal(area.baseValue,yAxis.domain[0]);assert.equal(area.type,'linear');
+ assert.deepEqual(references,[]);assert.equal(xAxis.scale,'time');
+ for(const width of [324,1040])for(const [x,value] of [[yAxis.width,Date.parse('2026-09-16')],[width-16,Date.parse('2026-09-22')]]){
+  const html=renderToStaticMarkup(React.cloneElement(xAxis.tick,{x,y:300,right:width-16,payload:{value}}));
+  const labelX=Number(html.match(/\bx="([\d.]+)"/)[1]);
+  assert.ok(labelX>yAxis.width&&labelX<width-16);
+  assert.match(html,/9월 (16|22)일/);
+ }
+ references=[];render(AssetChart,{data:[...data,{date:'2026-09-23',assetValue:0}],inactivePeriods:[],currency:'KRW'});
+ assert.equal(yAxis.domain[0],0);assert.deepEqual(references.map(line=>line.y),[0]);
+});
+
+test('both charts keep one fixed-height date row without year bands or format-specific baselines',()=>{
+ let xAxis,chartData;
+ let width=1040;
+ const wrap=({children,data})=>{if(data)chartData=data;return createElement('svg',null,children);};
+ const {AssetChart,ReturnChart}=loadTypescript('src/features/performance/Charts.tsx',{
+  react:{...React,useState:initial=>[typeof initial==='number'?width:{...initial,width,height:280},()=>{}]},
+  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,LineChart:wrap,XAxis:props=>{xAxis=props;return null;},
+   YAxis:()=>null,Area:()=>null,Line:()=>null,Tooltip:()=>null,ReferenceArea:()=>null,ReferenceLine:()=>null,ReferenceDot:()=>null},
+ });
+ const cases=[
+  ['2026-09-16','2026-09-22',/^9월 \d+일$/],
+  ['2026-07-01','2026-09-22',/^2026년 \d+월$/],
+  ['2016-09-23','2026-09-22',/^\d{4}년$/],
+  ['2025-12-28','2026-01-08',/^\d{4}년 \d+월 \d+일$/],
+ ];
+ for(width of [324,1040])for(const chart of [AssetChart,ReturnChart])for(const [first,last,format] of cases){
+  const data=[{date:first,assetValue:100,portfolioReturn:0},{date:last,assetValue:110,portfolioReturn:10}];
+  const html=render(chart,{data,inactivePeriods:[]});
+  assert.equal(xAxis.height,36);assert.equal(xAxis.tickMargin,12);
+  assert.equal(xAxis.axisLine,false);assert.equal(xAxis.tickLine,false);
+  assert.equal(xAxis.interval,0);assert.equal(xAxis.scale,'time');
+  assert.ok(xAxis.ticks.length>0&&xAxis.ticks.length<=6);
+  assert.doesNotMatch(html,/performance-chart-years/);
+  assert.deepEqual(Array.from(chartData,point=>point.timestamp),[Date.parse(first),Date.parse(last)]);
+  for(const value of xAxis.ticks){
+   const label=xAxis.tickFormatter(value);assert.match(label,format);assert.doesNotMatch(label,/[\r\n]/);
+   const tick=renderToStaticMarkup(React.cloneElement(xAxis.tick,{x:100,y:250,payload:{value}}));
+   assert.match(tick,/<text[^>]*y="250"[^>]*dominant-baseline="hanging"/);
+   assert.match(tick,/fill="var\(--cf-color-muted\)"/);
+   assert.match(tick,/font-size="var\(--cf-text-caption\)"/);
+   assert.match(tick,/font-family="var\(--cf-font-ui\)"/);
+   assert.doesNotMatch(tick,/<tspan|<br|[\r\n]/);
+  }
+ }
+ const css=readFileSync(new URL('../src/styles/portfolio.css',import.meta.url),'utf8');
+ assert.doesNotMatch(css,/performance-chart-years/);
+});
+
+test('asset chart finishes with one valid endpoint and a quiet gradient without filling missing values',()=>{
+ let dots=[],area,chartData;
+ const wrap=({children,data})=>{if(data)chartData=data;return createElement('svg',null,children);};
+ const {AssetChart}=loadTypescript('src/features/performance/Charts.tsx',{
+  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,XAxis:()=>null,YAxis:()=>null,
+   Area:props=>{area=props;return null;},Tooltip:()=>null,ReferenceArea:()=>null,ReferenceLine:()=>null,
+   ReferenceDot:props=>{dots.push(props);return null;}},
+ });
+ const first={date:'2026-09-16',assetValue:30_100_000};
+ for(const data of [
+  [first,{date:'2026-09-22',assetValue:30_700_000}],
+  [first,{date:'2026-09-22',assetValue:0}],
+  [first],
+ ]){
+  dots=[];
+  const before=JSON.stringify(data);
+  const html=render(AssetChart,{data,inactivePeriods:[]});
+  assert.equal(dots.length,1);
+  assert.equal(dots[0].x,Date.parse(data.at(-1).date));assert.equal(dots[0].y,data.at(-1).assetValue);
+  assert.equal(dots[0].r,4);assert.equal(dots[0].fill,'var(--cf-color-chart)');
+  assert.equal(dots[0].stroke,'var(--cf-color-surface)');assert.equal(dots[0].strokeWidth,2);
+  assert.equal(area.dot,false);assert.equal(area.type,'linear');assert.equal(area.strokeWidth,2.15);
+  assert.equal(area.connectNulls,false);assert.equal(area.isAnimationActive,false);
+  assert.match(html,/offset="0%"[^>]*stop-opacity="0\.18"/);
+  assert.match(html,/offset="55%"[^>]*stop-opacity="0\.06"/);
+  assert.match(html,/offset="100%"[^>]*stop-opacity="0"/);
+  assert.equal(JSON.stringify(data),before);assert.equal(chartData.at(-1).assetValue,data.at(-1).assetValue);
+ }
+ for(const last of [null,undefined,NaN,Infinity,-Infinity,'30700000']){
+  dots=[];
+  render(AssetChart,{data:[first,{date:'2026-09-22',assetValue:last}],inactivePeriods:[]});
+  assert.deepEqual(dots,[],'A missing final value must not move the endpoint to an earlier day');
+ }
+ for(const data of [[],[first,{date:'invalid-date',assetValue:30_700_000}],
+  [{date:'2026-09-22',assetValue:30_700_000},first]]){
+  dots=[];render(AssetChart,{data,inactivePeriods:[]});
+  assert.deepEqual(dots,[],'The endpoint must have the actual last valid date');
+ }
+});
+
 const point=(date,overrides={})=>({date,cutoffAt:`${date}T23:59:59+09:00`,assetValueKRW:100,
  twrIndex:100,netFlowKRW:0,cumulativeNetFlowKRW:100,cumulativeProfitKRW:0,active:true,final:true,...overrides});
 
 // Real component callbacks and range hook; only state storage and external boundaries are replaced.
 function performanceHarness(points=[point('2026-09-01'),point('2026-09-14'),point('2026-09-20'),point('2026-09-21')]){
- const state=[];let cursor=0;let tree;let comparisonTree;
+ const state=[];let cursor=0;let tree;let comparisonTree;let dateTree;
  const input={points,transactions:[],displayCurrency:'KRW',currentUsdKrwRate:null,loading:false,error:null,refreshError:null,scopeKey:'account:r1:2026-09-21',results:[],benchmarkStates:{}};
  const observed={retries:[]};
  const {ComparisonList,MAX_COMPARISONS}=loadTypescript('src/features/performance/ComparisonList.tsx');
- const {PerformanceAnalytics}=loadTypescript('src/components/PerformanceAnalytics.tsx',{
+ const overrides={
   react:{...React,useRef:()=>({current:null}),useMemo:factory=>factory(),useState:initial=>{
    const index=cursor++;
    if(!(index in state))state[index]=typeof initial==='function'?initial():initial;
    return [state[index],value=>{state[index]=typeof value==='function'?value(state[index]):value;}];
   }},
   '@/hooks/usePerformanceHistory':{usePerformanceHistory:()=>input},
+  '@/shared/time/use-kst-date':{useKstDate:()=> '2026-09-21'},
+  '@/features/performance/IntradayAnalytics':{IntradayAnalytics:props=>{observed.intraday=props;return null;}},
   '@/hooks/usePortfolio':{useTransactions:()=>({transactions:input.transactions}),usePreferences:()=>({displayCurrency:input.displayCurrency}),usePortfolioMarket:()=>({summary:null,currentUsdKrwRate:input.currentUsdKrwRate})},
   '@/features/market/use-stock-search':{useStockSearch:(query,options)=>{
    observed.search={query,...options};return {results:query&&options.enabled?input.results:[],loading:false};
@@ -111,11 +215,16 @@ function performanceHarness(points=[point('2026-09-01'),point('2026-09-14'),poin
   }},
   '@/features/performance/Charts':{AssetChart:props=>{observed.chart={mode:'assets',...props};return null;},ReturnChart:props=>{observed.chart={mode:'return',...props};return null;},PORTFOLIO_LINE:portfolioLine},
   '@/features/performance/ComparisonList':{MAX_COMPARISONS,ComparisonList:props=>{observed.comparisonList=props;comparisonTree=ComparisonList(props);return comparisonTree;}},
- });
+ };
+ const controls=loadTypescript('src/features/performance/Controls.tsx',overrides);
+ overrides['@/features/performance/Controls']={...controls,PerformanceDateControls:props=>{
+  dateTree=controls.PerformanceDateControls(props);return dateTree;
+ }};
+ const {PerformanceAnalytics}=loadTypescript('src/components/PerformanceAnalytics.tsx',overrides);
  const nodes=value=>Array.isArray(value)?value.flatMap(nodes):React.isValidElement(value)?[value,...nodes(value.props.children)]:[];
- const find=predicate=>{const result=nodes([tree,comparisonTree]).find(predicate);assert.ok(result,'Expected UI element');return result;};
+ const find=predicate=>{const result=nodes([tree,comparisonTree,dateTree]).find(predicate);assert.ok(result,'Expected UI element');return result;};
  return {input,observed,
-  draw(){cursor=0;comparisonTree=null;observed.comparisonList=null;tree=PerformanceAnalytics();return renderToStaticMarkup(tree);},
+  draw(){cursor=0;comparisonTree=null;dateTree=null;observed.comparisonList=null;tree=PerformanceAnalytics();return renderToStaticMarkup(tree);},
   element(className){return find(node=>node.props.className===className);},
   button(label){return find(node=>node.type==='button'&&(node.props.children===label||node.props['aria-label']===label));},
   field(label){return find(node=>node.type?.name==='DateField'&&node.props.label===label);},
@@ -138,7 +247,8 @@ test('closed securities retain period profit and return while the asset chart is
  const h=performanceHarness(points);h.input.transactions=transactions;
  h.input.displayCurrency='USD';h.input.currentUsdKrwRate=1000;
  const html=h.draw();
- assert.match(html,/\+₩1,000,000/);assert.doesNotMatch(html,/100\.00%/);
+ const summary=html.match(/<dl class="performance-metrics">[\s\S]*?<\/dl>/)?.[0];
+ assert.ok(summary);assert.match(summary,/\+₩1,000,000/);assert.doesNotMatch(summary,/%/);
  assert.equal(h.observed.chart.currency,'USD');
  assert.deepEqual(Array.from(h.observed.chart.data,point=>point.assetValue),[1000,2000,0,0,0]);
  h.button('수익률 비교').props.onClick();h.draw();
@@ -241,17 +351,17 @@ test('date field synchronizes external requests before effects without resetting
 
 test('period controls apply presets and direct dates immediately while rejecting empty or out of range dates',()=>{
  const h=performanceHarness();const html=h.draw();
- const presetLabels=['1주','1개월','3개월','올해','1년','전체'];
+ const presetLabels=['1일','5일','1개월','3개월','올해','1년','전체'];
  const rangeGroup=html.match(/<div class="performance-ranges" role="group" aria-label="조회 기간">([\s\S]*?)<\/div>/);
  assert.ok(rangeGroup);assert.deepEqual(Array.from(rangeGroup[1].matchAll(/<button[^>]*>([^<]+)<\/button>/g),match=>match[1]),presetLabels);
- assert.doesNotMatch(html,/>1일<\/button>|>6개월<\/button>/);
+ assert.doesNotMatch(html,/>6개월<\/button>/);
  assert.match(html,/class="performance-dates" role="group" aria-label="조회 날짜"/);
  for(const label of ['시작일','종료일'])assert.match(html,new RegExp(`<label[^>]*class="sr-only">${label}</label>`));
  assert.equal((html.match(/class="performance-input performance-date-input"/g)||[]).length,2);
  assert.match(html,/class="performance-date-separator" aria-hidden="true">–<\/span>/);
  const presets=performanceHarness(['2025-09-01','2025-09-21','2026-01-01','2026-06-23','2026-08-22','2026-09-14','2026-09-21'].map(date=>point(date)));
  presets.draw();
- for(const [label,start] of [['1주','2026-09-15'],['1개월','2026-08-23'],['3개월','2026-06-24'],['올해','2026-01-01'],['1년','2025-09-22'],['전체','2025-09-01']]){
+ for(const [label,start] of [['1일','2026-09-21'],['5일','2026-09-17'],['1개월','2026-08-23'],['3개월','2026-06-24'],['올해','2026-01-01'],['1년','2025-09-22'],['전체','2025-09-01']]){
   presets.button(label).props.onClick();presets.draw();
   for(const option of presetLabels)assert.equal(presets.button(option).props['aria-pressed'],option===label);
   assert.equal(presets.field('시작일').props.value,start);assert.equal(presets.field('종료일').props.value,'2026-09-21');
@@ -260,10 +370,10 @@ test('period controls apply presets and direct dates immediately while rejecting
  }
  assert.equal(h.field('시작일').props.value,'2026-09-01');assert.equal(h.field('종료일').props.value,'2026-09-21');
  assert.equal((html.match(/role="combobox"/g)||[]).length,2);
- h.button('1주').props.onClick();h.draw();
- assert.equal(h.button('1주').props['aria-pressed'],true);assert.equal(h.field('시작일').props.value,'2026-09-15');
+ h.button('5일').props.onClick();h.draw();
+ assert.equal(h.button('5일').props['aria-pressed'],true);assert.equal(h.field('시작일').props.value,'2026-09-17');
  h.changeDate('시작일','2026-09-19');h.draw();
- assert.equal(h.field('시작일').props.value,'2026-09-19');assert.equal(h.button('1주').props['aria-pressed'],false);
+ assert.equal(h.field('시작일').props.value,'2026-09-19');assert.equal(h.button('5일').props['aria-pressed'],false);
  assert.deepEqual(Array.from(h.observed.chart.data,p=>p.date),['2026-09-20','2026-09-21']);
  h.changeDate('종료일','2026-09-20');h.draw();
  assert.equal(h.field('종료일').props.value,'2026-09-20');assert.equal(h.observed.benchmark.end,'2026-09-20');
@@ -285,6 +395,10 @@ test('comparison mode keeps common controls separate from the below-chart search
  let html=h.draw();
  const controls=()=>renderToStaticMarkup(h.element('performance-controls')).replace(/aria-pressed="(?:true|false)"/g,'');
  const commonControls=controls();
+ const period=renderToStaticMarkup(h.element('performance-period'));
+ assert.match(period,/aria-label="조회 기간"/);assert.match(period,/aria-label="조회 날짜"/);
+ assert.match(period,/aria-label="차트 종류"/);
+ assert.equal((html.match(/aria-label="차트 종류"/g)||[]).length,1);
  assert.match(commonControls,/>보유자산 추이<\/button>/);assert.match(commonControls,/>수익률 비교<\/button>/);
  assert.doesNotMatch(commonControls,/<input|performance-search/);
  assert.doesNotMatch(html,/performance-comparison-panel|비교할 주식·ETF·지수 검색/);
@@ -293,6 +407,8 @@ test('comparison mode keeps common controls separate from the below-chart search
   const toolbar=renderToStaticMarkup(h.element('performance-toolbar'));
   const panel=renderToStaticMarkup(h.element('performance-comparison-panel'));
   assert.doesNotMatch(toolbar,/performance-search|performance-comparisons|<input/);
+  assert.doesNotMatch(toolbar,/aria-label="차트 종류"/);
+  assert.match(renderToStaticMarkup(h.element('performance-period')),/aria-label="차트 종류"/);
   assert.match(panel,/aria-label="비교할 주식·ETF·지수 검색"/);
   assert.match(panel,/aria-label="수익률 비교 목록"/);
   assert.ok(html.indexOf('aria-label="수익률 비교 그래프"')<html.indexOf('class="performance-comparison-panel"'),
@@ -499,7 +615,7 @@ test('failed refresh keeps only the last complete view and clearly distinguishes
 test('failed refresh never substitutes another selected period or account ledger day with the retained graph',()=>{
  const h=performanceHarness();h.draw();
  h.input.error=h.input.refreshError='새 자료 조회 실패';
- h.draw();h.button('1주').props.onClick();let html=h.draw();
+ h.draw();h.changeDate('시작일','2026-09-15');let html=h.draw();
  assert.match(html,/성과 조회 실패/);assert.doesNotMatch(html,/<dt>|aria-label="보유자산 추이 그래프"|갱신하지 못해/);
  h.input.loading=true;html=h.draw();
  assert.match(html,/성과 불러오는 중/);assert.doesNotMatch(html,/<dt>|aria-label="보유자산 추이 그래프"/);

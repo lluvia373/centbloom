@@ -1,0 +1,57 @@
+.asset-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: var(--cf-space-1);
+  color: var(--cf-color-muted);
+  background: var(--cf-color-surface);
+  border: 1px solid var(--cf-color-soft);
+  border-radius: var(--cf-radius-card);
+  overflow: hidden;
+}
+.asset-avatar.asset-avatar-small {
+  width: 30px;
+  height: 30px;
+  padding: var(--cf-space-1);
+  border-radius: var(--cf-radius-control);
+}
+.empty-portfolio {
+  padding: var(--cf-space-6) var(--cf-space-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--cf-radius-control);
+  margin-bottom: var(--cf-space-4);
+}
+.empty-portfolio h3 {
+  font-weight: 550;
+}
+.empty-portfolio.compact {
+  padding: var(--cf-space-6) var(--cf-space-4);
+}
+.empty-portfolio.compact h3 {
+  font-size: 12px;
+}
+.empty-icon {
+  background: #f2f4f6;
+  color: #727680;
+}
+.empty-portfolio h3 {
+  font-size: 17px;
+}
+@media (max-width: 760px) {
+  .asset-avatar {
+    width: 33px;
+    height: 33px;
+  }
+}

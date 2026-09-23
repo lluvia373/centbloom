@@ -122,7 +122,7 @@ export function calculateDailyChange({ transactions, date, displayCurrency, quot
   };
   const currentRate = (symbol: string) => {
     const quote = current(symbol);
-    if (!quote || quote.currency !== "KRW") return null;
+    if (!quote || quote.currency !== "KRW" || quote.fx?.valuationOnly) return null;
     const fetched = Date.parse(quote.fetchedAt ?? ""), quoted = Date.parse(quote.quotedAt ?? "");
     if (fetched < cutoff || !usableFxQuote(quoted, fetched, quote.marketState)) return null;
     return currentFollowsBaseline(quote, baseline(symbol)) ? quote.price : null;

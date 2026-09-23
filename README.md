@@ -13,7 +13,10 @@
 ```sh
 npm run docs:guide -- 관심종목
 npm run docs:guide -- src/features/watchlist/WatchStockButton.tsx
+npm run docs:guide -- src/features/performance/Controls.tsx
 ```
+
+진행 상태는 해당 작업 행의 결론·남은 조건부터 읽고, 검사 근거나 배포 버전이 필요할 때만 검증 기록을 연다. 기간 성과는 [날짜·차트·비교·모바일 기준](./DESIGN_SYSTEM.md#기간-성과-화면-기준), 스타일 변경은 [소유 파일 표](./DEVELOPMENT.md#스타일자산도구)에서 필요한 부분으로 바로 이동한다.
 
 | 내용 | 파일 |
 | --- | --- |

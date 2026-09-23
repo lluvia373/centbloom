@@ -2,9 +2,9 @@ import type { DisplayCurrency } from "@/lib/types";
 
 type ChartPoint = Record<string, unknown>;
 
-function numericExtent(data: ChartPoint[], keys: string[]): [number, number] {
-  let minimum = 0;
-  let maximum = 0;
+function numericExtent(data: ChartPoint[], keys: string[], includeZero = true): [number, number] {
+  let minimum = includeZero ? 0 : Infinity;
+  let maximum = includeZero ? 0 : -Infinity;
   for (const point of data) {
     for (const key of keys) {
       const value = point[key];
@@ -13,17 +13,17 @@ function numericExtent(data: ChartPoint[], keys: string[]): [number, number] {
       maximum = Math.max(maximum, value);
     }
   }
-  return [minimum, maximum];
+  return Number.isFinite(minimum) ? [minimum, maximum] : [0, 0];
 }
 
-function roundedTicks(minimum: number, maximum: number): number[] {
+function roundedTicks(minimum: number, maximum: number, minimumStep = 0): number[] {
   if (minimum === maximum) return [0, 0.25, 0.5, 0.75, 1];
-  const roughStep = (maximum - minimum) / 4;
+  const roughStep = Math.max((maximum - minimum) / 4, minimumStep);
   const magnitude = 10 ** Math.floor(Math.log10(roughStep));
   const step = ([1, 2, 2.5, 5, 10].find((value) => value * magnitude >= roughStep) ?? 10) * magnitude;
   const first = Math.floor(minimum / step);
   const last = Math.ceil(maximum / step);
-  return Array.from({ length: last - first + 1 }, (_, index) => Number(((first + index) * step).toPrecision(12)));
+  return Array.from({ length: last - first + 1 }, (_, index) => Number(((first + index) * step).toPrecision(15)));
 }
 
 function axisFormatter(divisor: number, step: number) {
@@ -36,13 +36,19 @@ function axisFormatter(divisor: number, step: number) {
 }
 
 export function getAssetAxis(data: ChartPoint[], currency: DisplayCurrency) {
-  const [minimum, maximum] = numericExtent(data, ["assetValue"]);
+  const [minimum, maximum] = numericExtent(data, ["assetValue"], false);
   const largest = Math.max(Math.abs(minimum), Math.abs(maximum));
   const [divisor, unitLabel] = currency === "KRW"
     ? largest >= 100_000_000 ? [100_000_000, "억원"] as const : largest >= 10_000 ? [10_000, "만원"] as const : [1, "원"] as const
     : largest >= 1_000_000 ? [1_000_000, "백만 USD"] as const : largest >= 1_000 ? [1_000, "천 USD"] as const : [1, "USD"] as const;
-  const ticks = roundedTicks(minimum, maximum);
-  return { ticks, domain: [ticks[0], ticks[ticks.length - 1]] as [number, number], unitLabel, format: axisFormatter(divisor, ticks[1] - ticks[0]) };
+  const minorUnit = currency === "KRW" ? 1 : 0.01;
+  const span = maximum - minimum;
+  const padding = Math.max(span > 0 ? span * 0.08 : largest * 0.01, minorUnit, largest * Number.EPSILON * 16);
+  const lower = minimum >= 0 ? Math.max(0, minimum - padding) : minimum - padding;
+  const ticks = largest === 0 ? [0, minorUnit] : roundedTicks(lower, maximum + padding, minorUnit);
+  const format = axisFormatter(divisor, ticks[1] - ticks[0]);
+  const width = Math.max(60, ...ticks.map((tick) => format(tick).length * 8 + 24));
+  return { ticks, domain: [ticks[0], ticks[ticks.length - 1]] as [number, number], unitLabel, format, width };
 }
 
 export function getReturnAxis(data: ChartPoint[], keys: string[] = ["portfolioReturn", "benchmarkReturn"]) {
@@ -52,33 +58,71 @@ export function getReturnAxis(data: ChartPoint[], keys: string[] = ["portfolioRe
 }
 
 const DAY_MS = 86_400_000;
-type YearBand = { year: number; start: number; end: number };
 type DateAxis = {
   ticks: number[];
   domain: [number, number];
-  yearBands: YearBand[];
   format: (timestamp: number) => string;
 };
+
+export const DATE_AXIS_HEIGHT = 36;
+
+/** Intraday coordinates stay absolute; all clock labels consistently use KST. */
+export function getIntradayDates(data: ChartPoint[], width: number, range: "1d" | "5d"): DateAxis {
+  const values = data.map(point => Date.parse(String(point.date))).filter(Number.isFinite);
+  const first = values[0] ?? 0;
+  const last = values.at(-1) ?? first;
+  const domain: [number, number] = first === last ? [first - 30_000, last + 30_000] : [first, last];
+  const format = (timestamp: number) => {
+    const date = new Date(timestamp + 9 * 3_600_000);
+    return range === "1d" ? `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`
+      : `${date.getUTCMonth() + 1}월 ${date.getUTCDate()}일`;
+  };
+  const steps = range === "1d" ? [0.25, 0.5, 1, 2, 3, 4, 6, 12, 24] : [24, 48, 72, 120];
+  const ticks = fittingDateTicks(steps, hours => {
+    const step = hours * 3_600_000;
+    const anchor = -9 * 3_600_000;
+    const result: number[] = [];
+    for (let at = anchor + Math.ceil((first - anchor) / step) * step; at <= last; at += step) result.push(at);
+    return result;
+  }, domain, format, width);
+  return { domain, ticks, format };
+}
+
+export function formatIntradayTooltip(timestamp: number): string {
+  const date = new Date(timestamp + 9 * 3_600_000);
+  return `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")} ${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")} KST`;
+}
+
+// Use the same conservative label bounds for tick selection and edge placement.
+export function getDateLabelPosition(label: string, x: number, left: number, right: number) {
+  const width = [...label].reduce((sum, letter) => sum + (letter.charCodeAt(0) > 127 ? 12 : 7), 0);
+  const center = right - left >= width ? Math.max(left + width / 2, Math.min(right - width / 2, x)) : x;
+  return { x: center, width };
+}
+
+function fittingDateTicks(steps: number[], create: (step: number) => number[], domain: [number, number],
+  format: (timestamp: number) => string, width: number) {
+  if (!Number.isFinite(width) || width <= 0) return [];
+  for (const step of steps) {
+    const ticks = create(step);
+    if (ticks.length > 6) continue;
+    let previousEnd = -Infinity;
+    const fits = ticks.every(tick => {
+      const position = (tick - domain[0]) / (domain[1] - domain[0]) * width;
+      const label = getDateLabelPosition(format(tick), position, 0, width);
+      const separated = label.width <= width && label.x - label.width / 2 >= previousEnd + 24;
+      previousEnd = label.x + label.width / 2;
+      return separated;
+    });
+    if (fits) return ticks;
+  }
+  return [];
+}
 
 function dateTimestamp(value: unknown) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value ? timestamp : null;
-}
-
-function clippedYears(first: number, last: number): YearBand[] {
-  const bands: YearBand[] = [];
-  for (let year = new Date(first).getUTCFullYear(); year <= new Date(last).getUTCFullYear(); year += 1) {
-    const start = Math.max(first, Date.UTC(year, 0, 1));
-    const end = Math.min(last, Date.UTC(year + 1, 0, 1));
-    if (end > start) bands.push({ year, start, end });
-  }
-  return bands;
-}
-
-function niceYearStep(minimum: number) {
-  const magnitude = 10 ** Math.floor(Math.log10(Math.max(1, minimum)));
-  return ([1, 2, 5, 10].find((value) => value * magnitude >= minimum) ?? 10) * magnitude;
 }
 
 export function getChartDates(data: ChartPoint[], width: number): DateAxis {
@@ -94,26 +138,27 @@ export function getChartDates(data: ChartPoint[], width: number): DateAxis {
     const date = new Date(timestamp);
     return `${date.getUTCMonth() + 1}월 ${date.getUTCDate()}일`;
   };
-  if (!Number.isFinite(first)) return { ticks: [], domain: [0, 1], yearBands: [], format: formatDay };
-  if (first === last) return { ticks: [first], domain: [first - DAY_MS / 2, last + DAY_MS / 2], yearBands: [], format: formatDay };
+  if (!Number.isFinite(first)) return { ticks: [], domain: [0, 1], format: formatDay };
+  if (first === last) return { ticks: [first], domain: [first - DAY_MS / 2, last + DAY_MS / 2], format: formatDay };
 
   const domain: [number, number] = [first, last];
   const spanDays = (last - first) / DAY_MS;
-  const narrow = width < 600;
-  const ticks: number[] = [];
   const firstDate = new Date(first);
   const lastDate = new Date(last);
   const firstYear = firstDate.getUTCFullYear();
   const lastYear = lastDate.getUTCFullYear();
 
   if (spanDays <= 45) {
-    const roughStep = spanDays / (narrow ? 2 : 5);
-    const stepDays = [1, 2, 3, 7, 14].find((value) => value >= roughStep) ?? 14;
-    const step = stepDays * DAY_MS;
-    // Weekly landmarks start on Monday; all positions remain actual UTC dates.
-    const anchor = stepDays >= 7 ? Date.UTC(1970, 0, 5) : 0;
-    for (let tick = anchor + Math.ceil((first - anchor) / step) * step; tick <= last; tick += step) ticks.push(tick);
-    return { ticks, domain, yearBands: firstYear === lastYear ? [] : clippedYears(first, last), format: formatDay };
+    const format = firstYear === lastYear ? formatDay : (timestamp: number) => `${new Date(timestamp).getUTCFullYear()}년 ${formatDay(timestamp)}`;
+    const ticks = fittingDateTicks([1, 2, 3, 7, 14, 28, 56], stepDays => {
+      const values: number[] = [];
+      const step = stepDays * DAY_MS;
+      // Weekly landmarks start on Monday; all positions remain actual UTC dates.
+      const anchor = stepDays >= 7 ? Date.UTC(1970, 0, 5) : 0;
+      for (let tick = anchor + Math.ceil((first - anchor) / step) * step; tick <= last; tick += step) values.push(tick);
+      return values;
+    }, domain, format, width);
+    return { ticks, domain, format };
   }
 
   // Calendar anniversaries must not pick a coarser interval because of leap days.
@@ -121,21 +166,28 @@ export function getChartDates(data: ChartPoint[], width: number): DateAxis {
     + (lastDate.getUTCDate() - firstDate.getUTCDate()) / 31;
   const spanYears = spanMonths / 12;
   if (spanYears > 4) {
-    const step = niceYearStep(spanYears / (narrow ? 2.5 : 5));
-    for (let year = Math.ceil(firstYear / step) * step; year <= lastYear; year += step) {
-      const tick = Date.UTC(year, 0, 1);
-      if (tick >= first && tick <= last) ticks.push(tick);
-    }
-    return { ticks, domain, yearBands: [], format: (timestamp) => `${new Date(timestamp).getUTCFullYear()}년` };
+    const format = (timestamp: number) => `${new Date(timestamp).getUTCFullYear()}년`;
+    const ticks = fittingDateTicks([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000], step => {
+      const values: number[] = [];
+      for (let year = Math.ceil(firstYear / step) * step; year <= lastYear; year += step) {
+        const tick = Date.UTC(year, 0, 1);
+        if (tick >= first && tick <= last) values.push(tick);
+      }
+      return values;
+    }, domain, format, width);
+    return { ticks, domain, format };
   }
 
-  const roughMonths = spanMonths / (narrow ? 4 : 10);
-  const step = [1, 2, 3, 6, 12].find((value) => value >= roughMonths) ?? 12;
   const firstMonth = firstYear * 12 + firstDate.getUTCMonth();
   const lastMonth = lastYear * 12 + lastDate.getUTCMonth();
-  for (let month = Math.ceil(firstMonth / step) * step; month <= lastMonth; month += step) {
-    const tick = Date.UTC(Math.floor(month / 12), month % 12, 1);
-    if (tick >= first && tick <= last) ticks.push(tick);
-  }
-  return { ticks, domain, yearBands: clippedYears(first, last), format: (timestamp) => `${new Date(timestamp).getUTCMonth() + 1}월` };
+  const format = (timestamp: number) => `${new Date(timestamp).getUTCFullYear()}년 ${new Date(timestamp).getUTCMonth() + 1}월`;
+  const ticks = fittingDateTicks([1, 2, 3, 6, 12, 24, 48, 60], step => {
+    const values: number[] = [];
+    for (let month = Math.ceil(firstMonth / step) * step; month <= lastMonth; month += step) {
+      const tick = Date.UTC(Math.floor(month / 12), month % 12, 1);
+      if (tick >= first && tick <= last) values.push(tick);
+    }
+    return values;
+  }, domain, format, width);
+  return { ticks, domain, format };
 }

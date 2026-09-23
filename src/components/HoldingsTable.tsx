@@ -3,6 +3,7 @@
 import { buildHoldingAllocation, formatAllocationWeight } from "@/features/portfolio/model/holding-allocation";
 import { carriedFxLabel, dailyReferenceLabel } from "@/features/portfolio/model/daily-reference-label";
 import styles from "@/features/portfolio/ui/PortfolioHoldings.module.css";
+import { HoldingsComposition, holdingAllocationColor } from "@/features/portfolio/ui/HoldingsComposition";
 import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { MARKETS, marketForSymbol, matchesStockQuery } from "@/lib/markets";
@@ -18,6 +19,8 @@ interface Props {
   transactions?: Transaction[];
   displayCurrency: DisplayCurrency;
   compact?: boolean;
+  embedded?: boolean;
+  showAllocation?: boolean;
   loading?: boolean;
   editable?: boolean;
   toolbarAction?: ReactNode;
@@ -34,7 +37,7 @@ const signedMoney = (value: number, currency: DisplayCurrency) => `${value > 0 ?
 const changeClass = (value: number) => value > 0 ? styles.positive : value < 0 ? styles.negative : "";
 
 export function HoldingsTable({
-  holdings, transactions = EMPTY_TRANSACTIONS, displayCurrency, compact = false, loading, editable = false,
+  holdings, transactions = EMPTY_TRANSACTIONS, displayCurrency, compact = false, embedded = false, showAllocation = false, loading, editable = false,
   toolbarAction, dailyChanges, dailyChangeReason, referenceDatesBySymbol, carriedDatesBySymbol,
 }: Props) {
   const { user } = useAuth();
@@ -44,12 +47,18 @@ export function HoldingsTable({
   const [sort, setSort] = useState<Sort>("value");
   const [query, setQuery] = useState("");
   const [displayLimit, setDisplayLimit] = useState({ scope, count: HOLDINGS_BATCH_SIZE });
+  const [highlight, setHighlight] = useState<{ scope: string; hovered: string | null; focused: string | null }>({ scope, hovered: null, focused: null });
   const tableId = useId();
+  const allocationCaptionId = `${tableId}-allocation-basis`;
   if (displayLimit.scope !== scope) {
     setDisplayLimit({ scope, count: HOLDINGS_BATCH_SIZE });
   }
   const limit = displayLimit.scope === scope ? displayLimit.count : HOLDINGS_BATCH_SIZE;
-  const resetDisplayLimit = () => setDisplayLimit({ scope, count: HOLDINGS_BATCH_SIZE });
+  if (highlight.scope !== scope) setHighlight({ scope, hovered: null, focused: null });
+  const resetDisplayLimit = () => {
+    setDisplayLimit({ scope, count: HOLDINGS_BATCH_SIZE });
+    setHighlight({ scope, hovered: null, focused: null });
+  };
   const allocation = useMemo(() => buildHoldingAllocation(holdings), [holdings]);
   const latestTradeDates = useMemo(() => {
     const dates = new Map<string, string>();
@@ -84,11 +93,16 @@ export function HoldingsTable({
   }, [holdings, filter, query, sort, dailyChanges, latestTradeDates]);
   const displayed = visible.slice(0, limit);
   const remaining = visible.length - displayed.length;
+  const candidate = highlight.scope === scope ? highlight.hovered ?? highlight.focused : null;
+  const activeId = showAllocation && allocation.available && displayed.some(holding => holding.id === candidate) ? candidate : null;
+  const showComposition = showAllocation && holdings.length > 0;
 
   return (
-    <section className={styles.holdings} aria-label="보유종목">
+    <section className={`${styles.holdings} ${embedded ? styles.embeddedHoldings : ""}`} aria-label="보유종목">
+      <div className={showComposition ? styles.holdingsOverview : undefined}>
+      {showComposition && <HoldingsComposition allocation={allocation} activeId={activeId} id={allocationCaptionId} loading={loading} />}
       <div className={styles.toolbar}>
-        <h2>보유종목 <span>{holdings.length}</span></h2>
+        {!embedded && <h2>보유종목 <span>{holdings.length}</span></h2>}
         <div className={styles.toolbarActions}>
           {compact ? <Link href="/portfolio" className="subtle-link">전체 보기</Link> : (
             <label className={styles.search}>
@@ -116,10 +130,12 @@ export function HoldingsTable({
           {toolbarAction}
         </div>
       </div>
+      </div>
+      <div className={styles.holdingsContent}>
       {holdings.length === 0 ? <EmptyPortfolio compact={compact} /> : visible.length === 0 ? (
         <p className={styles.empty}>조건에 맞는 보유 종목이 없습니다.</p>
       ) : (
-        <table id={tableId} className={styles.table}>
+        <table id={tableId} className={styles.table} aria-describedby={showComposition ? allocationCaptionId : undefined}>
           <thead>
             <tr>
               <th scope="col">종목 · 보유수량</th>
@@ -139,7 +155,13 @@ export function HoldingsTable({
               const hasPrice = price != null && Number.isFinite(price) && price > 0;
               const weight = allocation.weights[holding.id];
               return (
-                <tr key={holding.id}>
+                <tr key={holding.id} data-allocation-active={activeId === holding.id || undefined}
+                  onPointerEnter={showComposition ? () => setHighlight(current => ({ ...current, scope, hovered: holding.id })) : undefined}
+                  onPointerLeave={showComposition ? () => setHighlight(current => ({ ...current, hovered: null })) : undefined}
+                  onFocusCapture={showComposition ? () => setHighlight({ scope, hovered: null, focused: holding.id }) : undefined}
+                  onBlurCapture={showComposition ? event => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) setHighlight(current => ({ ...current, focused: null }));
+                  } : undefined}>
                   <td className={styles.asset}>
                     <div className={styles.assetMain}>
                       <Link href={`/stock/${encodeURIComponent(holding.symbol)}`} className={styles.assetLink}>
@@ -168,7 +190,8 @@ export function HoldingsTable({
                     {hasDaily && carriedLabel ? <span className={styles.subvalue}>{carriedLabel}</span> : null}
                   </td>
                   <td data-label="비중" className={styles.weight}>
-                    <strong>{allocation.available ? formatAllocationWeight(weight) : "—"}</strong>
+                    <strong>{showComposition && allocation.available && <span className={styles.weightSwatch}
+                      style={{ backgroundColor: holdingAllocationColor(holding.id) }} aria-hidden="true" />}{allocation.available ? formatAllocationWeight(weight) : "—"}</strong>
                   </td>
                 </tr>
               );
@@ -187,6 +210,7 @@ export function HoldingsTable({
           )}
         </div>
       )}
+      </div>
       {editable && <HoldingManagement key={scope} target={target?.scope === scope ? target : null} onClose={() => setTarget(null)} />}
     </section>
   );

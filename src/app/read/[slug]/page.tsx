@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reading } from "@/features/home/reading";
 import styles from "@/features/home/home.module.css";
+import readingStyles from "@/features/home/reading.module.css";
 export async function generateMetadata({
   params,
 }: {
@@ -23,19 +24,19 @@ export default async function ReadingPage({
   const article = reading.find((item) => item.slug === slug);
   if (!article) notFound();
   return (
-    <article className={styles.article}>
+    <article className={readingStyles.article}>
       <Link href="/community" className={styles.textLink}>
         ← 투자 이야기
       </Link>
-      <span className={styles.eyebrow}>{article.tag}</span>
+      <span className={`${styles.eyebrow} ${readingStyles.eyebrow}`}>{article.tag}</span>
       <h1>{article.title}</h1>
-      <p className={styles.articleSummary}>{article.summary}</p>
-      <div className={styles.articleMeta}>Centbloom 읽을거리 · 2026.09.06</div>
+      <p className={readingStyles.articleSummary}>{article.summary}</p>
+      <div className={readingStyles.articleMeta}>Centbloom 읽을거리 · 2026.09.06</div>
       {article.paragraphs.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}
       <AdSlot placement="article-bottom" />
-      <div className={styles.articleEnd}>
+      <div className={readingStyles.articleEnd}>
         <p>읽고 떠오른 생각을 나만의 투자 노트에 남겨보세요.</p>
         <Link href="/journal">투자 노트 작성하기</Link>
       </div>

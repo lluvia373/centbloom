@@ -60,6 +60,20 @@ test('KST midnight price and FX both contribute, independently of previous-close
   close(result.priceImpact + result.fxImpact, result.change);
 });
 
+test('valuation-only FX restores asset value but cannot claim a current daily profit', () => {
+  const carried = quote('USDKRW=X', 1410, 'KRW', { fx: { method: 'direct', components: [], valuationOnly: true } });
+  const quotes = { AAPL: quote('AAPL', 110), 'USDKRW=X': carried };
+  const summary = buildSummary([holding()], quotes, { USD: carried.price }, 'KRW');
+  assert.equal(summary.holdings[0].valuationAvailable, true);
+  close(summary.totalValue, 310200);
+  const result = calculate({ quotes });
+  assert.equal(result.available, false);
+  assert.match(result.reason, /USD\/KRW 현재 환율/);
+  assert.deepEqual(Object.keys(result.bySymbol), []);
+  // A direct USD display needs no USD/KRW conversion and remains valid.
+  assert.equal(calculate({ quotes, displayCurrency: 'USD' }).available, true);
+});
+
 test('a reference date reaches only the affected result and position, without an estimate label', () => {
   const reference = baseline('USDKRW=X', 1400, 'KRW', { precision: 'daily-reference', source: 'ecb-reference',
     sourceAt: null, sourceEndAt: null,

@@ -7,23 +7,27 @@ import type {
 } from "@/lib/types";
 import { MarketError, providerRequests, yahoo } from "./provider";
 export function fetchChart(
-  symbol: string,
+  rawSymbol: string,
   range: string,
   start: string | null,
   end: string | null,
   signal?: AbortSignal,
 ): Promise<ChartSeries> {
+  const symbol = rawSymbol.trim().toUpperCase();
+  const period1 = start ?? getPeriodStart(range);
+  const period2 = end ? addDays(end, 1) : undefined;
+  const interval = start || range === "5d" || range === "1mo" ? "1d" : "1wk";
+  // Share equivalent provider requests even when the UI range labels differ.
+  // Resolve relative dates before lookup so a new UTC day cannot reuse yesterday's window.
   return providerRequests.request(
-    JSON.stringify(["chart", symbol, range, start, end]),
+    JSON.stringify(["chart", symbol, period1, period2, interval]),
     async (signal) => {
-      const period1 = start ?? getPeriodStart(range);
-      const period2 = end ? addDays(end, 1) : undefined;
       const result = await yahoo.chart(
         symbol,
         {
           period1,
           ...(period2 ? { period2 } : {}),
-          interval: start || range === "5d" || range === "1mo" ? "1d" : "1wk",
+          interval,
           events: "div",
         },
         { fetchOptions: { signal } },

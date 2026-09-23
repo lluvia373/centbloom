@@ -2,6 +2,7 @@
 import { JournalEditor } from "@/features/journal/JournalEditor";
 import { JournalEntryCard } from "@/features/journal/JournalEntryCard";
 import { useJournalController } from "@/features/journal/use-journal-controller";
+import styles from "./JournalPage.module.css";
 
 import { useAuth } from "@/hooks/useAuth";
 import { JOURNAL_SENTIMENTS } from "@/hooks/useJournal";
@@ -11,7 +12,6 @@ import {
   Check,
   Clock3,
   Eye,
-  NotebookPen,
   Plus,
   Search,
 } from "lucide-react";
@@ -47,8 +47,10 @@ function JournalWorkspace() {
     submit,
     remove,
   } = useJournalController();
+  const hasEntries = entries.length > 0;
+  const showRecords = ready && hasEntries;
   return (
-    <div className="space-y-7 text-[#202329]">
+    <div className={`${styles.page} space-y-6 text-cf-ink`}>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-cf-title font-semibold">
@@ -60,15 +62,15 @@ function JournalWorkspace() {
           type="button"
           disabled={!ready || Boolean(storageError)}
           onClick={() => openEditor()}
-          className="flex items-center gap-2 rounded-xl bg-[#25282e] px-4 py-3 text-sm font-semibold text-[#ffffff] shadow-sm transition hover:bg-[#25282e] disabled:opacity-40"
+          className={`button-primary ${styles.control} disabled:opacity-40`}
         >
-          <Plus className="h-4 w-4" /> 노트 작성
+          <Plus className="h-4 w-4" aria-hidden="true" /> 노트 작성
         </button>
       </header>
 
       <div className="space-y-4">
-        <div className="min-w-0 space-y-5">
-          <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[#e6e8eb] bg-[#ffffff] p-5 sm:p-6">
+        <div className="min-w-0 space-y-4">
+          {showRecords && <div className="grid grid-cols-3 gap-3 rounded-cf-card border border-cf-line bg-cf-surface p-4 sm:p-6">
             {[
               { label: "기록한 생각", count: entries.length, icon: BookOpen },
               {
@@ -88,27 +90,27 @@ function JournalWorkspace() {
               <div
                 key={label}
                 className={
-                  index ? "border-l border-[#e6e8eb] pl-4 sm:pl-6" : ""
+                  index ? "min-w-0 border-l border-cf-line pl-4 sm:pl-6" : "min-w-0"
                 }
               >
-                <p className="flex items-center gap-2 text-xs text-[#727680] sm:text-xs">
-                  <Icon className="hidden h-3.5 w-3.5 sm:block" />
+                <p className="flex items-center gap-2 text-cf-caption text-cf-muted">
+                  <Icon className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" />
                   {label}
                 </p>
-                <p className="mt-3 text-2xl font-semibold tabular-nums">
+                <p className="mt-3 flex flex-wrap items-baseline gap-2 text-cf-section font-semibold tabular-nums">
                   {ready ? count : "—"}
-                  <span className="ml-1.5 text-xs font-normal text-[#727680]">
+                  <span className="text-cf-caption font-normal text-cf-muted">
                     {index === 1 ? "종목" : "개"}
                   </span>
                 </p>
               </div>
             ))}
-          </div>
+          </div>}
 
           {storageError && (
             <p
               role="alert"
-              className="rounded-xl border border-[#e9d9b8] bg-[#fff9ed] px-4 py-3 text-sm leading-6 text-[#727680]"
+              className="rounded-cf-control border border-cf-negative bg-cf-negative-soft px-4 py-3 text-cf-label text-cf-negative"
             >
               {storageError}
             </p>
@@ -116,9 +118,9 @@ function JournalWorkspace() {
           {notice && (
             <p
               role="status"
-              className="flex items-center gap-2 rounded-xl bg-[#f3f4f6] px-4 py-3 text-sm text-[#727680]"
+              className="flex items-center gap-2 rounded-cf-control bg-cf-soft px-4 py-3 text-cf-label text-cf-muted"
             >
-              <Check className="h-4 w-4 shrink-0" />
+              <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
               {notice}
             </p>
           )}
@@ -136,27 +138,22 @@ function JournalWorkspace() {
           )}
 
           <p className="text-cf-caption text-cf-muted">이 브라우저에 계정별 저장 · 브라우저 데이터 삭제 시 노트 삭제</p>
-          <div className="rounded-2xl border border-[#e6e8eb] bg-[#ffffff]">
-            <div className="space-y-4 border-b border-[#e6e8eb] p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold">
-                  나의 기록{" "}
-                  <span className="ml-1.5 font-normal text-[#727680]">
-                    {entries.length}
-                  </span>
-                </h2>
+          {(!storageError || hasEntries) && <div className="rounded-cf-card border border-cf-line bg-cf-surface">
+            {showRecords && <div className="space-y-4 border-b border-cf-line p-4 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-cf-section font-semibold">나의 기록</h2>
                 <button
                   type="button"
                   onClick={() => setOldestFirst(!oldestFirst)}
-                  className="flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680]"
+                  className={`button-secondary ${styles.control}`}
                 >
-                  <ArrowDownUp className="h-3 w-3" />
+                  <ArrowDownUp className="h-4 w-4" aria-hidden="true" />
                   {oldestFirst ? "오래된 순" : "최근 수정순"}
                 </button>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div
-                  className="flex gap-1 rounded-lg bg-[#ffffff] p-1"
+                  className="flex min-w-0 flex-wrap gap-1"
                   role="group"
                   aria-label="노트 분류 필터"
                 >
@@ -166,53 +163,52 @@ function JournalWorkspace() {
                       type="button"
                       onClick={() => setFilter(value)}
                       aria-pressed={filter === value}
-                      className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition ${filter === value ? "bg-[#e9ecf0] font-semibold text-[#25282e] shadow-sm" : "text-[#727680] hover:text-[#727680]"}`}
+                      className={`${styles.control} flex-1 whitespace-nowrap px-3 py-2 ${filter === value ? "bg-cf-soft font-semibold text-cf-ink" : "text-cf-muted hover:bg-cf-soft hover:text-cf-ink"}`}
                     >
                       {value}
                     </button>
                   ))}
                 </div>
-                <label className="relative block sm:w-52">
+                <label className={styles.search}>
                   <span className="sr-only">투자 노트 검색</span>
-                  <Search className="pointer-events-none absolute left-3 top-2.5 h-3.5 w-3.5 text-[#727680]" />
+                  <Search className="h-4 w-4 shrink-0 text-cf-muted" aria-hidden="true" />
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="노트, 종목 검색"
-                    className="w-full rounded-lg border border-[#e6e8eb] py-2 pl-9 pr-3 text-xs outline-none focus:border-[#9b9fa7]"
+                    className="text-cf-input"
                   />
                 </label>
               </div>
-            </div>
+            </div>}
 
             {!ready ? (
-              <p className="px-6 py-20 text-center text-sm text-[#727680]">
+              <p role="status" className="px-6 py-8 text-center text-cf-body text-cf-muted">
                 노트를 불러오고 있어요.
               </p>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center px-6 py-8 text-center">
-                <NotebookPen size={24} className="mb-4 text-cf-muted" aria-hidden="true" />
-                <h3 className="text-base font-semibold">
-                  {entries.length === 0
+                <p className="text-cf-body text-cf-muted">
+                  {!hasEntries
                     ? "작성한 노트 없음"
                     : "일치하는 노트가 없어요"}
-                </h3>
+                </p>
 
-                {entries.length > 0 && (
+                {hasEntries && (
                   <button
                     type="button"
                     onClick={() => {
                       setFilter("전체");
                       setQuery("");
                     }}
-                    className="mt-5 text-xs font-semibold text-[#727680]"
+                    className={`button-secondary ${styles.control} mt-4`}
                   >
                     필터 초기화
                   </button>
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-[#e6e8eb]">
+              <div className="divide-y divide-cf-line">
                 {filtered.map((entry) => (
                   <JournalEntryCard
                     key={entry.id}
@@ -225,7 +221,7 @@ function JournalWorkspace() {
                 ))}
               </div>
             )}
-          </div>
+          </div>}
         </div>
 
 

@@ -4,6 +4,7 @@ type Options = {
   ttlMs?: number;
   timeoutMs?: number;
   queueTimeoutMs?: number;
+  priority?: "normal" | "interactive";
   retry?: { limit: number; delayMs: number; when: (error: unknown) => boolean; onRetry?: (error: unknown) => void };
 };
 interface Entry {
@@ -24,7 +25,7 @@ export function createRequestCache({
   function request<T>(
     key: string,
     loader: (signal: AbortSignal) => Promise<T>,
-    { signal, ttlMs = 0, timeoutMs = 20_000, queueTimeoutMs = 60_000, retry }: Options = {},
+    { signal, ttlMs = 0, timeoutMs = 20_000, queueTimeoutMs = 60_000, priority = "normal", retry }: Options = {},
   ): Promise<T> {
     if (signal?.aborted) return Promise.reject(signal.reason);
     let entry = entries.get(key);
@@ -62,7 +63,7 @@ export function createRequestCache({
                 new DOMException("요청 시간이 초과되었습니다.", "TimeoutError"),
               ), timeoutMs);
               return Promise.race([Promise.resolve().then(() => loader(current.signal)), aborted]);
-            }, current.signal),
+            }, current.signal, priority),
             aborted,
           ]);
         } finally {

@@ -192,6 +192,7 @@ test("representative cards show the article directly; a researched empty feed re
     "@/features/market/use-watched-reports": { useWatchedReports: () => ({}) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
     "./home.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
+    "./market-changes.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
   });
   const html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
   assert.match(html, /SELLAS announces clinical trial results/);
@@ -221,6 +222,7 @@ test("history is visible without disclosure and longer card lists are paged thre
     "@/features/market/use-watched-reports": { useWatchedReports: () => ({}) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
     "./home.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
+    "./market-changes.module.css": { default: new Proxy({}, { get: (_, key) => String(key) }) },
   });
   let html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));
   assert.equal((html.match(/<article/g) ?? []).length, 3);

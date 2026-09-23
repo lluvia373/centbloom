@@ -3,21 +3,58 @@ import assert from 'node:assert/strict';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {loadTypescript} from './load-typescript.mjs';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+import {resolveTitle} from 'next/dist/lib/metadata/resolvers/resolve-title.js';
+
+test('browser tab title identifies local development and preserves production branding',()=>{
+ const source=readFileSync('src/app/layout.tsx','utf8');
+ const ast=ts.createSourceFile('layout.tsx',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+ const declaration=ast.statements.filter(ts.isVariableStatement)
+  .flatMap(statement=>Array.from(statement.declarationList.declarations))
+  .find(node=>node.name.getText(ast)==='metadata');
+ assert.ok(declaration?.initializer);
+ for(const environment of ['development','production']){
+  const metadata=runInNewContext(`(${declaration.initializer.getText(ast)})`,{process:{env:{NODE_ENV:environment}},URL});
+  const root=resolveTitle(metadata.title,null);
+  assert.equal(root.absolute,environment==='development'?'localhost:3000':'센트블룸 | Centbloom');
+  const child=resolveTitle('증시 캘린더 | Centbloom',root.template);
+  assert.equal(child.absolute,environment==='development'?'localhost:3000':'증시 캘린더 | Centbloom');
+  assert.equal(metadata.applicationName,'Centbloom');
+ }
+});
+
 const render=(component,props={})=>renderToStaticMarkup(createElement(component,props));
-test('daily summary: reference FX retains only a short midnight caption in the existing style', () => {
+test('daily summary: total leads a subordinate breakdown without equation or timezone clutter', () => {
  const daily = { available: true, estimated: true, change: 100, priceImpact: 60, fxImpact: 40, bySymbol: {},
   referenceDates: ['2026-09-18'], fxNotes: ['CNY/KRW 자정 기준: 2026-09-18 ECB 일별 참고 환율 적용'] };
  const {PortfolioMetrics}=loadTypescript('src/components/PortfolioMetrics.tsx',{'@/hooks/usePortfolio':{
   usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,loading:false}),usePortfolioDailyChange:()=>daily,
  }});
  const html=render(PortfolioMetrics);
- assert.match(html,/\+₩100/); assert.match(html,/오늘 손익 요인/);
- assert.match(html,/<dt>오늘 손익<\/dt>/);
+ assert.match(html,/<dt>오늘 손익<\/dt><dd class="portfolio-summary-result positive">\+₩100<\/dd>/);
+ assert.match(html,/오늘 손익 구성/);
+ assert.match(html,/오늘 손익<\/dt>.*\+₩100.*portfolio-summary-factors.*종목 손익<\/span><strong[^>]*>\+₩60<\/strong>.*환율 손익<\/span><strong[^>]*>\+₩40<\/strong>/s);
+ assert.doesNotMatch(html,/portfolio-summary-equation|portfolio-summary-operator|>[+=]<|합한 금액/);
  assert.doesNotMatch(html,/오늘 변동|오늘 기여/);
- assert.match(html,/<dd class="portfolio-summary-context">오늘 00:00 기준\(KST\)<\/dd>/);
- assert.equal(html.split('오늘 00:00 기준(KST)').length-1,1);
+ assert.doesNotMatch(html,/00:00|KST|주가·매매/);
+ assert.doesNotMatch(html,/한국시간/);
  assert.doesNotMatch(html,/<details\b|<summary\b|오늘 손익의 환율 기준|추정/);
  assert.doesNotMatch(html,/CNY\/KRW|2026-09-18 ECB|일별 환율 적용|최종 수신 환율 적용/);
+});
+
+test('daily summary: unrepresentable components retain the total without fabricated detail', () => {
+ const daily={available:true,change:100,priceImpact:Infinity,fxImpact:0,bySymbol:{}};
+ const {PortfolioMetrics}=loadTypescript('src/components/PortfolioMetrics.tsx',{'@/hooks/usePortfolio':{
+  usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,loading:false}),usePortfolioDailyChange:()=>daily,
+ }});
+ const invalid=render(PortfolioMetrics);
+ assert.match(invalid,/\+₩100/);assert.match(invalid,/세부 손익 표시 불가/);
+ assert.doesNotMatch(invalid,/portfolio-summary-factors|Infinity|∞/);
+ Object.assign(daily,{change:1e20,priceImpact:1e20,fxImpact:0});
+ const large=render(PortfolioMetrics);
+ assert.match(large,/세부 손익 표시 불가/);assert.doesNotMatch(large,/portfolio-summary-factors/);
 });
 
 test('daily summary: normal weekend rates do not add detailed timestamps', () => {
@@ -30,7 +67,7 @@ test('daily summary: normal weekend rates do not add detailed timestamps', () =>
   usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,loading:false}),usePortfolioDailyChange:()=>daily,
  }});
  const html=render(PortfolioMetrics);
- assert.match(html,/₩0/); assert.match(html,/오늘 00:00 기준\(KST\)/);
+ assert.match(html,/₩0/); assert.doesNotMatch(html,/한국시간|00:00/);
  assert.doesNotMatch(html,/추정|일별 환율 적용|<details\b|<summary\b|오늘 손익의 환율 기준|주말 마감 무렵/);
  for (const note of daily.fxNotes) assert.ok(!html.includes(note), 'currency timestamps must stay out of the summary');
 });
@@ -42,7 +79,7 @@ test('daily summary: mixed FX dates stay out of the caption and a calculation fa
   usePreferences:()=>({displayCurrency:'KRW'}),usePortfolioMarket:()=>({summary:null,loading:false}),usePortfolioDailyChange:()=>daily,
  }});
  const html=render(PortfolioMetrics);
- assert.equal(html.split('오늘 00:00 기준(KST)').length-1,1);
+ assert.doesNotMatch(html,/한국시간/);
  assert.doesNotMatch(html,/일별 환율 적용|최종 수신 환율 적용|추정/);
  daily.available=false; daily.reason='현재 환율 미확인';
  const missing=render(PortfolioMetrics);
@@ -121,9 +158,19 @@ test('portfolio summary: gain, cost and daily factors stay in their own metric g
  assert.match(html,/<dt>총 보유자산<\/dt>/);
  assert.doesNotMatch(html,/portfolio-summary-count|1종목/);
  assert.match(html,/<dd class="portfolio-summary-result portfolio-summary-gain positive"><span>\+₩2,568,895<\/span><span class="portfolio-summary-percent">\+9.14%<\/span><\/dd>/);
- assert.match(html,/<dd class="portfolio-summary-context">매입원가 ₩28,094,871<\/dd>/);
+ assert.match(html,/<dd class="portfolio-summary-context portfolio-summary-cost">매입원가 ₩28,094,871<\/dd>/);
+ const totalGroup=html.match(/<div class="portfolio-summary-total">(.*?)<\/div>/s)?.[1];
+ assert.match(totalGroup,/총 보유자산.*₩30,663,766/s);
+ assert.doesNotMatch(totalGroup,/매입원가/);
+ const valuationGroup=html.match(/<div class="portfolio-summary-valuation">(.*?)<\/div>/s)?.[1];
+ assert.match(valuationGroup,/평가손익.*\+₩2,568,895.*\+9.14%.*portfolio-summary-cost.*매입원가 ₩28,094,871/s);
+ assert.equal(html.split('매입원가').length-1,1);
  const dailyGroup=html.match(/<div class="portfolio-summary-daily">(.*?)<\/div>/s)?.[1];
- assert.ok(dailyGroup); assert.match(dailyGroup,/오늘 손익.*\+₩258,040.*주가·매매.*\+₩348,524.*환율.*-₩90,484.*오늘 00:00/s);
+ assert.ok(dailyGroup); assert.match(dailyGroup,/오늘 손익.*\+₩258,040.*종목 손익.*\+₩348,524.*환율 손익.*-₩90,484/s);
+ assert.ok(html.indexOf('portfolio-summary-total') < html.indexOf('portfolio-summary-valuation'));
+ assert.ok(html.indexOf('portfolio-summary-valuation') < html.indexOf('portfolio-summary-daily'));
+ assert.match(dailyGroup, /^<dt>오늘 손익<\/dt><dd class="portfolio-summary-result positive">/);
+ assert.doesNotMatch(dailyGroup,/한국시간|00:00|KST|매입원가|주가·매매/);
  assert.doesNotMatch(html,/portfolio-summary-footnote|<details\b|<summary\b| title=/);
  displayCurrency='USD';
  const dollars=render(PortfolioMetrics);
@@ -153,11 +200,11 @@ test('portfolio summary: partial data, zero and fully sold positions retain inde
  assert.match(failed,/현재 환율 미확인/); assert.doesNotMatch(failed,/portfolio-summary-factors|전량 매도|오늘 00:00/);
 });
 
-test('portfolio overview: summary and one focusable performance section precede allocation and editable holdings',()=>{
+test('portfolio overview: summary and one focusable graph precede integrated holdings and investment history',()=>{
  const holdings=[{symbol:'TEST',valuationAvailable:true,gainAvailable:true,displayMarketValue:140000,displayGainLoss:7000,displayGainLossPercent:5}];
  const transactions=[{id:'trade-test',symbol:'TEST',type:'buy',quantity:1}];
  let marketState={summary:{holdings},loading:true,marketDataError:null};
- let allocationProps; let holdingsProps; let headingProps;
+ let holdingsProps; let headingProps; let detailsProps;
  const referenceDatesBySymbol = { TEST: ['2026-09-18'] };
  const carriedDatesBySymbol = { TEST: ['2026-09-17'] };
  const dailyChange={available:false,reason:'자정 자료 미확인',referenceDatesBySymbol,carriedDatesBySymbol,bySymbol:{TEST:7000}};
@@ -167,8 +214,11 @@ test('portfolio overview: summary and one focusable performance section precede 
   '@/components/Header':{PageHeading:(props)=>{headingProps=props;return createElement('header',null,props.titleAction,props.children);},AddTransactionLink:marker('ADD_TRANSACTION'),CurrencySwitch:marker('CURRENCY_SWITCH')},
   '@/components/PortfolioMetrics':{PortfolioMetrics:marker('SUMMARY_ONCE')},
   '@/components/HoldingsTable':{HoldingsTable:(props)=>{holdingsProps=props;return createElement('div',null,'EDITABLE_HOLDINGS');}},
-  '@/components/AllocationChart':{AllocationChart:(props)=>{allocationProps=props;return createElement('div',null,'ALLOCATION_ONCE');}},
   '@/components/PerformanceAnalytics':{PerformanceAnalytics:marker('PERFORMANCE_ONCE')},
+  '@/features/performance/InvestmentHistory':{InvestmentHistory:marker('HISTORY_ONCE')},
+  '@/features/portfolio/ui/PortfolioDetails':{PortfolioDetails:(props)=>{
+   detailsProps=props;return createElement('section',{'data-view':'portfolio-details'},props.holdings,props.history);
+  }},
   '@/features/portfolio/ui/PortfolioHoldings.module.css':{default:{performance:'performance'}},
   '@/hooks/usePortfolio':{useTransactions:()=>({transactions}),usePreferences:()=>({displayCurrency:'USD'}),usePortfolioMarket:()=>marketState,usePortfolioDailyChange:()=>dailyChange},
  });
@@ -176,13 +226,16 @@ test('portfolio overview: summary and one focusable performance section precede 
  assert.equal(headingProps.title,'보유자산');assert.equal(headingProps.titleAction,undefined);
  assert.match(html,/<header><div>CURRENCY_SWITCH<\/div><div>ADD_TRANSACTION<\/div><\/header>/);
  assert.doesNotMatch(html,/aria-controls="performance"|href="#performance"|<button[^>]*>기간 성과<\/button>/);
- for(const text of ['SUMMARY_ONCE','ALLOCATION_ONCE','PERFORMANCE_ONCE','EDITABLE_HOLDINGS'])assert.equal(html.split(text).length-1,1);
+ for(const text of ['SUMMARY_ONCE','PERFORMANCE_ONCE','EDITABLE_HOLDINGS','HISTORY_ONCE'])assert.equal(html.split(text).length-1,1);
  assert.equal(html.split('class="portfolio-overview"').length-1,1);
- assert.match(html,/<div class="portfolio-overview"><div>SUMMARY_ONCE<\/div><section\b[^>]*><div>PERFORMANCE_ONCE<\/div><\/section><\/div><div>ALLOCATION_ONCE<\/div><div>EDITABLE_HOLDINGS<\/div>/);
+ assert.match(html,/<div class="portfolio-overview"><div>SUMMARY_ONCE<\/div><section\b[^>]*><div>PERFORMANCE_ONCE<\/div><\/section><\/div><section data-view="portfolio-details"><div>EDITABLE_HOLDINGS<\/div><div>HISTORY_ONCE<\/div><\/section>/);
+ assert.deepEqual(Object.keys(detailsProps).sort(),['history','holdings']);
+ assert.doesNotMatch(readFileSync(new URL('../src/app/portfolio/page.tsx',import.meta.url),'utf8'),/AllocationChart/);
+ assert.equal('holdingCount' in detailsProps,false);
  assert.equal(html.split('id="performance"').length-1,1);
  assert.match(html,/<section id="performance"[^>]*aria-label="기간 성과"/);
  assert.match(html,/<section id="performance" tabindex="-1"/);
- assert.equal(allocationProps.holdings,holdings);assert.equal(allocationProps.displayCurrency,'USD');assert.equal(allocationProps.loading,true);
+ assert.equal(holdingsProps.embedded,true);assert.equal(holdingsProps.showAllocation,true);
  assert.equal(holdingsProps.holdings,holdings);assert.equal(holdingsProps.transactions,transactions);
  assert.equal(holdingsProps.displayCurrency,'USD');assert.equal(holdingsProps.loading,true);assert.equal(holdingsProps.editable,true);
  assert.equal(holdingsProps.referenceDatesBySymbol,referenceDatesBySymbol);
@@ -195,13 +248,17 @@ test('portfolio overview: summary and one focusable performance section precede 
  for(const loading of [true,false]){
   marketState={summary:null,loading,marketDataError:null};
   const unknown=render(PortfolioPage);
-  assert.doesNotMatch(unknown,/ALLOCATION_ONCE|EDITABLE_HOLDINGS|보유 자산 CSV/,'unread or failed ledger is not an empty portfolio');
+  assert.doesNotMatch(unknown,/EDITABLE_HOLDINGS|보유 자산 CSV/,'unread or failed ledger is not an empty portfolio');
   assert.match(unknown,/SUMMARY_ONCE/);assert.match(unknown,/PERFORMANCE_ONCE/);
+  assert.match(unknown,/HISTORY_ONCE/);assert.equal('holdingCount' in detailsProps,false);
+  assert.match(unknown,loading ? /role="status">보유종목 확인 중/ : /role="alert">보유종목을 확인하지 못했습니다\./);
  }
  marketState={summary:{holdings:[]},loading:false,marketDataError:null};
  const empty=render(PortfolioPage);
  assert.match(empty,/EDITABLE_HOLDINGS/,'confirmed zero holdings keeps the normal empty-state UI');
  assert.equal(holdingsProps.holdings.length,0);assert.equal(holdingsProps.toolbarAction,undefined);
+ assert.equal('holdingCount' in detailsProps,false);assert.equal(holdingsProps.showAllocation,true);
+ assert.match(empty,/HISTORY_ONCE/,'closed holdings retain the separate monthly and yearly history');
  assert.match(empty,/PERFORMANCE_ONCE/,'closed holdings do not hide past performance');
 });
 
@@ -234,6 +291,9 @@ test('portfolio overview: the embedded graph keeps period controls and loading s
  assert.match(ready,/기간 손익/);assert.match(ready,/원화 기준/);
  assert.match(ready,/role="group" aria-label="차트 종류"/);assert.match(ready,/보유자산 추이/);assert.match(ready,/수익률 비교/);
  assert.match(ready,/role="region" aria-label="보유자산 추이 그래프"/);
+ assert.doesNotMatch(ready,/performance-history|performance-line-key|<h3>투자 성과/);
+ assert.equal(ready.split('aria-label="차트 종류"').length-1,1);
+ assert.ok(ready.indexOf('aria-label="차트 종류"')<ready.indexOf('class="performance-toolbar"'));
  history={...history,points:[],loading:true};
  const loading=render(PerformanceAnalytics);checkFrame(loading);
  assert.match(loading,/aria-busy="true"/);assert.match(loading,/성과 불러오는 중/);assert.doesNotMatch(loading,/ASSET_GRAPH_ONCE|기간 손익/);
@@ -296,13 +356,14 @@ test('integrated asset history preserves flow records but only displays holdings
 });
 
 test('integrated asset chart only plots held assets and labels their exact tooltip value',()=>{
- const lines=[];const areas=[];let tooltip;
+ const lines=[];const areas=[];const endpoints=[];let tooltip;
  const wrap=({children})=>createElement('div',null,children);
  const {AssetChart}=loadTypescript('src/features/performance/Charts.tsx',{
-  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,LineChart:wrap,CartesianGrid:()=>null,XAxis:()=>null,YAxis:()=>null,ReferenceArea:()=>null,ReferenceLine:()=>null,ReferenceDot:()=>null,Area:(props)=>{areas.push(props);return null;},Line:(props)=>{lines.push(props);return null;},Tooltip:(props)=>{tooltip=props;return null;}},
+  recharts:{ResponsiveContainer:wrap,ComposedChart:wrap,LineChart:wrap,CartesianGrid:()=>null,XAxis:()=>null,YAxis:()=>null,ReferenceArea:()=>null,ReferenceLine:()=>null,ReferenceDot:(props)=>{endpoints.push(props);return null;},Area:(props)=>{areas.push(props);return null;},Line:(props)=>{lines.push(props);return null;},Tooltip:(props)=>{tooltip=props;return null;}},
  });
  render(AssetChart,{data:[{date:'2026-09-18',assetValue:200,cumulativeNetFlow:100}],inactivePeriods:[],currency:'USD'});
- assert.equal(areas[0].dataKey,'assetValue');assert.equal(areas[0].dot.r,4);assert.equal(lines.length,0);
+ assert.equal(areas[0].dataKey,'assetValue');assert.equal(areas[0].dot,false);assert.equal(lines.length,0);
+ assert.equal(endpoints.length,1);assert.equal(endpoints[0].r,4);assert.equal(endpoints[0].x,Date.parse('2026-09-18'));assert.equal(endpoints[0].y,200);
  assert.equal(tooltip.formatter(200,'assetValue')[1],'보유자산');
  assert.match(tooltip.formatter(200,'assetValue')[0],/\$200/);
 });

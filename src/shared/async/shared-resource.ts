@@ -48,6 +48,13 @@ export function createSharedResource<I, R>(
       return entries.get(key)?.state ?? initial;
     },
     initial,
+    retry(key: string) {
+      const entry = entries.get(key);
+      if (!entry || entry.controller || !entry.listeners.size) return;
+      clearTimeout(entry.timer);
+      entry.timer = undefined;
+      void run(entry);
+    },
     subscribe(key: string, input: I, listener: () => void) {
       let entry = entries.get(key);
       if (!entry) {

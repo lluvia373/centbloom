@@ -115,8 +115,8 @@ export async function saveHistory(
   changed: PortfolioPerformancePoint[],
   signal: AbortSignal,
 ) {
-  signal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   signal.throwIfAborted();
+  const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   const client = getSupabaseBrowserClient();
   let warning: string | null = null;
   if (client && userId && changed.length) {
@@ -131,14 +131,21 @@ export async function saveHistory(
               started_at: history.startedAt,
               points: changed,
             }).abortSignal(requestSignal),
-        signal,
+        requestSignal,
       );
       if (error)
         warning =
           error.code === "PGRST202"
             ? "성과는 계산됐지만 서버 저장 업데이트가 필요합니다."
             : "성과는 계산됐지만 서버 저장에 실패했습니다. 다음 갱신 때 재시도합니다.";
-    } catch {
+    } catch (error) {
+      signal.throwIfAborted();
+      // Preserve the account-boundary errors from runSupabaseRequest even if
+      // the caller has not received the account change and cancelled yet.
+      if (error instanceof Error && (
+        error.message === "계정이 변경되어 요청을 중단했습니다." ||
+        error.message === "로그인이 만료되었습니다. 다시 로그인해 주세요."
+      )) throw error;
       warning = "성과는 계산됐지만 서버 저장에 실패했습니다. 다음 갱신 때 재시도합니다.";
     }
   }

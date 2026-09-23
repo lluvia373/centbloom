@@ -6,7 +6,7 @@ import type { ComparisonLine } from "./Charts";
 
 export const MAX_COMPARISONS = 12;
 
-interface ComparisonItem extends ComparisonLine {
+export interface ComparisonItem extends ComparisonLine {
   symbol?: string;
   fullName?: string;
   value: number | null;

@@ -88,6 +88,7 @@ export async function loadPerformance(
     mapLimited(currentCurrencies, 6, async (currency) => {
       const quote = await getQuote(`${currency}KRW=X`, signal);
       if (quote.currency !== "KRW") throw new Error(`${today} ${currency}/KRW 현재 환율의 통화가 올바르지 않습니다.`);
+      if (quote.fx?.valuationOnly) throw new Error(`${currency}/KRW 최신 환율 갱신 후 성과를 계산합니다.`);
       return [currency, quote.price] as const;
     }),
   ]);

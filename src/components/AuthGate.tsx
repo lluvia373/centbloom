@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { isPublicRoute } from "@/features/auth/public-routes";
+import { cancelLoginReturn } from "@/features/auth/login-return";
 import { Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { useAuth } from "@/hooks/useAuth";
 import "@/app/auth.css";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, configured, signInWithGoogle } = useAuth();
+  const { user, loading, configured, loginError, signInWithGoogle } = useAuth();
   const pathname=usePathname();
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const returned = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      setSigningIn(false);
+      try { cancelLoginReturn(window.sessionStorage); } catch { /* Explicit save remains required. */ }
+    };
+    window.addEventListener("pageshow", returned);
+    return () => window.removeEventListener("pageshow", returned);
+  }, []);
 
   // Google/Supabase 환경변수가 준비되기 전에는 기존 공개 앱을 유지합니다.
-  if (isPublicRoute(pathname) || !configured) return children;
+  if (isPublicRoute(pathname) || !configured) return <>{loginError && <p role="alert" className="text-cf-label text-cf-negative">{loginError}</p>}{children}</>;
 
   if (loading) {
     return (
@@ -46,7 +56,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="cf-auth-page">
       <header className="cf-auth-header">
-        <Link href="/" aria-label="Centbloom 시장 홈" className="cf-auth-wordmark"><BrandMark size={36} /><span>centbloom</span></Link><Link href="/" className="text-cf-label text-cf-muted">시장 먼저 둘러보기</Link>
+        <Link href="/" aria-label="Centbloom 시장 홈" className="cf-auth-wordmark" onClick={() => { try { cancelLoginReturn(window.sessionStorage); } catch {} }}><BrandMark size={36} /><span>centbloom</span></Link><Link href="/" onClick={() => { try { cancelLoginReturn(window.sessionStorage); } catch {} }} className="text-cf-label text-cf-muted">취소하고 시장으로</Link>
       </header>
       <main id="main-content" className="cf-auth-main">
         <div className="cf-auth-stage">
@@ -67,7 +77,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 )}
                 <span>{signingIn ? "Google로 이동 중..." : "Google로 계속하기"}</span>
               </button>
-              {error && <p role="alert" className="cf-auth-error">{error}</p>}
+              {(error || loginError) && <p role="alert" className="cf-auth-error">{error || loginError}</p>}
             </div>
           </section>
         </div>

@@ -7,8 +7,10 @@ import {
 } from "@/lib/performance";
 import type { PortfolioPerformancePoint, Transaction } from "@/lib/types";
 import { useMemo, useState } from "react";
+import { useKstDate } from "@/shared/time/use-kst-date";
 export const RANGES = [
-  { key: "1w", label: "1주", days: 7 },
+  { key: "1d", label: "1일", days: 1 },
+  { key: "5d", label: "5일", days: 5 },
   { key: "1m", label: "1개월", days: 30 },
   { key: "3m", label: "3개월", days: 90 },
   { key: "ytd", label: "올해" },
@@ -22,17 +24,21 @@ export function usePerformanceRange(
   points: PortfolioPerformancePoint[],
   transactions: Transaction[],
 ) {
+  const today = useKstDate();
   const [range, setRange] = useState<RangeKey>("all");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const firstDate = points[0]?.date ?? "";
-  const lastDate = points.at(-1)?.date ?? "";
-  const effectiveEnd = range === "custom" && customEnd ? customEnd : lastDate;
+  const firstDate = points[0]?.date ?? transactions.map(tx => tx.date).sort()[0] ?? "";
+  const lastDate = points.at(-1)?.date ?? (transactions.length ? today : "");
+  const effectiveEnd = range === "1d" || range === "5d" ? today || lastDate
+    : range === "custom" && customEnd ? customEnd : lastDate;
   const effectiveStart = useMemo(() => {
     if (!firstDate || !effectiveEnd) return "";
     if (range === "custom" && customStart) {
       return customStart < firstDate ? firstDate : customStart;
     }
+    if (range === "1d") return effectiveEnd;
+    if (range === "5d") return addCalendarDays(effectiveEnd, -4);
     if (range === "all") return firstDate;
     if (range === "ytd") {
       const ytd = `${effectiveEnd.slice(0, 4)}-01-01`;

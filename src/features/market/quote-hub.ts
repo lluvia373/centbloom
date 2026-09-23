@@ -30,7 +30,7 @@ export function createQuoteHub(
   const subscribers = new Map<() => void, string[]>();
   const views = new Map<string, { version: string; value: QuoteView }>();
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let request: AbortController | undefined;
+  const requests = new Map<string, AbortController>();
   let visible = true;
   const wanted = () => [...new Set([...subscribers.values()].flat())];
   const emit = (symbols: string[]) => {
@@ -41,21 +41,29 @@ export function createQuoteHub(
     clearTimeout(timer);
     if (visible && subscribers.size) timer = setTimeout(() => void tick(), ms);
   };
+  const scheduleNext = () => {
+    const next = wanted().filter((symbol) => !requests.has(symbol)).map((symbol) => {
+      const checkedAt = states.get(symbol)?.checkedAt;
+      return checkedAt ? Math.max(0, interval - (Date.now() - checkedAt)) : 0;
+    });
+    clearTimeout(timer);
+    if (next.length) schedule(Math.min(...next));
+  };
   async function tick(force = false) {
-    if (request || !visible || !subscribers.size) return;
+    if (!visible || !subscribers.size) return;
     const symbols = wanted().filter(
       (s) =>
-        force ||
+        !requests.has(s) && (force ||
         !states.get(s)?.checkedAt ||
-        Date.now() - states.get(s)!.checkedAt! >= interval,
+        Date.now() - states.get(s)!.checkedAt! >= interval),
     );
     if (!symbols.length) {
-      schedule(interval);
+      scheduleNext();
       return;
     }
-    const controller = new AbortController();
-    request = controller;
-    symbols.forEach((s) => {
+    const pending = symbols.map((s) => {
+      const controller = new AbortController();
+      requests.set(s, controller);
       const old = states.get(s);
       states.set(s, {
         ...old,
@@ -64,13 +72,16 @@ export function createQuoteHub(
         refreshing: true,
         version: (old?.version ?? 0) + 1,
       });
+      return { symbol: s, controller };
     });
     emit(symbols);
     await Promise.all(
-      symbols.map(async (symbol) => {
+      pending.map(async ({ symbol, controller }) => {
+        const current = () => !controller.signal.aborted && requests.get(symbol) === controller;
         try {
+          controller.signal.throwIfAborted();
           const quote = await load(symbol, controller.signal);
-          if (!controller.signal.aborted && wanted().includes(symbol))
+          if (current())
             states.set(symbol, {
               quote,
               failed: false,
@@ -79,7 +90,7 @@ export function createQuoteHub(
               version: (states.get(symbol)?.version ?? 0) + 1,
             });
         } catch {
-          if (!controller.signal.aborted && wanted().includes(symbol)) {
+          if (current()) {
             const old = states.get(symbol)!;
             states.set(symbol, {
               ...old,
@@ -90,15 +101,15 @@ export function createQuoteHub(
             });
           }
         } finally {
-          // Publish each settled symbol without waiting for unrelated slow quotes.
-          if (!controller.signal.aborted && wanted().includes(symbol)) emit([symbol]);
+          if (current()) {
+            requests.delete(symbol);
+            // New subscriptions and each quote's refresh interval remain independent.
+            emit([symbol]);
+            scheduleNext();
+          }
         }
       }),
     );
-    if (request === controller) request = undefined;
-    if (controller.signal.aborted) return;
-    emit(symbols);
-    schedule(wanted().some((s) => !states.get(s)?.checkedAt) ? 0 : interval);
   }
   return {
     subscribe(symbols: string[], listener: () => void) {
@@ -106,17 +117,21 @@ export function createQuoteHub(
       schedule(0);
       return () => {
         subscribers.delete(listener);
+        const keep = new Set(wanted());
+        for (const [symbol, controller] of requests)
+          if (!keep.has(symbol)) {
+            requests.delete(symbol);
+            controller.abort();
+          }
         if (!subscribers.size) {
           clearTimeout(timer);
-          request?.abort();
-          request = undefined;
           states.clear();
           views.clear();
         } else {
-          const keep = new Set(wanted());
           for (const symbol of states.keys())
             if (!keep.has(symbol)) states.delete(symbol);
           views.clear();
+          scheduleNext();
         }
       };
     },

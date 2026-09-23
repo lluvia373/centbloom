@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { useStockSearch } from "@/features/market/use-stock-search";
 import { AssetAvatar } from "@/components/AssetAvatar";
-import styles from "./home.module.css";
+import styles from "./stock-discovery.module.css";
 export function StockDiscovery({ expanded = false }: { expanded?: boolean }) {
   const { user, loading: authLoading } = useAuth();
   const { record } = useRecentSearches(authLoading ? null : user?.id ?? null);
@@ -29,8 +29,8 @@ export function StockDiscovery({ expanded = false }: { expanded?: boolean }) {
       <div className={styles.searchBox}>
         <Search size={20} />
         <input
-          aria-label="종목명 또는 티커 검색"
-          placeholder="종목명·티커 검색"
+          aria-label="종목 정보 검색"
+          placeholder="종목명·티커로 정보 찾기"
           value={query}
           onFocus={() => setFocused(true)}
           onChange={(event) => setQuery(event.target.value)}

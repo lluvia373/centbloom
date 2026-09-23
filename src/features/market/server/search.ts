@@ -77,6 +77,6 @@ export function fetchSearch(
         throw new MarketError("검색에 실패했습니다.");
       }
     },
-    { signal, ttlMs: 60000 },
+    { signal, ttlMs: 60000, priority: "interactive" },
   );
 }

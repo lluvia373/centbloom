@@ -1,5 +1,6 @@
 import { createRequestCache } from "@/shared/async/request-cache";
 import type { MidnightBaseline } from "@/features/market/baseline";
+import type { IntradayRange, IntradaySeries } from "@/features/market/intraday";
 import { FX_HISTORY_MAX_CARRY_DAYS, fxToday, shiftFxDate, validFxDate, type DailyFxSeries } from "@/features/market/fx-history";
 import { BASE_CURRENCY, normalizeCurrency } from "./currency";
 import type { MarketFilter } from "./markets";
@@ -82,7 +83,7 @@ export function searchStocks(
   return marketRequests.request(
     `search:${market}:${q.toLowerCase()}`,
     (s) => json(`/api/search?q=${encodeURIComponent(q)}&market=${market}`, s),
-    { signal, ttlMs: 60_000 },
+    { signal, ttlMs: 60_000, priority: "interactive" },
   );
 }
 export function getQuote(
@@ -149,6 +150,25 @@ export function getChartSeries(
     { signal, ttlMs: 60_000 },
   );
 }
+export function getIntradaySeries(symbol: string, range: IntradayRange, day: string, signal?: AbortSignal): Promise<IntradaySeries> {
+  symbol = symbol.trim().toUpperCase();
+  const params = new URLSearchParams({ intraday: range, day });
+  return recoverableRequest(`intraday:${symbol}:${range}:${day}`, `${symbol} 시간별 시세 조회`, async (s) => {
+    const series = await json<IntradaySeries>(`/api/chart/${encodeURIComponent(symbol)}?${params}`, s);
+    const step = range === "1d" ? 60_000 : 1_800_000;
+    const start = Date.parse(`${day}T00:00:00+09:00`) - (range === "5d" ? 4 * 86_400_000 : 0);
+    const end = Date.parse(series?.endAt);
+    if (!series || series.symbol !== symbol || series.interval !== (range === "1d" ? "1m" : "30m") ||
+      !/^(?:[A-Z]{3}|GBp)$/.test(series.currency) || Date.parse(series.startAt) !== start ||
+      !Number.isFinite(end) || end < start || end >= Date.parse(`${day}T00:00:00+09:00`) + 86_400_000 ||
+      end > Date.now() || (end - start) % step !== 0 || !Array.isArray(series.points) ||
+      series.points.length !== (end - start) / step + 1 || series.points.some((p, index) =>
+        !p || Date.parse(p.at) !== start + index * step || (p.close !== null &&
+          (!Number.isFinite(p.close) || p.close <= 0 || !p.sourceAt || !Number.isFinite(Date.parse(p.sourceAt)) || Date.parse(p.sourceAt) > Date.parse(p.at)))))
+      throw new Error("시간별 시세의 종목·통화·시각을 확인하지 못했습니다.");
+    return series;
+  }, { signal, ttlMs: 60_000 });
+}
 export function getHistoricalDay(
   symbol: string,
   date: string,
@@ -201,9 +221,13 @@ export async function getFxRateToKRW(
   const normalized = normalizeCurrency(currency);
   if (normalized === BASE_CURRENCY) return 1;
   const symbol = `${normalized}${BASE_CURRENCY}=X`;
-  return date && date !== fxToday()
-    ? (await getDailyFxHistory(normalized, date, date, signal)).points[0].close
-    : (await getQuote(symbol, signal)).price;
+  if (date && date !== fxToday())
+    return (await getDailyFxHistory(normalized, date, date, signal)).points[0].close;
+  const quote = await getQuote(symbol, signal);
+  // A carried valuation may keep a balance visible, but is not today's trade FX.
+  if (quote.fx?.valuationOnly)
+    throw new Error(`${normalized}/KRW 현재 환율을 확인하지 못했습니다. 최근 확인 환율은 평가액에만 사용할 수 있습니다.`);
+  return quote.price;
 }
 
 function validatePoints(points: ChartPoint[]): ChartPoint[] {

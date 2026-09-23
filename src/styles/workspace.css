@@ -98,29 +98,6 @@
   border-radius: 50%;
   border: 1px solid #e6e8eb;
 }
-.topbar-popover {
-  position: absolute;
-  right: 0;
-  top: 46px;
-  width: 310px;
-  padding: 21px;
-  z-index: 60;
-}
-.topbar-popover h3 {
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-.topbar-popover > a {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--accent);
-  font-size: 12px;
-  margin-top: 13px;
-}
 .mobile-nav {
   display: none;
 }
@@ -134,10 +111,6 @@
 .page-heading-actions {
   display: flex;
   align-items: center;
-}
-.page-date {
-  align-items: center;
-  gap: 7px;
 }
 .button-primary {
   display: inline-flex;
@@ -204,26 +177,6 @@
 .dashboard-bottom-grid {
   display: grid;
 }
-.asset-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  padding: var(--cf-space-1);
-  color: var(--cf-color-muted);
-  background: var(--cf-color-surface);
-  border: 1px solid var(--cf-color-soft);
-  border-radius: var(--cf-radius-card);
-  overflow: hidden;
-}
-.asset-avatar.asset-avatar-small {
-  width: 30px;
-  height: 30px;
-  padding: var(--cf-space-1);
-  border-radius: var(--cf-radius-control);
-}
 .samsung-mark {
   font-style: italic;
   font-size: 20px;
@@ -289,30 +242,6 @@
   font-weight: 550;
   color: #5d6169;
 }
-.empty-portfolio {
-  padding: var(--cf-space-6) var(--cf-space-4);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.empty-icon {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--cf-radius-control);
-  margin-bottom: var(--cf-space-4);
-}
-.empty-portfolio h3 {
-  font-weight: 550;
-}
-.empty-portfolio.compact {
-  padding: var(--cf-space-6) var(--cf-space-4);
-}
-.empty-portfolio.compact h3 {
-  font-size: 12px;
-}
 .app-footer {
   display: flex;
   align-items: center;
@@ -342,9 +271,6 @@
   .dashboard-bottom-grid {
     grid-template-columns: minmax(0, 1.8fr) minmax(250px, 1fr);
     gap: 17px;
-  }
-  .page-date {
-    display: none;
   }
 }
 @media (max-width: 1000px) {
@@ -452,20 +378,6 @@
   width: 5px;
   height: 5px;
 }
-.topbar-popover {
-  background: #fff;
-  border: 1px solid #e5e7ea;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px #20232916;
-}
-.topbar-popover h3 {
-  font-size: 14px;
-}
-.topbar-popover p {
-  font-size: 13px;
-  line-height: 1.8;
-  color: #686d77;
-}
 .page-heading {
   align-items: center;
   margin-bottom: 27px;
@@ -473,11 +385,6 @@
 }
 .page-heading-actions {
   gap: 18px;
-}
-.page-date {
-  display: flex;
-  color: #727680;
-  font-size: 12px;
 }
 .button-primary {
   padding: 12px 17px;
@@ -593,13 +500,6 @@
   border: 0;
   background: #f2f4f6;
   border-radius: 8px;
-}
-.empty-icon {
-  background: #f2f4f6;
-  color: #727680;
-}
-.empty-portfolio h3 {
-  font-size: 17px;
 }
 .app-footer {
   margin-top: var(--cf-space-8);
@@ -726,9 +626,6 @@
   .dashboard-bottom-grid {
     grid-template-columns: 1fr;
   }
-  .page-date {
-    display: none;
-  }
   :root {
     --sidebar-width: 190px;
   }
@@ -774,9 +671,6 @@
   .app-footer {
     justify-content: center;
   }
-  .topbar-popover {
-    right: -7px;
-  }
   .brand {
     font-size: 24px;
   }
@@ -816,9 +710,6 @@
   }
   .topbar .icon-button {
     width: 28px;
-  }
-  .topbar-popover {
-    width: min(330px, calc(100vw - 40px));
   }
   .page-heading {
     display: flex;
@@ -861,10 +752,6 @@
   }
   .surface-header select {
     font-size: 11px;
-  }
-  .asset-avatar {
-    width: 33px;
-    height: 33px;
   }
   .mobile-nav {
     background: #fff;
@@ -935,7 +822,6 @@
 .calculation-help summary::-webkit-details-marker { display: none; }
 .calculation-help summary:focus-visible { outline: 2px solid var(--cf-color-focus); }
 .calculation-help p { margin-block: var(--cf-space-2); font-size: var(--cf-text-caption); font-weight: var(--cf-weight-regular); line-height: var(--cf-leading-body); color: var(--cf-color-muted); }
-
 
 .page-heading h1 { font-size: var(--cf-text-title); font-weight: var(--cf-weight-semibold); letter-spacing: var(--cf-tracking-title); line-height: var(--cf-leading-title); }
 .calculation-help[open] { display: block; margin-left: 0; }

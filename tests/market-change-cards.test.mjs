@@ -26,6 +26,7 @@ function render(items, { selected, page = 0, failed = false, partial = false, mi
     "@/features/market/use-watched-reports": { useWatchedReports: () => reports },
     "./HomeSection": { HomeSection: ({ title, actions, children }) => React.createElement("section", null, React.createElement("h2", null, title), actions, children) },
     "./home.module.css": { default: new Proxy({}, { get: (_, name) => String(name) }) },
+    "./market-changes.module.css": { default: new Proxy({}, { get: (_, name) => String(name) }) },
   });
   return renderToStaticMarkup(React.createElement(MarketChanges));
 }

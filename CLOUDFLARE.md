@@ -1,6 +1,6 @@
 # Cloudflare Workers 배포
 
-현재 배포·환경 설정·복구 절차. 실행 결과와 배포 이력은 여기에 누적하지 않는다.
+현재 배포·환경 설정·복구 절차. 현재 승인 범위는 원본 main의 모든 변경이며, 이전 일부 파일 임시 후보가 아니라 원본에서 전체 pre-push 검사 후 GitHub 푸시·자동 배포를 진행한다. 검사·운영 DB 적용·푸시·배포의 완료 여부는 [PROJECT_STATUS](./PROJECT_STATUS.md#환경별-진행-상태)에서 확인하며 실행 결과와 이력을 여기에 누적하지 않는다.
 
 Next.js·API를 Workers/OpenNext에서 실행한다. 실제 배포 상태는 [PROJECT_STATUS.md](./PROJECT_STATUS.md#환경별-진행-상태).
 
@@ -73,6 +73,8 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 - 브라우저 공개 값이므로 publishable 키만 사용한다. `service_role`·비밀 키 금지. 값 변경 후 재빌드·재배포한다. 미설정 시 로컬 저장 모드다.
 - Google 로그인: Supabase Google 제공자를 활성화한다. Auth Site URL은 `https://centbloom.stock-web-demo.workers.dev`, Redirect URLs는 이 공개 주소, `http://localhost:3000`, `http://127.0.0.1:3000`을 사용한다.
 - Google OAuth 리디렉션 URI는 앱 주소가 아니라 Supabase 대시보드의 `/auth/v1/callback` 주소다.
+
+구루/앱 안 알림의 [증분 SQL](./supabase/migrations/20260923030710_guru_notifications.sql)은 원본 main 전체 배포 범위에 포함하며 운영 centbloom에 적용하고 스키마·RLS·함수/직접 쓰기 권한을 확인했다. 상세 근거와 남은 보안 경고는 [진행 상태](./PROJECT_STATUS.md#검증-기록)의 기존 알림 행을 따른다. 실제 계정 쓰기·다중 기기는 미검증이다. GitHub/Cloudflare 앱 배포만으로 DB 변경이 적용되지는 않으므로 기존 `auth.users`와 계정 관심목록 migration 이후의 적용 여부, RLS·계정별 읽기/저장·영수증·복구를 별도로 확인한다. 공개 사건 기록 함수는 신뢰된 서버 `service_role`에만 허용하고 브라우저에는 권한/비밀 키를 주지 않는다. 현재 수집기/예약 실행/메일·푸시 공급은 연결하지 않았으며 앱·DB 배포를 사건 자동 수집 완료로 해석하지 않는다.
 
 ## AdSense 연결
 

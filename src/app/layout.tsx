@@ -4,6 +4,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { Header } from "@/components/Header";
 import { StorageNotice } from "@/components/StorageNotice";
 import { AuthProvider } from "@/hooks/useAuth";
+import { NotificationProvider } from "@/features/notifications/NotificationProvider";
 import { PortfolioProvider } from "@/hooks/usePortfolio";
 import "@/styles/charts.css";
 import "@/styles/portfolio.css";
@@ -28,7 +29,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   applicationName: "Centbloom",
-  title: "센트블룸 | Centbloom",
+  title: process.env.NODE_ENV === "development"
+    ? { default: "localhost:3000", template: "localhost:3000" }
+    : "센트블룸 | Centbloom",
   metadataBase: new URL("https://centbloom.stock-web-demo.workers.dev"),
   openGraph: { siteName: "Centbloom", locale: "ko_KR", type: "website" },
   description:
@@ -53,6 +56,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <AuthGate>
+            <NotificationProvider>
             <PortfolioProvider>
                 <div className="app-shell">
                   <Header />
@@ -66,6 +70,7 @@ export default function RootLayout({
                   </PageFrame>
                 </div>
             </PortfolioProvider>
+            </NotificationProvider>
           </AuthGate>
         </AuthProvider>
       </body>

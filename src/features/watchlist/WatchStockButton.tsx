@@ -27,7 +27,7 @@ export function WatchStockButton({
     return (
       <div className={className}>
         {!loading && (needsLogin || saved) ? (
-          <Link href="/watchlist" aria-label={label} title={label}>
+          <Link href={needsLogin ? `/save-interest/${encodeURIComponent(symbol)}` : "/watchlist"} aria-label={label} title={label}>
             <Star size={18} fill={saved ? "currentColor" : "none"} aria-hidden="true" />
           </Link>
         ) : (
@@ -43,7 +43,7 @@ export function WatchStockButton({
   }
   if (configured && !user)
     return (
-      <Link className="button-secondary" href="/watchlist">
+      <Link className="button-secondary" href={`/save-interest/${encodeURIComponent(symbol)}`}>
         <Star size={15} />
         로그인하고 관심종목 저장
       </Link>

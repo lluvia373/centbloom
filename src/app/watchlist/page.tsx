@@ -7,7 +7,6 @@ import {
   Check,
   CircleAlert,
   Crosshair,
-  ListPlus,
   Plus,
   RefreshCw,
   Star,
@@ -15,7 +14,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 
-const panel = "rounded-2xl border border-[#e6e8eb] bg-[#ffffff]";
+const panel = "rounded-cf-card border border-cf-line bg-cf-surface";
 
 export default function WatchlistPage() {
   const {
@@ -55,24 +54,19 @@ export default function WatchlistPage() {
   const targets = items.filter((item) => item.targetPrice !== null).length;
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-7 text-[#202329]">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-cf-title font-semibold">
-            관심종목
-          </h1>
-
-        </div>
+    <div className="space-y-6 text-cf-ink">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-cf-title font-semibold">관심종목</h1>
         <button
           type="button"
           onClick={() => searchInput.current?.focus()}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#25282e] px-4 py-3 text-sm font-semibold text-[#ffffff] shadow-sm transition hover:bg-[#25282e]"
+          className="button-primary"
         >
-          <Plus size={17} /> 관심종목 추가
+          <Plus size={16} aria-hidden="true" /> 관심종목 추가
         </button>
       </header>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {ready && items.length > 0 && <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           {
             label: "지켜보는 종목",
@@ -95,25 +89,25 @@ export default function WatchlistPage() {
         ].map(({ label, value, unit, icon: Icon }) => (
           <section
             key={label}
-            className={`${panel} flex items-center justify-between p-3.5 sm:p-5`}
+            className={`${panel} flex items-center justify-between gap-2 p-3 sm:p-4`}
           >
             <div>
-              <p className="min-h-8 text-xs leading-4 text-[#727680] sm:min-h-0 sm:text-xs">
+              <p className="text-cf-caption text-cf-muted">
                 {label}
               </p>
-              <p className="mt-2 text-[24px] font-semibold leading-none tracking-tight sm:mt-3 sm:text-[26px]">
+              <p className="mt-2 text-cf-title font-semibold tabular-nums">
                 {ready ? value : "—"}
-                <span className="ml-1.5 text-xs font-normal text-[#727680]">
+                <span className="ml-1 text-cf-caption font-normal text-cf-muted">
                   {unit}
                 </span>
               </p>
             </div>
-            <span className="hidden h-10 w-10 items-center justify-center rounded-xl bg-[#f3f4f6] text-[#727680] sm:flex">
-              <Icon size={18} strokeWidth={1.7} />
+            <span className="hidden text-cf-muted sm:flex" aria-hidden="true">
+              <Icon size={16} />
             </span>
           </section>
         ))}
-      </div>
+      </div>}
 
       <WatchlistSearch
         items={items}
@@ -126,9 +120,9 @@ export default function WatchlistPage() {
       {error ? (
         <div
           role="alert"
-          className="flex items-start gap-2 rounded-xl border border-[#e6e8eb] bg-[#ffffff] p-4 text-[13px] leading-6 text-[#d65353]"
+          className={`${panel} flex flex-wrap items-center gap-2 p-4 text-cf-label text-cf-negative`}
         >
-          <CircleAlert className="mt-1 shrink-0" size={16} />
+          <CircleAlert className="shrink-0" size={16} aria-hidden="true" />
           <span>{error}</span>
           <button type="button" className="button-secondary" disabled={pending || refreshing} onClick={() => void refresh()}>다시 불러오기</button>
         </div>
@@ -137,47 +131,44 @@ export default function WatchlistPage() {
       {notice ? (
         <div
           role="status"
-          className="flex items-center justify-between gap-3 rounded-xl bg-[#f3f4f6] px-4 py-3 text-xs text-[#727680]"
+          className="flex items-center justify-between gap-3 rounded-cf-control bg-cf-soft px-4 py-3 text-cf-caption text-cf-muted"
         >
           <span>{notice}</span>
           <button
             type="button"
             aria-label="메시지 닫기"
             onClick={() => setNotice(null)}
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-cf-control focus-visible:outline-2 focus-visible:outline-cf-focus"
           >
-            <X size={14} />
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
       ) : null}
 
-      <section className={`${panel} overflow-hidden`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e6e8eb] p-5 sm:px-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-[15px] font-semibold">내 관심종목</h2>
-            <span className="rounded-md bg-[#f3f4f6] px-1.5 py-0.5 text-xs font-semibold text-[#727680]">
-              {items.length}
-            </span>
-          </div>
+      {(!error || ready && items.length > 0) && <section className={`${panel} overflow-hidden`} aria-label="관심종목 목록">
+        {ready && items.length > 0 && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cf-line p-4 sm:px-6">
+          <h2 className="text-cf-body font-semibold">내 관심종목</h2>
           <button
             type="button"
             onClick={refreshQuotes}
             disabled={!items.length || quotesRefreshing}
-            className="inline-flex items-center gap-1.5 text-xs text-[#727680] hover:text-[#727680] disabled:opacity-40"
+            className="button-secondary"
           >
             <RefreshCw
-              size={13}
+              size={16}
               className={quotesRefreshing ? "animate-spin" : ""}
+              aria-hidden="true"
             />{" "}
             시세 새로고침
           </button>
-        </div>
+        </div>}
         {!ready ? (
-          <p className="p-12 text-center text-sm text-[#727680]">
-            저장된 관심종목을 불러오고 있어요.
+          <p role="status" className="p-8 text-center text-cf-body text-cf-muted">
+            관심종목 불러오는 중
           </p>
         ) : items.length ? (
           <>
-            <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_72px] gap-4 border-b border-[#e6e8eb] bg-[#ffffff] px-6 py-3 text-xs text-[#727680] md:grid">
+            <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_72px] gap-4 border-b border-cf-line px-6 py-3 text-cf-caption text-cf-muted md:grid">
               <span>종목</span>
               <span>현재가 · 전일 대비</span>
               <span>목표 매수가</span>
@@ -198,24 +189,17 @@ export default function WatchlistPage() {
             ))}
           </>
         ) : error ? null : (
-          <div className="flex flex-col items-center px-4 py-8 text-center">
-            <ListPlus size={24} className="text-cf-muted" aria-hidden="true" />
-            <h3 className="mt-4 text-cf-body font-semibold">
-              관심종목 없음
-            </h3>
-
-
-          </div>
+          <p className="p-8 text-center text-cf-body text-cf-muted">관심종목 없음</p>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#e6e8eb] bg-[#ffffff] px-5 py-3.5 text-xs leading-5 text-[#727680] sm:px-6">
+        {ready && items.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t border-cf-line px-4 py-3 text-cf-caption text-cf-muted sm:px-6">
           <span>최대 50개</span>
           <span>
             {failedSymbols.length
               ? `${failedSymbols.length}개 종목의 시세를 확인하지 못했어요.`
               : "지연 시세 가능 · 목표가 알림 없음"}
           </span>
-        </div>
-      </section>
+        </div>}
+      </section>}
     </div>
   );
 }

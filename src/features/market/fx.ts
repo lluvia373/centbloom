@@ -27,12 +27,18 @@ export function usdLeg(currency: string) {
   return { symbol: inverted ? `${currency}USD=X` : `${currency}=X`, inverted };
 }
 
-/** A live market needs fresh data. During a closure, retain the last received observation. */
-export function usableFxQuote(quotedAt: number, fetchedAt: number, marketState?: string) {
+/** A dated valuation may retain a real observation for at most the existing seven-day window. */
+export function usableValuationFxQuote(quotedAt: number, fetchedAt: number) {
   if (!Number.isFinite(quotedAt) || !Number.isFinite(fetchedAt) || quotedAt > fetchedAt ||
     fetchedAt - quotedAt > FX_LOOKBACK) return false;
   const cutoff = fxCutoff(fetchedAt);
-  if (cutoff.closed && quotedAt > cutoff.at) return false;
+  return !cutoff.closed || quotedAt <= cutoff.at;
+}
+
+/** A live market needs fresh data. During a closure, retain the last received observation. */
+export function usableFxQuote(quotedAt: number, fetchedAt: number, marketState?: string) {
+  if (!usableValuationFxQuote(quotedAt, fetchedAt)) return false;
+  const cutoff = fxCutoff(fetchedAt);
   return quotedAt >= cutoff.at - 15 * FX_MINUTE || cutoff.closed || marketState === "CLOSED";
 }
 
@@ -43,4 +49,6 @@ export interface FxEvidence {
   publishedAt?: string;
   /** Outside the normal close window; this is not proof of a holiday. */
   carried?: boolean;
+  /** Last confirmed rate for valuation only; never sufficient for today's P&L. */
+  valuationOnly?: true;
 }

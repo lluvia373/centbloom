@@ -183,12 +183,14 @@ test('broad crosses never combine different minutes, future samples, zero legs o
   assert.equal(await alias.fetchFxMinute('CNYKRW=X', monday), null);
 });
 
-test('market-open old quotes stay unavailable, while weekends and provider-confirmed closure allow dated observations', async () => {
+test('market-open old quotes are valuation-only, while weekends and provider-confirmed closure allow dated observations', async () => {
   const now = Date.parse('2026-09-21T01:00:00Z'), old = Date.parse('2026-09-17T20:59:00Z');
   const quote = marketState => async () => ({ symbol: 'KRW=X', currency: 'KRW', regularMarketPrice: 1400,
     regularMarketTime: new Date(old), marketState });
   const open = server(s => chart(s, [row(old, 1400)]), { quote: quote('REGULAR') });
-  await assert.rejects(open.fetchFxQuote('USDKRW=X', undefined, now), { status: 503 });
+  const valuation = await open.fetchFxQuote('USDKRW=X', undefined, now);
+  assert.equal(valuation.price, 1400); assert.equal(valuation.fx.valuationOnly, true);
+  assert.equal(valuation.marketState, 'REGULAR');
   const closed = server(() => { throw new Error('unneeded'); }, { quote: quote('CLOSED') });
   const result = await closed.fetchFxQuote('USDKRW=X', undefined, now);
   assert.equal(result.price, 1400); assert.equal(result.marketState, 'CLOSED'); assert.equal(result.fx.carried, true);
@@ -265,7 +267,9 @@ test('validated CLOSED metadata survives a missing quote price and enables the h
   for (const invalid of [{ symbol: 'USDCNY=X' }, { currency: 'USD' }, { regularMarketTime: new Date(now + 1) },
     { regularMarketTime: new Date(now - fx.FX_LOOKBACK - 1) }, { regularMarketTime: undefined }, { marketState: 'REGULAR' }]) {
     const bad = server(s => chart(s, [row(newer, 1401)]), { quote: async () => ({ ...metadata, ...invalid }) });
-    await assert.rejects(bad.fetchFxQuote('USDKRW=X', undefined, now), { status: 503 });
+    const valuation = await bad.fetchFxQuote('USDKRW=X', undefined, now);
+    assert.equal(valuation.price, 1401); assert.equal(valuation.marketState, 'REGULAR');
+    assert.equal(valuation.fx.valuationOnly, true);
   }
 });
 

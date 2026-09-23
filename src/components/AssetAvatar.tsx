@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { ArrowUpRight, Building2 } from "lucide-react";
 import { companyLogoSources } from "@/lib/company-logos";
+import styles from "./AssetAvatar.module.css";
 
 export function AssetAvatar({
   symbol,
@@ -23,7 +24,7 @@ function CompanyMark({ sources, small }: { sources: string[]; small: boolean }) 
   const [failed, setFailed] = useState<string[]>([]);
   const source = sources.find(candidate => !failed.includes(candidate));
   return (
-    <span className={`asset-avatar ${small ? "asset-avatar-small" : ""}`} aria-hidden="true">
+    <span className={`${styles["asset-avatar"]} ${small ? styles["asset-avatar-small"] : ""}`} aria-hidden="true">
       {source ? (
         <Image key={source} src={source} alt="" width={32} height={32} unoptimized
           loading="lazy" referrerPolicy="no-referrer"
@@ -36,8 +37,8 @@ function CompanyMark({ sources, small }: { sources: string[]; small: boolean }) 
 
 export function EmptyPortfolio({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`empty-portfolio ${compact ? "compact" : ""}`}>
-      <span className="empty-icon">
+    <div className={`${styles["empty-portfolio"]} ${compact ? styles.compact : ""}`}>
+      <span className={styles["empty-icon"]}>
         <ArrowUpRight size={27} />
       </span>
       <h3>보유종목 없음</h3>

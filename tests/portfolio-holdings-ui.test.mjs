@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as React from 'react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 import { loadTypescript } from './load-typescript.mjs';
 
 const styles = { default: {} };
@@ -187,12 +188,173 @@ function interactiveHoldings(initialProps) {
   const find = (predicate) => [...nodes(tree())].find(predicate);
   return {
     html: () => renderToStaticMarkup(tree()),
+    row: (id) => find((node) => node.type === 'tr' && node.key === id),
     more: () => find((node) => node.type === 'button' && node.props['aria-controls'] === 'holdings-test').props.onClick(),
     change: (label, value) => find((node) => node.props['aria-label'] === label).props.onChange({ target: { value } }),
     update: (next) => { props = { ...props, ...next }; },
     switchUser: (id) => { user = id == null ? null : { id }; },
   };
 }
+
+const ringSegments = (html) => [...html.matchAll(/<circle data-holding-id="([^"]+)" data-weight="([^"]+)" data-start="([^"]+)"[^>]*?stroke="([^"]+)"/g)]
+  .map(([, id, weight, start, color]) => ({ id, weight: Number(weight), start: Number(start), color }));
+const combinedProps = { displayCurrency: 'KRW', embedded: true, showAllocation: true };
+
+test('integrated allocation: all 1, 8, 21, 200 and 2000 holdings fit one donut while the table stays batched', () => {
+  for (const count of [1, 8, 21, 200, 2000]) {
+    const holdings = Array.from({ length: count }, (_, index) => holding(`S${index}`, index + 1));
+    const html = render(HoldingsTable, { ...combinedProps, holdings });
+    const segments = ringSegments(html);
+    assert.equal(segments.length, count);
+    assert.ok(Math.abs(segments.reduce((sum, segment) => sum + segment.weight, 0) - 100) < 1e-8);
+    assert.equal(rowSymbols(html).length, Math.min(20, count));
+    assert.equal((html.match(/aria-label="보유 종목 검색"/g) ?? []).length, 1);
+    assert.equal((html.match(/<figure/g) ?? []).length, 1);
+    assert.match(html, /전체 보유자산 기준/);
+    assert.match(html, /<table[^>]+aria-describedby=/);
+    const svg = html.match(/<svg[^]*?<\/svg>/)?.[0];
+    assert.ok(svg);
+    assert.doesNotMatch(svg, /tabindex|<button|min-width|NaN|Infinity/);
+    assert.match(svg, /viewBox="0 0 200 200"/);
+    assert.match(svg, /stroke-linecap="butt"/);
+    assert.doesNotMatch(html, /자산 구성 검색|이전 페이지|다음 페이지|상위 종목|나머지/);
+  }
+});
+
+test('integrated allocation: filtering, sorting and show more never rebase the donut or row percentages', () => {
+  const holdings = Array.from({ length: 45 }, (_, i) => holding(`${String(i).padStart(6, '0')}.${i % 2 ? 'T' : 'KS'}`, 100));
+  const ui = interactiveHoldings({ ...combinedProps, holdings });
+  const initial = ringSegments(ui.html());
+  ui.more();
+  assert.equal(rowSymbols(ui.html()).length, 40);
+  assert.deepEqual(ringSegments(ui.html()), initial);
+  ui.change('보유 종목 검색', holdings[44].symbol);
+  assert.deepEqual(rowSymbols(ui.html()), [holdings[44].symbol]);
+  assert.match(ui.html(), /data-label="비중"[^]*?>2\.2%<\/strong>/);
+  assert.deepEqual(ringSegments(ui.html()), initial);
+  ui.change('보유 종목 검색', 'no-match');
+  assert.match(ui.html(), /조건에 맞는 보유 종목이 없습니다/);
+  assert.deepEqual(ringSegments(ui.html()), initial);
+  ui.change('보유 종목 검색', '');
+  ui.change('보유 종목 시장 필터', 'kr');
+  assert.ok(rowSymbols(ui.html()).every(symbol => symbol.endsWith('.KS')));
+  ui.change('보유종목 정렬', 'gainPercent');
+  assert.deepEqual(ringSegments(ui.html()), initial);
+  assert.match(ui.html(), /data-label="비중"[^]*?>2\.2%<\/strong>/);
+});
+
+test('integrated allocation: missing offscreen valuations, zero totals and empty holdings never invent a complete donut', () => {
+  for (const value of [0, NaN, Infinity, -1]) {
+    const holdings = Array.from({ length: 2001 }, (_, i) => holding(`S${i}`, 100));
+    holdings[2000] = holding('S2000', value, { valuationAvailable: value !== 0 });
+    const html = render(HoldingsTable, { ...combinedProps, holdings });
+    assert.equal(ringSegments(html).length, 0);
+    assert.match(html, /시세·환율이 누락되어 전체 비중을 표시할 수 없습니다/);
+    assert.equal((html.match(/data-label="비중"><strong>—<\/strong>/g) ?? []).length, 20);
+  }
+  const zero = render(HoldingsTable, { ...combinedProps, holdings: [holding('ZERO', 0)] });
+  assert.match(zero, /평가액이 없어 비중을 표시할 수 없습니다/);
+  assert.match(zero, /data-label="비중"><strong>—<\/strong>/);
+  assert.doesNotMatch(zero, /role="img"/);
+  const mixed = render(HoldingsTable, { ...combinedProps, holdings: [holding('AAA', 100), holding('ZERO', 0)] });
+  assert.equal(ringSegments(mixed).find(segment => segment.id === 'ZERO').weight, 0);
+  assert.match(mixed, />0%<\/strong>/);
+  const empty = render(HoldingsTable, { ...combinedProps, holdings: [] });
+  assert.match(empty, /보유종목 없음/);
+  assert.doesNotMatch(empty, /<figure|전체 보유자산 기준|role="img"/);
+  const loading = render(HoldingsTable, { ...combinedProps, holdings: [holding('AAA', 0, { valuationAvailable: false })], loading: true });
+  assert.match(loading, /시세·환율 확인 중/);
+});
+
+test('integrated allocation: row focus and hover use a shared outline without new tiny targets or lost actions', () => {
+  const holdings = [holding('AAA', 600), holding('BBB', 400)];
+  const ui = interactiveHoldings({ ...combinedProps, holdings, editable: true });
+  ui.row('AAA').props.onFocusCapture();
+  assert.match(ui.html(), /data-allocation-outline="AAA"/);
+  assert.match(ui.html(), /<tr data-allocation-active="true"/);
+  assert.match(ui.html(), /stroke-width="32"/);
+  ui.row('BBB').props.onPointerEnter();
+  assert.match(ui.html(), /data-allocation-outline="BBB"/);
+  ui.row('BBB').props.onPointerLeave();
+  assert.match(ui.html(), /data-allocation-outline="AAA"/, 'mouse leave preserves keyboard focus');
+  ui.row('AAA').props.onBlurCapture({ currentTarget: { contains: () => true }, relatedTarget: {} });
+  assert.match(ui.html(), /data-allocation-outline="AAA"/, 'focus within the same row stays highlighted');
+  ui.row('AAA').props.onBlurCapture({ currentTarget: { contains: () => false }, relatedTarget: null });
+  assert.doesNotMatch(ui.html(), /data-allocation-outline=/);
+  ui.row('AAA').props.onPointerEnter();
+  ui.row('BBB').props.onFocusCapture();
+  assert.match(ui.html(), /data-allocation-outline="BBB"/, 'new keyboard focus takes priority over a stationary mouse');
+  ui.row('AAA').props.onFocusCapture();
+  ui.change('보유종목 정렬', 'gainPercent');
+  assert.doesNotMatch(ui.html(), /data-allocation-outline=/);
+  ui.row('AAA').props.onFocusCapture();
+  ui.change('보유 종목 검색', 'BBB');
+  assert.doesNotMatch(ui.html(), /data-allocation-outline=/);
+  ui.row('BBB').props.onFocusCapture();
+  ui.switchUser('different-account');
+  assert.doesNotMatch(ui.html(), /data-allocation-outline=/);
+  const html = ui.html();
+  assert.match(html, /href="\/stock\/BBB"/);
+  assert.match(html, /aria-label="BBB 보유종목 수정"/);
+  assert.match(html, /aria-label="BBB 보유종목 삭제"/);
+  assert.doesNotMatch(html, /<tr[^>]*tabindex|<circle[^>]*tabindex/);
+});
+
+test('integrated allocation: stable donut colors match the unobtrusive marker beside each exact weight', () => {
+  const before = render(HoldingsTable, { ...combinedProps, holdings: [holding('AAA', 600), holding('BBB', 400)] });
+  const after = render(HoldingsTable, { ...combinedProps, holdings: [holding('AAA', 200), holding('BBB', 800)] });
+  for (const id of ['AAA', 'BBB']) {
+    const segment = ringSegments(before).find(item => item.id === id);
+    assert.equal(segment.color, ringSegments(after).find(item => item.id === id).color);
+    assert.ok(before.includes(`style="background-color:${segment.color}" aria-hidden="true"`));
+  }
+  assert.match(before, />60\.0%<\/strong>/);
+  assert.match(before, />40\.0%<\/strong>/);
+});
+
+test('integrated allocation: compact overview leaves the table full width on desktop and mobile', () => {
+  const css = readFileSync(new URL('../src/features/portfolio/ui/PortfolioHoldings.module.css', import.meta.url), 'utf8');
+  assert.match(css, /\.holdingsOverview\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(css, /@container \(min-width: 1000px\)[^]*\.holdingsOverview\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) auto/);
+  assert.doesNotMatch(css, /\.composedHoldings/);
+  assert.match(css, /\.embeddedHoldings \.search\s*\{ margin-right: 0/);
+  const source = readFileSync('src/components/HoldingsTable.tsx', 'utf8');
+  assert.ok(source.indexOf('styles.holdingsOverview') < source.indexOf('styles.toolbar'));
+  assert.ok(source.indexOf('styles.holdingsContent') > source.indexOf('styles.toolbarAction'));
+  assert.match(css, /\.compositionRing\s*\{[^}]*max-width: 100%/);
+  assert.match(css, /\.table tr\[data-allocation-active\] \.weight > strong\s*\{[^}]*text-decoration: underline/);
+  assert.match(css, /\.assetLink:focus-visible\s*\{[^}]*outline: 2px/);
+  assert.match(css, /@container \(max-width: 700px\)/);
+  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.table td > strong\s*\{ overflow-wrap: anywhere/);
+  assert.match(css, /\.holdingsContent\s*\{[^}]*min-width: 0;[^}]*container-type: inline-size/);
+  assert.match(css, /\.compositionCaption\s*\{[^}]*overflow-wrap: anywhere/);
+  assert.doesNotMatch(css, /\.compositionBar|\.weightTrack|\.compositionLabels/);
+});
+
+test('integrated allocation: center identifies the largest or focused holding without extra lists or fake small slices', () => {
+  const holdings = [holding('AAA', 600, { name: 'Apple Inc.' }), holding('000660.KS', 399, { name: 'SK hynix Inc.' }), holding('TINY', 1)];
+  const ui = interactiveHoldings({ ...combinedProps, holdings });
+  const html = ui.html();
+  const composition = html.match(/<figure[^]*?<\/figure>/)[0];
+  assert.doesNotMatch(composition, />TINY<|<button|tabindex|<a /);
+  assert.match(composition, /최대 비중/);
+  assert.match(composition, /<strong>Apple Inc\.<\/strong>/);
+  assert.match(composition, />60\.0%<\/strong>/);
+  assert.ok(ringSegments(composition).some(segment => segment.id === 'TINY' && segment.weight === 0.1));
+  assert.ok(rowSymbols(html).includes('TINY'));
+  ui.row('000660.KS').props.onFocusCapture();
+  const focused = ui.html().match(/<figure[^]*?<\/figure>/)[0];
+  assert.match(focused, /<strong>SK hynix Inc\.<\/strong>/);
+  assert.match(focused, /보유 비중/);
+  assert.match(focused, />39\.9%<\/strong>/);
+  const zero = render(HoldingsTable, { ...combinedProps, holdings: [holding('AAA', 100), holding('ZERO', 0)] });
+  assert.match(zero, /stroke-dasharray="0 100"/);
+  assert.match(zero, /stroke-dasharray="100 0"/);
+  const many = render(HoldingsTable, { ...combinedProps, holdings: Array.from({ length: 2000 }, (_, i) => holding(`S${i}`, 1)) });
+  assert.equal(ringSegments(many).length, 2000);
+  assert.doesNotMatch(many, /stroke-dasharray="0 100"/, 'small positive positions retain their actual arc');
+});
 
 test('holdings batches: first render caps rows at 20 and preserves full-portfolio weights', () => {
   for (const count of [0, 8, 20, 21, 200]) {

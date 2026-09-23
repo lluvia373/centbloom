@@ -11,6 +11,9 @@ import { fetchFxBaseline } from "./fx-market";
 const MINUTE = 60_000;
 const FX_LOOKBACK_MINUTES = 5;
 const MAX_SESSION_LOOKBACK_DAYS = 40;
+// KRX closing call auctions end at a random instant within 30 seconds of the
+// scheduled close: https://global.krx.co.kr/contents/GLB/06/0602/0602010202/GLB0602010202T1.jsp
+const KRX_CLOSING_AUCTION_MS = 30_000;
 
 type BaselinePlan =
   | { kind: "minute"; marketClosed: false | null }
@@ -104,6 +107,12 @@ export function selectMidnightPrice(
       typeof quote.close === "number" && Number.isFinite(quote.close) && quote.close > 0;
   });
   const sparseFx = symbol.endsWith("=X") && result.meta.instrumentType === "CURRENCY";
+  const krClosingAuction = marketForSymbol(symbol) === "kr" && currency === "KRW" &&
+    result.meta.symbol?.toUpperCase() === symbol.toUpperCase() &&
+    (result.meta.instrumentType === "EQUITY" || result.meta.instrumentType === "ETF");
+  const sessionEnd = plan.kind === "session-close"
+    ? plan.end + (krClosingAuction ? KRX_CLOSING_AUCTION_MS : 0)
+    : baselineAt;
   const price = plan.kind === "minute"
     // FX crosses can contain null minutes between actual quotes. Keep the last
     // completed bar in a bounded five-minute window, retaining its real time.
@@ -114,14 +123,17 @@ export function selectMidnightPrice(
         time >= baselineAt - (sparseFx ? FX_LOOKBACK_MINUTES : 1) * MINUTE;
     }).sort((left, right) => right.date.getTime() - left.date.getTime())[0]
     // A daily timestamp marks the trading date, not the time its closing price
-    // became known. Require that exact session to have ended before midnight.
-    : quotes.find((quote) => quote.date.getTime() <= plan.end &&
-      localParts(quote.date.getTime(), plan.timeZone).date === plan.date);
+    // became known. Yahoo can also stamp the final closing auction trade.
+    // Require the exact session and its full verified closing window to have
+    // ended before midnight; later/off-session rows remain ineligible.
+    : sessionEnd <= baselineAt ? quotes.find((quote) => quote.date.getTime() <= sessionEnd &&
+      localParts(quote.date.getTime(), plan.timeZone).date === plan.date) : undefined;
   if (!price) {
     const completed = quotes.some((quote) => quote.date.getTime() + MINUTE <= baselineAt);
     return unavailable(completed ? "stale-price" : "missing-price");
   }
-  const sourceEnd = plan.kind === "minute" ? price.date.getTime() + MINUTE : plan.end;
+  const sourceEnd = plan.kind === "minute"
+    ? price.date.getTime() + MINUTE : Math.max(plan.end, price.date.getTime());
   return {
     symbol,
     date,

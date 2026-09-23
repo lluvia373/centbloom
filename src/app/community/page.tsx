@@ -11,7 +11,7 @@ export default function ReadingPage() {
           </p>
         </div>
       </div>
-      <ReadingShelf />
+      <ReadingShelf variant="listing" />
     </div>
   );
 }

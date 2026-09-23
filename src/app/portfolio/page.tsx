@@ -6,21 +6,23 @@ import {
   PageHeading,
 } from "@/components/Header";
 import { HoldingsTable } from "@/components/HoldingsTable";
-import { AllocationChart } from "@/components/AllocationChart";
 import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
+import { PortfolioDetails } from "@/features/portfolio/ui/PortfolioDetails";
+import { InvestmentHistory } from "@/features/performance/InvestmentHistory";
 import styles from "@/features/portfolio/ui/PortfolioHoldings.module.css";
 import { usePortfolioDailyChange, usePortfolioMarket, usePreferences, useTransactions } from "@/hooks/usePortfolio";
 import { Download } from "lucide-react";
 export default function PortfolioPage() {
   const { transactions } = useTransactions();
   const { displayCurrency } = usePreferences();
-  const { summary, loading, marketDataError } = usePortfolioMarket();
+  const { summary, loading, marketDataError, valuationFxNotice } = usePortfolioMarket();
   const dailyChange = usePortfolioDailyChange();
 
   const exportHoldings = () => {
     const rows = [
       ["내 보유 자산", "표시 통화", displayCurrency],
+      ...(valuationFxNotice ? [["적용 환율", valuationFxNotice]] : []),
       ["종목", "이름", "수량", "평가액", "평가손익", "수익률(%)"],
       ...(summary?.holdings ?? []).map((h) => [
         h.symbol,
@@ -79,14 +81,16 @@ export default function PortfolioPage() {
           <PerformanceAnalytics />
         </section>
       </div>
-      {summary != null && <>
-        <AllocationChart holdings={summary.holdings} displayCurrency={displayCurrency} loading={loading} />
-        <HoldingsTable
+      <PortfolioDetails
+        history={<InvestmentHistory />}
+        holdings={summary != null ? <HoldingsTable
           holdings={summary.holdings}
           transactions={transactions}
           displayCurrency={displayCurrency}
           loading={loading}
           editable
+          embedded
+          showAllocation
           dailyChanges={dailyChange.available ? dailyChange.bySymbol : undefined}
           dailyChangeReason={dailyChange.reason}
           referenceDatesBySymbol={dailyChange.referenceDatesBySymbol}
@@ -96,8 +100,8 @@ export default function PortfolioPage() {
               <Download size={16} aria-hidden="true" />보유 자산 CSV
             </button>
           ) : undefined}
-        />
-      </>}
+        /> : <p className={styles.empty} role={loading ? "status" : "alert"}>{loading ? "보유종목 확인 중" : "보유종목을 확인하지 못했습니다."}</p>}
+      />
 
       <PortfolioAd hasContent={transactions.length > 0} />
     </>
