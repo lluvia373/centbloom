@@ -20,7 +20,8 @@ test('valuation-only FX remains available for valuations but never auto-fills to
  assert.equal(valuation.fx.components[0].sourceAt,'2026-09-18T20:00:00Z');
  await assert.rejects(getFxRateToKRW('USD',fxToday()),/USD\/KRW 현재 환율.*평가액에만/);
  await assert.rejects(getFxRateToKRW('USD'),/USD\/KRW 현재 환율.*평가액에만/);
- assert.deepEqual(urls,['/api/quote/USDKRW%3DX']);
+ // Each completed read is followed by a new request; every trade consumer still rejects valuation-only FX.
+ assert.deepEqual(urls,['/api/quote/USDKRW%3DX','/api/quote/USDKRW%3DX','/api/quote/USDKRW%3DX']);
 });
 
 test('fresh and normal closed-market carried FX preserve current trade behavior',async(t)=>{

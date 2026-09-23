@@ -65,8 +65,10 @@ test('quote and search prefer full provider names while Korean aliases still res
    search:async()=>({quotes:[{symbol:'005930.KS',shortname:'SamsungElec',longname:'Samsung Electronics Co., Ltd.',exchange:'KOS',quoteType:'EQUITY'}]}),
   },
  };
- const {fetchQuote}=loadTypescript('src/features/market/server/quote.ts',{'./provider':provider});
- assert.equal((await fetchQuote('OXY')).name,'Occidental Petroleum Corporation');
+ // Provider name normalization lives at the source boundary; facade/cache
+ // wiring is covered by prepared-runtime.test.mjs without real runtime state.
+ const {fetchProviderQuote}=loadTypescript('src/features/market/server/quote-source.ts',{'./provider':provider});
+ assert.equal((await fetchProviderQuote('OXY')).name,'Occidental Petroleum Corporation');
  const {fetchSearch}=loadTypescript('src/features/market/server/search.ts',{'./provider':provider});
  const results=await fetchSearch('삼성전자','kr');
  assert.equal(results.length,1);

@@ -39,7 +39,9 @@ test('past new trade FX uses the common daily API while today and omitted dates 
  assert.equal(await getFxRateToKRW('CNY',fxToday()),207);
  assert.equal(await getFxRateToKRW('CNY'),207);
  assert.equal(await getFxRateToKRW('KRW','2026-09-20'),1);
- assert.deepEqual(urls,['/api/fx-history?currency=CNY&start=2026-09-20&end=2026-09-20','/api/quote/CNYKRW%3DX']);
+ // Sequential current-quote reads share no completed response in the request layer.
+ assert.deepEqual(urls,['/api/fx-history?currency=CNY&start=2026-09-20&end=2026-09-20',
+  '/api/quote/CNYKRW%3DX','/api/quote/CNYKRW%3DX']);
 });
 
 test('daily FX provider failures remain visible and cancelled requests cannot resolve normally',async(t)=>{
