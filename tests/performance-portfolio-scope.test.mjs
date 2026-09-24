@@ -89,7 +89,8 @@ test('intraday scope hides previous portfolio/account results immediately and pa
     revision: 'r1', status: 'ready', authLoading: false };
   const states = new Map(), subscriptions = [];
   let resource;
-  const { useIntradayPerformance } = loadTypescript('src/features/performance/use-intraday-performance.ts', {
+  // This runner substitutes React's hooks and evaluates separate renders, not a component loop.
+  const { useIntradayPerformance: renderIntraday } = loadTypescript('src/features/performance/use-intraday-performance.ts', {
     '@/hooks/useAuth': { useAuth: () => ({ user: input.user, loading: input.authLoading }) },
     '@/hooks/usePortfolio': { useTransactions: () => input, usePortfolios: () => input },
     '@/shared/time/use-kst-date': { useKstDate: () => '2020-04-10' },
@@ -104,16 +105,16 @@ test('intraday scope hides previous portfolio/account results immediately and pa
   const result = { points: [{ date: '2020-04-10T01:00:00Z', assetValueKRW: 40 }] };
   const key = JSON.stringify(['user-a', 'p-a', 'r1', '2020-04-10', '1d', 'KRW']);
   states.set(key, { value: result, loading: false, error: null });
-  assert.equal(useIntradayPerformance('1d', 'KRW').value, result);
+  assert.equal(renderIntraday('1d', 'KRW').value, result);
   assert.equal(subscriptions.at(-1).request.transactions, input.transactions);
   for (const scope of ['p-b', 'all']) {
     input.selectedPortfolioId = scope;
-    assert.equal(useIntradayPerformance('1d', 'KRW').value.points.length, 0);
+    assert.equal(renderIntraday('1d', 'KRW').value.points.length, 0);
   }
   input.selectedPortfolioId = 'p-a'; input.user = { id: 'other' };
-  assert.equal(useIntradayPerformance('1d', 'KRW').value.points.length, 0);
+  assert.equal(renderIntraday('1d', 'KRW').value.points.length, 0);
   input.user = null;
-  assert.equal(useIntradayPerformance('1d', 'KRW').value.points.length, 0);
+  assert.equal(renderIntraday('1d', 'KRW').value.points.length, 0);
 });
 
 test('aggregate daily/monthly/yearly amounts equal portfolio sums after a different-cost same-symbol partial sale', () => {
