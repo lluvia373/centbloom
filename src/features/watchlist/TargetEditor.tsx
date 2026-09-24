@@ -80,7 +80,7 @@ export function TargetEditor({
         </p>
       ) : (
         <p className="mt-2 text-xs leading-5 text-[#727680]">
-          설정가 이하 도달 표시 · 알림 발송 없음
+          목표 매수가는 가격 알림과 별도로 저장됩니다.
         </p>
       )}
     </form>

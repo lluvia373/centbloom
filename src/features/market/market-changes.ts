@@ -1,5 +1,7 @@
 import type { ChartPoint } from "@/lib/types";
 import type { MoverQuote } from "./movers-model";
+import { calendars } from "./schedule/calendars";
+import { addDays, isWeekend } from "./schedule/time";
 
 export const changeKinds = ["volume", "price", "reversal"] as const;
 export type ChangeKind = (typeof changeKinds)[number];
@@ -26,6 +28,27 @@ export interface MarketChangesFeed {
   examined: number;
   historyUnavailable: number;
   partial: boolean;
+  /** Public candidate coverage, not the number of all listed US companies. */
+  coverage?: { perRankingLimit: number; rankingsReceived: number; truncatedRankings: number; historyChecked: number };
+}
+
+/** Missing sessions and unverified calendar years never count as consecutive days. */
+export function consecutiveMarketSessions(before: string, after: string): boolean {
+  const calendar = calendars.find(calendar => calendar.id === "US")!;
+  if (before < calendar.validFrom || after > calendar.validThrough || before >= after
+    || isWeekend(before) || calendar.holidays[before]) return false;
+  let date = before;
+  while (date < after) {
+    date = addDays(date, 1);
+    if (isWeekend(date) || calendar.holidays[date]) {
+      if (date === after) return false;
+      continue;
+    }
+    const override = calendar.overrides[date];
+    if (override && !override.windows) return false;
+    return date === after;
+  }
+  return false;
 }
 
 export function marketSessionDate(quotedAt?: string): string | null {
@@ -55,9 +78,9 @@ export function describeMarketChange(quote: MoverQuote, history: ChartPoint[], n
   const previousClose = quote.price - quote.change;
   // Refuse mismatched sessions or incompatible price bases (e.g. a corporate action).
   const compatible = last && previousClose > 0 && Math.abs(last.close / previousClose - 1) < 0.01
-    && Date.parse(sessionDate) - Date.parse(last.date) <= 7 * 86400_000;
+    && consecutiveMarketSessions(last.date, sessionDate);
   const moves = points.slice(1).map((point, index) => (point.close / points[index].close - 1) * 100);
-  const continuous = points.every((point, index) => index === 0 || Date.parse(point.date) - Date.parse(points[index - 1].date) <= 7 * 86400_000);
+  const continuous = points.every((point, index) => index === 0 || consecutiveMarketSessions(points[index - 1].date, point.date));
   const consistent = points.every((point, index) => {
     if (!index) return true;
     const previous = points[index - 1];
@@ -126,6 +149,7 @@ export function changeHeadline(signal: ChangeSignal): string {
 
 /** One slot per type first, then fill by magnitude. A stock appears only once. */
 export function selectMarketChanges<T extends MarketChange>(items: T[], kind?: ChangeKind, limit = 3) {
+  if (limit <= 0) return [];
   const strength = (item: MarketChange) => Math.max(...item.signals.filter(signal => !kind || signal.kind === kind).map(signal => signal.ratio));
   const ranked = items.filter(item => item.signals.some(signal => !kind || signal.kind === kind))
     .map(item => ({ ...item, signals: [...item.signals].sort((a, b) => Number(b.kind === kind) - Number(a.kind === kind)) }))

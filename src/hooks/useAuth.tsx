@@ -9,13 +9,14 @@ import {
   useState,
 } from "react";
 import type { User } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase";
+import { getSupabaseBrowserClient, getSupabaseConfigurationError, isSupabaseConfigured } from "@/lib/supabase";
 import { cancelLoginReturn, failedReturnPath, startLoginReturn, takeLoginReturn } from "@/features/auth/login-return";
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   configured: boolean;
+  configurationError: string | null;
   loginError: string | null;
   signInWithGoogle: () => Promise<string | null>;
   signOut: () => Promise<void>;
@@ -25,8 +26,9 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const configured = isSupabaseConfigured();
+  const configurationError = getSupabaseConfigurationError();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(configured);
+  const [loading, setLoading] = useState(configured && !configurationError);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loading, user]);
 
   useEffect(() => {
+    if (configurationError) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       return;
@@ -76,9 +79,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [configurationError]);
 
   const signInWithGoogle = useCallback(async (): Promise<string | null> => {
+    if (configurationError) return configurationError;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return "Google 로그인이 아직 설정되지 않았습니다.";
 
@@ -104,19 +108,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try { cancelLoginReturn(window.sessionStorage); } catch { /* Nothing may be replayed automatically. */ }
       return "로그인을 시작하지 못했습니다. 다시 시도해 주세요.";
     }
-  }, []);
+  }, [configurationError]);
 
   const signOut = useCallback(async () => {
+    if (configurationError) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     try { cancelLoginReturn(window.sessionStorage); } catch { /* No navigation intent is a safe fallback. */ }
-  }, []);
+  }, [configurationError]);
 
   const value = useMemo(
-    () => ({ user, loading, configured, loginError, signInWithGoogle, signOut }),
-    [user, loading, configured, loginError, signInWithGoogle, signOut],
+    () => ({ user, loading, configured, configurationError, loginError, signInWithGoogle, signOut }),
+    [user, loading, configured, configurationError, loginError, signInWithGoogle, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-24T10:01:21.212Z",
+  "directoryCount": 14455,
+  "attemptedCompanies": 10,
+  "symbols": {
+    "005930.KS": {
+      "path": "/data/dividends/3b3727d3bc75158693467877b11ca6564ceb3f956cc9258fe2af7693e90877a2.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "035420.KS": {
+      "path": "/data/dividends/b6cff3b9bb020752103b000cc6031a9973ad0c57bd715197552dc6621e7bd255.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "AAPL": {
+      "path": "/data/dividends/e047ab7818ebda7280e5f6d515374ab0f5ba29a25ff88d927ae1d2f598a17dd3.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "GOOGL": {
+      "path": "/data/dividends/e59e7adc4b6e274180f3555c9885d3ac87ca645de63a1e39e7688c885ebc16fd.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "SBUX": {
+      "path": "/data/dividends/e737daf4ebf48ae4e6d932e6684bd8efd6c61ab08f2051cc95afd2d4eee48116.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "BAC": {
+      "path": "/data/dividends/1a32b6a48e492122b9869d039955060f389ac37b7835a23e7792f1b03faa51d6.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "OXY": {
+      "path": "/data/dividends/4b2127bc2296bfc2578b6e5e383486a30ff5b2ff8ac766129ec40d7848c0a264.json",
+      "status": "partial",
+      "owner": "seed"
+    },
+    "BABA": {
+      "path": "/data/dividends/03aab1c515b0bc22025340fc5c184c3ae0351c458a6262d3990c4524e7c0f888.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "9988.HK": {
+      "path": "/data/dividends/99c1bda0735102957aa816b1c93cc7c6fff1d26b3de04fd25fe356b8e1b3fbd7.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "NU": {
+      "path": "/data/dividends/e3c934eba384cee1074e5ab126a1ea56473c948ad87a2b327b8ee4580ee37dda.json",
+      "status": "no-announcement",
+      "owner": "seed"
+    },
+    "GRAB": {
+      "path": "/data/dividends/fcacaad5618da9581139d4b678469373b5a1fc14c69db2f57369f85a054e67ff.json",
+      "status": "no-announcement",
+      "owner": "seed"
+    },
+    "SOC": {
+      "path": "/data/dividends/84e1ed77e9131748be824a4f7884fcc1169a02cc7f42700a520d8a0c9cf5bbd3.json",
+      "status": "no-announcement",
+      "owner": "seed"
+    },
+    "459580.KS": {
+      "path": "/data/dividends/806ad34729ec477bde0eb07b3a908eb17cdc2975589fbf4720af0e237d871a17.json",
+      "status": "supported",
+      "owner": "seed"
+    },
+    "000660.KS": {
+      "path": "/data/dividends/90876afe789a1ee5559c27adc32418644b995b776dbabcb78a0c128a448afdaf.json",
+      "status": "supported",
+      "owner": "dart:00164779"
+    },
+    "MSFT": {
+      "path": "/data/dividends/8514413c06ee183801a95c6e25ed08040f7c3a5ede04b6c1845977307e610fde.json",
+      "status": "partial",
+      "owner": "sec:789019:MSFT"
+    },
+    "OMCC": {
+      "path": "/data/dividends/f2fc72543570381ad542ddea46f17b0be858a30ad7d62175e4fd722b4a5c3144.json",
+      "status": "failed",
+      "owner": "sec:1000045:OMCC"
+    },
+    "114190.KQ": {
+      "path": "/data/dividends/c3f1abb3b621a30a32404727111379529abe205d291af59e9f5da48c060eec5e.json",
+      "status": "no-announcement",
+      "owner": "dart:00100601"
+    },
+    "NAT": {
+      "path": "/data/dividends/1ebaddee70eb1a9a2cb1dbce77b4284dda26dcf4df8b070cc1604537392aab5b.json",
+      "status": "failed",
+      "owner": "sec:1000177:NAT"
+    },
+    "SAP": {
+      "path": "/data/dividends/b24baa1223ad38dddd4533eab2b50d1c0964e2b75d2e734714971d3d866d57a1.json",
+      "status": "failed",
+      "owner": "sec:1000184:SAP"
+    },
+    "000860.KS": {
+      "path": "/data/dividends/c3717921be0fb11b4b2b4eccdeb2ada4bd2227bee3a1729ac7f0fe790a535a6f.json",
+      "status": "supported",
+      "owner": "dart:00100939"
+    },
+    "SAPGF": {
+      "path": "/data/dividends/1815212c790e1331da6f9605e5e81a82b0e289e34176e8f6d5cf76e235b6c5b3.json",
+      "status": "failed",
+      "owner": "sec:1000184:SAPGF"
+    }
+  }
+}

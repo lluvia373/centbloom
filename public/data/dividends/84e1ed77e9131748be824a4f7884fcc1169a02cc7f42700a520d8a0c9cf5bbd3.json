@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:10:47.607Z",
+  "sourceCheckedAt": "2026-09-24T09:01:01.113Z",
+  "symbols": [
+    {
+      "symbol": "SOC",
+      "status": "no-announcement",
+      "from": "2026-01-01",
+      "through": "2026-09-24",
+      "checkedAt": "2026-09-24T09:01:01.113Z",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1831481/000183148126000026/socc-20251231.htm",
+      "reason": "회사의 배당 미지급 방침과 이후 SEC 공시를 확인했습니다."
+    }
+  ],
+  "events": []
+}

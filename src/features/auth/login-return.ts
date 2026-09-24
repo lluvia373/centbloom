@@ -1,3 +1,5 @@
+import { projectStorageKey } from "@/lib/project-storage";
+
 const KEY = "centbloom-login-return-v1";
 const MAX_AGE = 30 * 60 * 1000;
 type ReturnStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
@@ -15,7 +17,7 @@ export function safeReturnPath(input: string): string | null {
     const symbol = url.searchParams.get("symbol");
     return symbol && validSymbol(symbol) ? `/search?symbol=${encodeURIComponent(symbol)}` : "/search";
   }
-  if (["/", "/portfolio", "/watchlist", "/journal", "/settings", "/notifications", "/gurus", "/transactions", "/insights"].includes(url.pathname)) return url.pathname;
+  if (["/", "/portfolio", "/watchlist", "/journal", "/settings", "/notifications", "/gurus", "/transactions", "/insights", "/movements"].includes(url.pathname)) return url.pathname;
   if (/^\/gurus\/[a-z0-9-]+$/.test(url.pathname)) return url.pathname;
   return null;
 }
@@ -28,12 +30,13 @@ export function failedReturnPath(target: string) {
 export function startLoginReturn(storage: ReturnStorage, path: string, now = Date.now()) {
   const target = safeReturnPath(path);
   if (!target) throw new Error("돌아갈 화면을 확인하지 못했습니다.");
-  storage.setItem(KEY, JSON.stringify({ version: 1, target, createdAt: now }));
+  storage.setItem(projectStorageKey(KEY), JSON.stringify({ version: 1, target, createdAt: now }));
 }
-export function cancelLoginReturn(storage: ReturnStorage) { storage.removeItem(KEY); }
+export function cancelLoginReturn(storage: ReturnStorage) { storage.removeItem(projectStorageKey(KEY)); }
 export function takeLoginReturn(storage: ReturnStorage, now = Date.now()): string | null {
-  const raw = storage.getItem(KEY);
-  storage.removeItem(KEY); // Claim before navigating: refresh/auth events must not replay it.
+  const key = projectStorageKey(KEY);
+  const raw = storage.getItem(key);
+  storage.removeItem(key); // Claim before navigating: refresh/auth events must not replay it.
   if (!raw) return null;
   try {
     const value = JSON.parse(raw);

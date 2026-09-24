@@ -253,31 +253,26 @@ test('explicit region and page selections remain in place when the clock and quo
  assert.match(after.html,/\+99.00%/);
 });
 
-test('movement cards honor the two-card page size without changing the default three-card size',()=>{
+test('movement home shows three cards and links to the full member directory',()=>{
  const items=Array.from({length:5},(_,index)=>({
   quote:{symbol:`TEST${index}`,name:`Company ${index}`,price:100,currency:'USD',changePercent:2},
   signals:[{kind:'price',value:2,baseline:1,ratio:2}],sessionDate:'2026-09-22',
   story:{url:'https://example.com/news',title:'Company news',publisher:'Publisher',publishedAt:'2026-09-22T12:00:00Z'},
  }));
- let currentPage=0;
  const {MarketChanges}=loadTypescript('src/features/home/MarketChanges.tsx',{
-  react:{...React,useId:()=> 'movement-list',useState:initial=>[initial===0?currentPage:initial,()=>{}]},
-  'next/link':{default:()=>null},
+  '@/hooks/useAuth':{useAuth:()=>({user:null})},
+  'next/link':{default:({children,...props})=>React.createElement('a',props,children)},
   '@/components/AssetAvatar':{AssetAvatar:()=>null},
   '@/features/watchlist/WatchStockButton':{WatchStockButton:()=>null},
   '@/features/market/use-market-changes':{useMarketChanges:()=>({data:{items},failed:false})},
   '@/hooks/useWatchlist':{useWatchlist:()=>({items:[]})},
   '@/features/market/use-watched-reports':{useWatchedReports:()=>[]},
-  '@/features/market/personalized-changes':{mergeWatchedChanges:items=>items,selectPersonalizedChanges:items=>items},
-  '@/features/market/market-changes':{changeKinds:['price'],changeLabels:{price:'가격'},changeObservation:()=>({headline:'Observed change'})},
+  './MarketChangeCard':{MarketChangeCard:({item})=>React.createElement('article',null,item.quote.symbol)},
   './home.module.css':{default:{}},
   './market-changes.module.css':{default:{}},
  });
- const cards=props=>Array.from(MarketChanges(props).props.children[2].props.children,card=>card.key);
- assert.deepEqual(cards({}),['TEST0','TEST1','TEST2']);
- assert.deepEqual(cards({pageSize:2}),['TEST0','TEST1']);
- currentPage=1;
- assert.deepEqual(cards({pageSize:2}),['TEST2','TEST3']);
- currentPage=2;
- assert.deepEqual(cards({pageSize:2}),['TEST4']);
+ const html=renderToStaticMarkup(React.createElement(MarketChanges,{}));
+ assert.equal((html.match(/<article>/g)??[]).length,3);
+ assert.match(html,/href="\/movements"/);
+ assert.match(html,/로그인하고 전체 보기/);
 });

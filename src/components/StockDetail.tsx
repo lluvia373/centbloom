@@ -19,9 +19,9 @@ RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 
-export function StockDetail({ symbol, initialNews }: { symbol: string; initialNews?: NewsFeed | null }) {
+export function StockDetail({ symbol, initialNews, children }: { symbol: string; initialNews?: NewsFeed | null; children?: React.ReactNode }) {
   const live=useLiveQuotes([symbol]);const quote=live.quotes[symbol];
-  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={`chart:${symbol}`} symbol={symbol} currency={quote?.currency??''} /><MarketMovementEvidence key={`movement:${symbol}`} symbol={symbol}/>{quote&&<StockStats quote={quote}/>}<MarketNews key={`news:${symbol}`} symbol={symbol} initialData={initialNews}/></div>;
+  return <div className="space-y-6"><QuoteDetail symbol={symbol} live={live} /><StockChart key={`chart:${symbol}`} symbol={symbol} currency={quote?.currency??''} /><MarketMovementEvidence key={`movement:${symbol}`} symbol={symbol}/>{quote&&<StockStats quote={quote}/>}{children}<MarketNews key={`news:${symbol}`} symbol={symbol} initialData={initialNews}/></div>;
 }
 function QuoteDetail({ symbol,live }: { symbol: string;live:ReturnType<typeof useLiveQuotes> }) {
   const { quotes, loading, refreshing, failedSymbols, refresh } = live;

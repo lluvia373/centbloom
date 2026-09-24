@@ -48,6 +48,7 @@ function fixture(t) {
   const imports = {
     '@/features/auth/session-request': { runSupabaseRequest },
     '@/lib/branded-storage': { readBrandedStorage: () => null },
+    '@/lib/project-storage': loadTypescript('src/lib/project-storage.ts'),
     '@/lib/supabase': { getSupabaseBrowserClient: () => client },
   };
   runInNewContext(source, {

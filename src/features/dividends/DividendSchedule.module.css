@@ -1,0 +1,22 @@
+.section { min-width: 0; margin-top: var(--cf-space-6); padding-top: var(--cf-space-6); border-top: 1px solid var(--cf-color-line); }
+.heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--cf-space-2); margin-bottom: var(--cf-space-2); }
+.heading h2 { font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); line-height: var(--cf-leading-title); }
+.heading span, .note, .identity span, .amount span { font-size: var(--cf-text-caption); color: var(--cf-color-muted); line-height: var(--cf-leading-body); }
+.note { margin-top: var(--cf-space-2); overflow-wrap: anywhere; }
+.list { list-style: none; padding: 0; margin: var(--cf-space-2) 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, .45fr) minmax(136px, .45fr); gap: var(--cf-space-4); padding-block: var(--cf-space-4); border-bottom: 1px solid var(--cf-color-line); align-items: center; }
+.identity { min-width: 0; display: flex; flex-direction: column; gap: var(--cf-space-1); }
+.identity a { width: fit-content; max-width: 100%; font-size: var(--cf-text-body); font-weight: var(--cf-weight-medium); color: var(--cf-color-ink); overflow-wrap: anywhere; }
+.identity a:hover { text-decoration: underline; }
+.identity a:focus-visible, .more:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 4px; }
+.amount { display: flex; flex-direction: column; gap: var(--cf-space-1); text-align: right; min-width: 0; }
+.amount strong { font-size: var(--cf-text-body); font-weight: var(--cf-weight-medium); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.reason { grid-column: 2 / -1; font-size: var(--cf-text-label); color: var(--cf-color-muted); text-align: right; }
+.more { min-height: 44px; margin-top: var(--cf-space-2); padding-inline: var(--cf-space-3); font-size: var(--cf-text-label); color: var(--cf-color-ink); border-radius: var(--cf-radius-control); cursor: pointer; }
+.more:hover { background: var(--cf-color-soft); }
+@media (max-width: 600px) {
+  .row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cf-space-3); }
+  .identity { grid-column: 1 / -1; }
+  .amount { text-align: left; }
+  .reason { grid-column: 1 / -1; text-align: left; }
+}

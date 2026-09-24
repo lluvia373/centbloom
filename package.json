@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "market:prepare:company": "node --env-file-if-exists=.env.development.local scripts/prepare-company-data.mjs",
+    "dividends:prepare:common": "node --env-file-if-exists=.env.development.local scripts/prepare-common-dividends.mjs",
+    "dividends:prepare:dart": "node --env-file-if-exists=.env.development.local scripts/prepare-dart-dividends.mjs",
+    "dividends:prepare:foreign": "node --env-file-if-exists=.env.development.local scripts/prepare-foreign-dividends.mjs",
+    "dividends:prepare:etf": "node scripts/prepare-etf-dividends.mjs",
+    "dividends:prepare": "node --env-file-if-exists=.env.development.local scripts/refresh-dividends.mjs",
+    "gurus:prepare": "node scripts/prepare-gurus.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -22,11 +29,13 @@
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.6",
     "@supabase/supabase-js": "2.109.0",
+    "fflate": "0.8.3",
     "lucide-react": "^1.23.0",
     "next": "16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.9.2",
+    "saxes": "^6.0.0",
     "yahoo-finance2": "^3.15.4"
   },
   "devDependencies": {

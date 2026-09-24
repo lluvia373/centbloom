@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { scopedKey, TRANSACTIONS_KEY } from "@/lib/portfolio-storage";
 import type { Transaction } from "@/lib/types";
 import {
   createContext,
@@ -13,10 +14,12 @@ import { createLedgerStore } from "../data/ledger-store";
 import { localRepository, transactionCache } from "../data/local";
 import { serverRepository } from "../data/server";
 import { prepareTransactions } from "../model/enrichment";
+import { ALL_PORTFOLIOS_ID } from "../model/portfolios";
 import type {
   AddTransactionInput,
   TransactionImportMode,
   UpdateTransactionInput,
+  Portfolio,
 } from "../model/types";
 
 const browserStorage = {
@@ -47,7 +50,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
           );
         return await navigator.locks.request(
           // Keep the lock shared with tabs opened before the brand change.
-          `centifolio-ledger:${userId ?? "guest"}`,
+          scopedKey("centifolio-ledger", userId ?? "guest"),
           async () => await action(),
         );
       },
@@ -58,7 +61,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
     const changed = () => void store.reload();
     // Local guest tabs share Web Locks and reload after another tab commits.
     const onStorage = (event: StorageEvent) => {
-      if (!userId && event.key === "stock-transactions") changed();
+      if (!userId && [scopedKey(TRANSACTIONS_KEY), scopedKey("centbloom-portfolio-workspace")].includes(event.key ?? "")) changed();
     };
     window.addEventListener("storage", onStorage);
     return () => {
@@ -75,7 +78,7 @@ function useLedgerStore() {
   if (!store) throw new Error("LedgerProvider is required");
   return store;
 }
-export function useTransactions() {
+export function useAllTransactions() {
   const store = useLedgerStore();
   return useSyncExternalStore(
     store.subscribe,
@@ -83,38 +86,65 @@ export function useTransactions() {
     store.getSnapshot,
   );
 }
+export function useTransactions() {
+  const state = useAllTransactions();
+  return useMemo(() => ({ ...state, transactions: state.selectedPortfolioId === ALL_PORTFOLIOS_ID ? state.transactions : state.transactions.filter((tx) => tx.portfolioId === state.selectedPortfolioId) }), [state]);
+}
+export function usePortfolios() {
+  const store = useLedgerStore();
+  const state = useAllTransactions();
+  return useMemo(() => ({
+    portfolios: state.portfolios ?? [], selectedPortfolioId: state.selectedPortfolioId,
+    isAggregate: state.selectedPortfolioId === ALL_PORTFOLIOS_ID,
+    status: state.status, error: state.error, writable: state.writable,
+    setSelectedPortfolioId: store.setSelectedPortfolioId,
+    createPortfolio: async (name: string) => (await store.execute({ type: "createPortfolio", portfolio: { id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), isDefault: false } })).error,
+    renamePortfolio: async (id: string, name: string) => (await store.execute({ type: "renamePortfolio", id, name })).error,
+    deletePortfolio: async (id: string, targetPortfolioId?: string) => (await store.execute({ type: "deletePortfolio", id, targetPortfolioId })).error,
+  }), [state, store]);
+}
 export function useTransactionCommands() {
   const store = useLedgerStore();
+  const { selectedPortfolioId } = useAllTransactions();
   return useMemo(
     () => ({
-      addTransaction: async (input: AddTransactionInput) =>
-        (
+      addTransaction: async (input: AddTransactionInput) => {
+        if (selectedPortfolioId === ALL_PORTFOLIOS_ID) return "거래를 기록할 포트폴리오를 먼저 선택해 주세요.";
+        return (
           await store.execute({
             type: "add",
             transaction: {
               ...input,
+              portfolioId: selectedPortfolioId,
               symbol: input.symbol.toUpperCase(),
               fee: input.fee ?? 0,
               id: crypto.randomUUID(),
               createdAt: new Date().toISOString(),
             },
           })
-        ).error,
+        ).error;
+      },
       updateTransaction: async (id: string, changes: UpdateTransactionInput) =>
         (await store.execute({ type: "update", id, changes })).error,
       removeTransaction: async (id: string) =>
         (await store.execute({ type: "delete", id })).error,
-      removeHolding: async (symbol: string) =>
-        (await store.execute({ type: "deleteHolding", symbol })).error,
+      removeHolding: async (symbol: string) => selectedPortfolioId === ALL_PORTFOLIOS_ID
+        ? "종목을 삭제할 포트폴리오를 먼저 선택해 주세요."
+        : (await store.execute({ type: "deleteHolding", symbol, portfolioId: selectedPortfolioId })).error,
       restoreTransaction: async (transaction: Transaction) =>
         (await store.execute({ type: "restore", transaction })).error,
       importTransactions: (
         records: Transaction[],
         mode: TransactionImportMode,
-      ) => store.execute({ type: "import", records, mode }),
+        portfolios?: Portfolio[],
+      ) => portfolios
+        ? store.execute({ type: "import", records, mode, portfolios })
+        : selectedPortfolioId === ALL_PORTFOLIOS_ID
+        ? Promise.resolve({ error: "거래를 가져올 포트폴리오를 먼저 선택해 주세요.", importedCount: 0, skippedCount: 0 })
+        : store.execute({ type: "import", records: records.map((tx) => ({ ...tx, portfolioId: selectedPortfolioId })), mode, portfolioId: selectedPortfolioId }),
       retryStorage: () => store.retry(),
-      reloadTransactions: () => store.reload(),
+      reloadTransactions: (options?: { discardPending?: boolean }) => store.reload(options),
     }),
-    [store],
+    [store, selectedPortfolioId],
   );
 }

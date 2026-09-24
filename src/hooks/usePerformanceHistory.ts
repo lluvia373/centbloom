@@ -4,7 +4,7 @@ import {
   type HistoryResult,
 } from "@/features/performance/service";
 import { useAuth } from "@/hooks/useAuth";
-import { useTransactions } from "@/hooks/usePortfolio";
+import { usePortfolios, useTransactions } from "@/hooks/usePortfolio";
 import { useKstDate } from "@/shared/time/use-kst-date";
 import { createSharedResource } from "@/shared/async/shared-resource";
 import { useCallback, useSyncExternalStore } from "react";
@@ -16,9 +16,10 @@ const history = createSharedResource(loadPerformance, {
 export function usePerformanceHistory() {
   const { user, loading: authLoading } = useAuth();
   const { transactions, revision, status, error: ledgerError } = useTransactions();
+  const { selectedPortfolioId } = usePortfolios();
   const today = useKstDate();
   const userId = user?.id ?? null;
-  const key = JSON.stringify([userId, revision, today]);
+  const key = JSON.stringify([userId, selectedPortfolioId, revision, today]);
   const ledgerKnown = revision !== "";
   const inputsReady = !authLoading && status !== "loading" && !!today;
   const enabled = inputsReady && ledgerKnown;
@@ -31,10 +32,10 @@ export function usePerformanceHistory() {
         ? () => {}
         : history.subscribe(
             key,
-            { userId, revision, transactions, today },
+            { userId, portfolioId: selectedPortfolioId, revision, transactions, today },
             listener,
           ),
-    [key, userId, revision, transactions, today, enabled],
+    [key, userId, selectedPortfolioId, revision, transactions, today, enabled],
   );
   const state = useSyncExternalStore(
     subscribe,

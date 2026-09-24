@@ -1,12 +1,20 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { runSupabaseRequest } from "@/features/auth/session-request";
+import type { PriceAlert, PriceAlertInput } from "@/features/watchlist/price-alerts";
 
 export interface NotificationItem {
   event_id: string; delivered_at: string; read_at: string | null;
-  kind: "guru_filing" | "guru_amendment" | "watch_change";
+  kind: "guru_filing" | "guru_amendment" | "watch_change" | "watch_price";
   subject_id: string; title: string; source_url: string; occurred_at: string;
 }
 export interface VisitWindow { since: string | null; visitedAt: string }
+type PriceCheckResponse = {
+  data: { error?: string; evaluated: number; emitted: number; unavailable: number };
+  error: { code: string; message: string } | null;
+};
+type PriceCheckQuery = PromiseLike<PriceCheckResponse> & {
+  setHeader(name: string, value: string): PriceCheckQuery;
+};
 export function notificationRepository(userId: string, signal: AbortSignal) {
   const client = getSupabaseBrowserClient();
   if (!client) throw new Error("알림을 저장하려면 계정 연결이 필요합니다.");
@@ -18,6 +26,26 @@ export function notificationRepository(userId: string, signal: AbortSignal) {
     return result.data as T;
   };
   return {
+    priceAlerts: () => rpc<PriceAlert[]>("read_price_alerts", {}),
+    savePriceAlerts: (id: string, symbol: string, rules: PriceAlertInput[]) =>
+      rpc<PriceAlert[]>("set_price_alerts", { p_request: id, p_symbol: symbol, p_rules: rules }),
+    evaluatePrices: async () => {
+      const result = await runSupabaseRequest(client, userId, signal => {
+        const headers: Record<string, string> = {};
+        // Defer HTTP until runSupabaseRequest pins the owning account's header.
+        const task: Promise<PriceCheckResponse> = Promise.resolve().then(async () => {
+          const response = await fetch("/api/notifications/prices", { method: "POST", signal, headers, cache: "no-store" });
+          const data = await response.json() as PriceCheckResponse["data"];
+          return { data, error: response.ok ? null : { code: response.status === 401 ? "PGRST303" : "PRICE_CHECK", message: data.error ?? "가격 알림 확인에 실패했습니다." } };
+        });
+        const query: PriceCheckQuery = Object.assign(task, {
+          setHeader(name: string, value: string): PriceCheckQuery { headers[name] = value; return query; },
+        });
+        return query;
+      }, requestSignal);
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
     visit: (id: string) => rpc<VisitWindow>("visit_notifications",{p_visit:id}),
     list: (before?: NotificationItem) => rpc<NotificationItem[]>("read_notifications",{p_before:before?.delivered_at??null,p_before_id:before?.event_id??null}),
     hasUnread: async () => {

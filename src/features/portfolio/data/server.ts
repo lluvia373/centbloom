@@ -1,6 +1,8 @@
 import { runSupabaseRequest } from "@/features/auth/session-request";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Repository, Snapshot } from "../model/types";
+import type { Portfolio, Repository, Snapshot } from "../model/types";
+import { normalizeWorkspace } from "../model/portfolios";
+import { LedgerStorageError, ledgerMessage } from "./storage-error";
 import {
   rowToTransaction,
   transactionToRow,
@@ -8,29 +10,31 @@ import {
 } from "./rows";
 
 export const MIGRATION_REQUIRED =
-  "거래 저장 서버 업데이트가 필요합니다. 기존 기록은 유지되며 지금은 조회만 가능합니다.";
+  "지금은 거래를 추가하거나 수정할 수 없어요. 기존 기록은 볼 수 있어요.";
 function readFailure(error: { code: string; message: string }, status: number) {
   const code = /^[A-Z0-9]{3,12}$/.test(error.code) ? error.code : null;
-  const reference = code ? " (오류 " + code + ")" : status ? " (HTTP " + status + ")" : "";
+  console.warn("Portfolio read failed", { code, status });
   if (status === 401 || error.code === "PGRST301" || error.code === "PGRST303")
-    return new Error("로그인 상태를 확인하지 못했습니다. 다시 로그인해 주세요." + reference);
+    return new LedgerStorageError("load", "로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.");
   if (status === 403 || error.code === "42501")
-    return new Error("거래 기록의 조회 권한을 확인하지 못했습니다." + reference);
+    return new LedgerStorageError("load", "거래 기록을 열지 못했어요. 잠시 후 다시 시도해 주세요.");
   if (/timeout|timed out/i.test(error.message))
-    return new Error("거래 조회 시간이 초과됐습니다. 기록 다시 불러오기를 눌러 주세요." + reference);
+    return new LedgerStorageError("load", "거래 기록을 불러오는 데 시간이 걸리고 있어요. 다시 시도해 주세요.");
   if (status === 0)
-    return new Error("거래 서버에 연결하지 못했습니다. 네트워크 연결을 확인한 뒤 다시 불러와 주세요.");
-  return new Error("서버 거래를 불러오지 못했습니다. 다시 시도해 주세요." + reference);
+    return new LedgerStorageError("load", "연결이 끊겼어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.");
+  return new LedgerStorageError("load", ledgerMessage("load"));
 }
 function snapshot(value: {
   revision: string;
   transactions: PortfolioTransactionRow[];
+  portfolios?: { id: string; name: string; created_at: string; is_default: boolean }[];
 }): Snapshot {
-  return {
+  return normalizeWorkspace({
     revision: value.revision,
     transactions: value.transactions.map(rowToTransaction),
-    writable: true,
-  };
+    portfolios: value.portfolios?.map((row): Portfolio => ({ id: row.id, name: row.name, createdAt: row.created_at, isDefault: row.is_default })),
+    writable: Array.isArray(value.portfolios),
+  });
 }
 export function serverRepository(
   client: SupabaseClient,
@@ -70,30 +74,29 @@ export function serverRepository(
     },
     async commit(change) {
       if (change.revision.startsWith("migration-required"))
-        throw new Error(MIGRATION_REQUIRED);
+        throw new LedgerStorageError("command", MIGRATION_REQUIRED);
       const { data, error } = await runSupabaseRequest(
         client,
         userId,
         (signal) =>
           client
-            .rpc("commit_portfolio_ledger", {
+            .rpc("commit_portfolio_workspace", {
               expected_revision: change.revision,
               request_id: change.id,
+              next_portfolios: change.portfolios?.map((p) => ({ id: p.id, user_id: userId, name: p.name, created_at: p.createdAt, is_default: p.isDefault })),
               next_transactions: change.transactions.map((tx) =>
                 transactionToRow(userId, tx),
               ),
             }).abortSignal(signal),
       );
       if (error) {
+        const code = /^[A-Z0-9]{3,12}$/.test(error.code) ? error.code : null;
+        console.warn("Portfolio commit failed", { code });
         if (["PGRST202", "42883"].includes(error.code))
-          throw new Error(MIGRATION_REQUIRED);
+          throw new LedgerStorageError("pending-save", MIGRATION_REQUIRED);
         if (error.code === "40001")
-          throw new Error(
-            "다른 기기에서 거래가 변경되었습니다. 다시 불러온 뒤 수정해 주세요.",
-          );
-        throw new Error(
-          "서버 저장을 확인하지 못했습니다. 재시도하면 같은 요청을 확인하므로 중복 저장되지 않습니다.",
-        );
+          throw new LedgerStorageError("conflict", ledgerMessage("conflict"));
+        throw new LedgerStorageError("pending-save", ledgerMessage("pending-save"));
       }
       return snapshot(data);
     },

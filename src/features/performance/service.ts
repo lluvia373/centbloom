@@ -9,6 +9,8 @@ import { calculateHistory } from "./calculate";
 import { readHistory, saveHistory } from "./repository";
 export interface HistoryInput {
   userId: string | null;
+  /** Account-wide server snapshots may only serve the aggregate scope. */
+  portfolioId?: string;
   revision: string;
   transactions: Transaction[];
   today: string;
@@ -22,13 +24,14 @@ export async function loadPerformance(
   input: HistoryInput,
   signal: AbortSignal,
 ): Promise<HistoryResult> {
-  const { userId, revision, transactions, today } = input;
+  const { userId, portfolioId = "all", revision, transactions, today } = input;
   if (!transactions.length)
     return { points: [], trackingStartedAt: null, error: null };
   const { saved, startedAt: persisted } = await readHistory(
     userId,
     revision,
     signal,
+    portfolioId,
   );
   const earliestTrade = transactions.map(tx => tx.date).sort()[0];
   const recordedStart = persisted ?? transactions.map((tx) => tx.createdAt).sort()[0];
@@ -40,6 +43,7 @@ export async function loadPerformance(
   const refreshStart = addCalendarDays(today, -90);
   // Server/legacy snapshots have no calculation version: rebuild them before reuse.
   let previousPoints =
+    (saved?.portfolioId ?? "all") === portfolioId &&
     saved?.calculationVersion === PERFORMANCE_CALCULATION_VERSION &&
     saved.points.every(point => Number.isFinite(point.openingValueKRW) && point.openingValueKRW! >= 0) &&
     saved.revision === revision && saved.startedAt === startedAt
@@ -116,9 +120,10 @@ export async function loadPerformance(
   );
   const error = await saveHistory(
     userId,
-    { calculationVersion: PERFORMANCE_CALCULATION_VERSION, revision, startedAt, points },
+    { calculationVersion: PERFORMANCE_CALCULATION_VERSION, portfolioId, revision, startedAt, points },
     saved?.serverSynced ? points.slice(previousPoints.length) : points,
     signal,
+    portfolioId,
   );
   return { points, trackingStartedAt: startedAt, error };
 }

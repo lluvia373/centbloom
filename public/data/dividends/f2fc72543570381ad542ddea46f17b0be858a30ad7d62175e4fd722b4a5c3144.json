@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:58:26.543Z",
+  "sourceCheckedAt": null,
+  "symbols": [
+    {
+      "symbol": "OMCC",
+      "status": "failed",
+      "from": "2026-01-01",
+      "through": "2026-09-24",
+      "checkedAt": null,
+      "reason": "SEC multiple share classes or fund require unit mapping"
+    }
+  ],
+  "events": []
+}

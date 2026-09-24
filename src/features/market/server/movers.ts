@@ -13,16 +13,18 @@ const screens = {
 export function fetchMovers(
   kind: MoverKind,
   signal?: AbortSignal,
+  count = 10,
 ): Promise<MoversResult> {
+  const limit = Math.max(1, Math.min(250, Math.floor(count)));
   return providerRequests.request(
-    "movers:us:" + kind,
+    "movers:us:" + kind + ":" + limit,
     async (signal) => {
       const data = await yahoo.screener(
-        { scrIds: screens[kind], count: 10 },
+        { scrIds: screens[kind], count: limit },
         undefined,
         { fetchOptions: { signal } },
       );
-      const quotes = normalizeMovers(data.quotes, kind);
+      const quotes = normalizeMovers(data.quotes, kind, limit);
       if (data.quotes.length && !quotes.length)
         throw new MarketError("순위 시세를 확인할 수 없습니다.", 502);
       return {

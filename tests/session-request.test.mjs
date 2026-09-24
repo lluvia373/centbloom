@@ -118,7 +118,7 @@ test('AuthProvider uses ordered auth events, unsubscribes and ignores late event
   const values=[];let onChange,cleanup,unsubscribed=false;
   const {AuthProvider}=loadTypescript('src/hooks/useAuth.tsx',{
     react:{createContext:()=>({Provider:'auth-provider'}),useState:()=>[null,value=>values.push(value)],useEffect:effect=>{cleanup=effect();},useMemo:fn=>fn(),useCallback:fn=>fn},
-    '@/lib/supabase':{isSupabaseConfigured:()=>true,getSupabaseBrowserClient:()=>({auth:{onAuthStateChange:callback=>{onChange=callback;return {data:{subscription:{unsubscribe:()=>{unsubscribed=true;}}}};}}})},
+    '@/lib/supabase':{isSupabaseConfigured:()=>true,getSupabaseConfigurationError:()=>null,getSupabaseBrowserClient:()=>({auth:{onAuthStateChange:callback=>{onChange=callback;return {data:{subscription:{unsubscribe:()=>{unsubscribed=true;}}}};}}})},
   });
   AuthProvider({children:null});
   onChange('INITIAL_SESSION',session());onChange('SIGNED_IN',session('new','new-user'));onChange('SIGNED_OUT',null);

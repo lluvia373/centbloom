@@ -1,4 +1,5 @@
 import { readBrandedStorage } from "@/lib/branded-storage";
+import { projectStorageKey } from "@/lib/project-storage";
 
 export interface RecentStock { symbol: string; name: string }
 const limit = 6;
@@ -22,7 +23,7 @@ export function parseRecentSearches(raw: string | null): RecentStock[] {
   } catch { return []; }
 }
 export function createRecentSearches(storage: () => Pick<Storage, "getItem" | "setItem">) {
-  const key = (userId: string) => "centbloom:recent-searches:v1:" + encodeURIComponent(userId);
+  const key = (userId: string) => projectStorageKey("centbloom:recent-searches:v1:" + encodeURIComponent(userId));
   return {
     read(userId: string | null): string | null {
       if (!userId) return null;

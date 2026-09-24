@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import "@/app/auth.css";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, configured, loginError, signInWithGoogle } = useAuth();
+  const { user, loading, configured, configurationError, loginError, signInWithGoogle } = useAuth();
   const pathname=usePathname();
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("pageshow", returned);
   }, []);
 
-  // Google/Supabase 환경변수가 준비되기 전에는 기존 공개 앱을 유지합니다.
+  if (configurationError) {
+    return <div className="cf-auth-page"><main id="main-content" className="cf-auth-main"><p role="alert" className="cf-auth-error">{configurationError}</p></main></div>;
+  }
+
+  // 두 연결 값이 모두 없을 때만 기존 브라우저 저장 모드를 유지합니다.
   if (isPublicRoute(pathname) || !configured) return <>{loginError && <p role="alert" className="text-cf-label text-cf-negative">{loginError}</p>}{children}</>;
 
   if (loading) {

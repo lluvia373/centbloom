@@ -6,7 +6,7 @@ const { describeMarketChange, selectMarketChanges, marketSessionDate, changeObse
 const now = Date.parse("2026-09-12T10:00:00Z");
 const quote = { symbol: "TEST", name: "Test", price: 104, change: 4, changePercent: 4, currency: "USD", volume: 300, averageDailyVolume3Month: 100, quotedAt: "2026-09-11T20:00:00Z" };
 const dates = Array.from({ length: 50 }, (_, i) => new Date(Date.parse("2026-07-23") + i * 86400_000))
-  .filter(date => date.getUTCDay() !== 0 && date.getUTCDay() !== 6).map(date => date.toISOString().slice(0, 10)).slice(-21);
+  .filter(date => date.getUTCDay() !== 0 && date.getUTCDay() !== 6 && date.toISOString().slice(0, 10) !== "2026-09-07").map(date => date.toISOString().slice(0, 10)).slice(-21);
 const history = dates.map((date, i) => ({ date, close: i % 2 ? 101 : 100 }));
 
 test("volume uses the explicit three-month daily mean and ignores missing/zero baselines", () => {
@@ -83,4 +83,32 @@ test("history failure retains independently verified volume changes and marks pa
   assert.equal(data.historyUnavailable, 1);
   assert.equal(data.partial, true);
   assert.equal(data.items[0].signals[0].kind, "volume");
+});
+
+test("missing trading days suppress price/reversal claims, while real weekends and holidays remain continuous", () => {
+  const { consecutiveMarketSessions } = loadTypescript("src/features/market/market-changes.ts");
+  assert.equal(consecutiveMarketSessions("2026-09-04", "2026-09-08"), true);
+  assert.equal(consecutiveMarketSessions("2026-09-21", "2026-09-23"), false);
+  assert.equal(consecutiveMarketSessions("2026-09-21", "2026-09-22"), true);
+  assert.equal(consecutiveMarketSessions("2027-09-20", "2027-09-21"), false);
+  const rows = ["16", "17", "18", "21", "23"].map((day, i) => ({ date: `2026-09-${day}`, close: [96, 95, 97, 99, 100][i] }));
+  const result = describeMarketChange({ ...quote, price: 95, change: -5, changePercent: -5, quotedAt: "2026-09-24T16:00:00Z" }, rows, Date.parse("2026-09-24T17:00:00Z"));
+  assert.deepEqual(Array.from(result.signals, signal => signal.kind), ["volume"]);
+});
+
+test("expanded scan keeps more than thirty unique stocks and reuses persisted session histories", async () => {
+  const values = new Map(); const storage = { get: async key => values.get(key), put: async (key, value) => values.set(key, JSON.parse(value)) };
+  let charts = 0; const counts = [];
+  const overrides = {
+    "./movers": { fetchMovers: async (kind, _signal, count) => { counts.push(count); return { kind, total: 100,
+      quotes: Array.from({ length: 40 }, (_, i) => ({ ...quote, symbol: `${kind}${i}`, quotedAt: new Date().toISOString() })) }; } },
+    "./chart": { fetchChart: async () => { charts++; return { points: [{ date: "2026-09-23", close: 100 }] }; } },
+    "./provider": { MarketError: Error },
+  };
+  const first = await loadTypescript("src/features/market/server/market-changes.ts", overrides).fetchMarketChanges(undefined, storage);
+  assert.equal(first.examined, 120); assert.equal(first.items.length, 120);
+  assert.deepEqual(counts, [250, 250, 250]); assert.equal(first.historyUnavailable, 0);
+  assert.equal(charts, 120);
+  await loadTypescript("src/features/market/server/market-changes.ts", overrides).fetchMarketChanges(undefined, storage);
+  assert.equal(charts, 120, "second server instance reads shared historical baselines");
 });

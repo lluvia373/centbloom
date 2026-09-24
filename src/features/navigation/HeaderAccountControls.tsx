@@ -125,9 +125,9 @@ function NotificationPreview({ inbox, onNavigate }: { inbox: Inbox; onNavigate: 
     {(!inbox?.ready || (inbox.pending && !inbox.items.length)) && !error && <p className={styles.empty} role="status">알림 확인 중…</p>}
     {inbox?.ready && !inbox.pending && !inbox.items.length && !error && <p className={styles.empty}>아직 받은 알림이 없어요.</p>}
     {!!inbox?.items.length && <ul className={styles.notificationList}>{inbox.items.slice(0, 5).map(item => <li key={item.event_id}>
-      <Link href={item.kind === "watch_change" ? `/stock/${encodeURIComponent(item.subject_id)}` : `/gurus/${encodeURIComponent(item.subject_id)}`} onClick={onNavigate}>
+      <Link href={item.kind === "watch_change" || item.kind === "watch_price" ? `/stock/${encodeURIComponent(item.subject_id)}` : `/gurus/${encodeURIComponent(item.subject_id)}`} onClick={onNavigate}>
         <span className={styles.notificationTitle}>{item.title}</span>
-        <span className={styles.notificationMeta}>{new Date(item.occurred_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })} · {item.read_at ? "읽음" : "읽지 않음"}</span>
+        <span className={styles.notificationMeta}>{item.kind === "watch_price" ? "시세 기준 " : ""}{new Date(item.occurred_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false })} · {item.read_at ? "읽음" : "읽지 않음"}</span>
       </Link>
       {!item.read_at && <button type="button" className={styles.markRead} onClick={event => {
         // The successful read removes this action; keep keyboard position on its item.

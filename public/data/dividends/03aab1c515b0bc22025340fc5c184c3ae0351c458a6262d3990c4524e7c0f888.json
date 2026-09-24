@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:10:47.607Z",
+  "sourceCheckedAt": "2026-09-24T09:00:58.061Z",
+  "symbols": [
+    {
+      "symbol": "BABA",
+      "status": "supported",
+      "from": "2026-01-01",
+      "through": "2026-09-24",
+      "checkedAt": "2026-09-24T09:00:58.061Z"
+    }
+  ],
+  "events": [
+    {
+      "symbol": "BABA",
+      "amountPerShare": 1.05,
+      "recordDate": "2026-06-11",
+      "paymentDate": "2026-07-13",
+      "declaredDate": "2026-05-13",
+      "declarationDateBasis": "issuer-date",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1577552/000110465926067190/tm2615873d1_ex99-1.htm",
+      "id": "BABA:2026-06-11",
+      "name": "Alibaba Group Holding Limited",
+      "currency": "USD",
+      "exDate": "2026-06-11",
+      "marketTimeZone": "America/New_York",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2019-07-30",
+      "withholding": null,
+      "issuerCountry": "unknown",
+      "instrument": "adr",
+      "treatyEligible": false,
+      "rightsSourceUrl": "https://www.investor.gov/introduction-investing/investing-basics/glossary/ex-dividend-dates-when-are-you-entitled-stock-and",
+      "factsCheckedUrl": "https://www.sec.gov/Archives/edgar/data/1577552/000110465926067190/tm2615873d1_ex99-1.htm",
+      "rightsCheckedAt": "2026-09-24"
+    }
+  ]
+}

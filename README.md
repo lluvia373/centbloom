@@ -47,7 +47,7 @@ npm run dev -- --hostname localhost --port 3000
 
 http://localhost:3000 에서 확인한다. 의존성·명령은 [package.json](./package.json), 설치 버전은 [package-lock.json](./package-lock.json)이 기준이다.
 
-계정 연결 없이 로컬 저장 모드로 시작할 수 있다. Google 로그인은 [.env.example](./.env.example)과 [연결 절차](./CLOUDFLARE.md#supabase-연결)를 따른다.
+계정 연결 없이 로컬 저장 모드로 시작할 수 있다. 로컬 Google 로그인은 실제 서비스와 분리된 시험용 저장소만 사용한다. [.env.example](./.env.example)을 `.env.development.local`로 복사하는 초기 설정과 로그인·저장 시험 방법은 [로컬 Google 로그인](./CLOUDFLARE.md#로컬-google-로그인)을 따른다. 설정 파일은 Git에 올리지 않으며 실제 사이트의 키를 복사하지 않는다.
 
 ## 검증
 

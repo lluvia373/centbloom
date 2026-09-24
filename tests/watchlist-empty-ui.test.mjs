@@ -16,11 +16,12 @@ function pageHarness() {
  const observed={rows:[],search:null};
  const searchRef={current:{focus(){focusCount++;}}};
  const {default:Page}=loadTypescript('src/app/watchlist/page.tsx',{
-  react:{...React,useRef:()=>searchRef,useState:initial=>{
+  react:{...React,useEffect:()=>{},useRef:()=>searchRef,useState:initial=>{
    const index=cursor++;if(!(index in state))state[index]=initial;
    return [state[index],value=>{state[index]=typeof value==='function'?value(state[index]):value;}];
   }},
   '@/hooks/useWatchlist':{useWatchlist:()=>input},
+  '@/features/notifications/NotificationProvider':{useNotificationInbox:()=>null},
   '@/features/watchlist/WatchlistSearch':{WatchlistSearch:props=>{observed.search=props;return createElement('div',null,'ADD_SEARCH');}},
   '@/features/watchlist/WatchlistRow':{WatchlistRow:props=>{observed.rows.push(props);return createElement('article',null,`ROW_${props.item.symbol}`);}},
  });

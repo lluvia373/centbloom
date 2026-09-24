@@ -17,6 +17,7 @@ export function BackupPreview({
   importingMode,
   errors,
   handleImport,
+  destinationName,
 }: {
   preview: TransactionBackup;
   previewSummary: {
@@ -29,6 +30,7 @@ export function BackupPreview({
   importingMode: TransactionImportMode | null;
   errors: string[];
   handleImport: (mode: TransactionImportMode) => Promise<void>;
+  destinationName?: string | null;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -96,11 +98,14 @@ export function BackupPreview({
             {errors.join(" ")}
           </p>
         )}
+        <p className="mt-4 text-cf-label text-cf-muted">
+          {preview.portfolios ? "복원 범위: 모든 포트폴리오" : destinationName ? `가져올 곳: ${destinationName}` : "창을 닫고 거래를 가져올 포트폴리오를 먼저 선택해 주세요."}
+        </p>
         <div className="mt-5 space-y-3">
           <button
             type="button"
             onClick={() => void handleImport("merge")}
-            disabled={Boolean(importingMode)}
+            disabled={Boolean(importingMode) || (!preview.portfolios && !destinationName)}
             className="flex w-full items-center justify-between rounded-xl border border-[#e6e8eb] bg-[#f3f4f6] px-4 py-3 text-left transition-colors hover:bg-[#f3f4f6] disabled:opacity-50"
           >
             <span>
@@ -118,15 +123,15 @@ export function BackupPreview({
           <button
             type="button"
             onClick={() => void handleImport("replace")}
-            disabled={Boolean(importingMode)}
+            disabled={Boolean(importingMode) || (!preview.portfolios && !destinationName)}
             className="flex w-full items-center justify-between rounded-xl border border-[#edc4c4]/30 bg-[#fceeee]/10 px-4 py-3 text-left transition-colors hover:bg-[#fceeee]/15 disabled:opacity-50"
           >
             <span>
               <span className="block text-sm font-semibold text-[#d65353]">
-                전체 교체
+                {preview.portfolios ? "전체 포트폴리오 교체" : "선택한 포트폴리오 교체"}
               </span>
               <span className="mt-1 block text-xs text-[#727680]">
-                현재 거래를 이 백업 내용으로 완전히 바꿉니다.
+                {preview.portfolios ? "모든 포트폴리오와 거래를 이 백업 내용으로 완전히 바꿉니다." : "선택한 포트폴리오의 거래만 바꿉니다. 다른 포트폴리오는 유지합니다."}
               </span>
             </span>
             {importingMode === "replace" && (

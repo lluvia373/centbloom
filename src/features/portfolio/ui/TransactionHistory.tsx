@@ -1,14 +1,15 @@
 "use client";
 import { TransactionList } from "@/components/TransactionList";
 import { useAuth } from "@/hooks/useAuth";
-import { useTransactionCommands, useTransactions } from "@/hooks/usePortfolio";
+import { useTransactionCommands, useTransactions, usePortfolios } from "@/hooks/usePortfolio";
 import type { Transaction } from "@/lib/types";
 import { Loader2, RotateCcw, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function TransactionHistory() {
   const { user } = useAuth();
-  return <History key={user?.id ?? "local"} />;
+  const { selectedPortfolioId } = usePortfolios();
+  return <History key={`${user?.id ?? "local"}:${selectedPortfolioId}`} />;
 }
 function History() {
   const { transactions } = useTransactions();

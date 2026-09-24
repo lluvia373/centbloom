@@ -18,7 +18,7 @@ const story = (overrides = {}) => ({ id: "article", title: "SELLAS announces cli
 const feed = (items = [{ ...item, story: story() }]) => ({
   items, examined: 8, historyUnavailable: 0, partial: false, expiresAt: now + CHANGES_MAX_AGE_MS,
 });
-const snapshot = (value = feed(), preparedAt = now) => ({ version: 1, preparedAt, feed: value });
+const snapshot = (value = feed(), preparedAt = now) => ({ version: 2, preparedAt, feed: value });
 function memoryKV(initial = []) {
   const values = new Map(initial);
   return { values, get: async (key, type) => {
@@ -101,7 +101,7 @@ test("one failed search is partial; both failed searches are not treated as no a
 });
 test("snapshots reject stale data and malformed/irrelevant cards; a successful empty collection stays empty", () => {
   assert.equal(usableChanges(snapshot(), now + CHANGES_MAX_AGE_MS + 1), null);
-  assert.equal(usableChanges(snapshot(feed([{ ...item, story: story({ symbols: ["BA"] }) }])), now), null);
+  assert.equal(usableChanges(snapshot(feed([{ ...item, story: story({ symbols: ["BA"] }) }])), now).feed.items[0].story, null);
   assert.equal(usableChanges(snapshot(feed([{ ...item, signals: [] }])), now), null);
   assert.equal(usableChanges(snapshot(feed([{ ...item, quote: { ...item.quote, price: NaN } }])), now), null);
   assert.equal(usableChanges(snapshot(feed([])), now).feed.items.length, 0);
@@ -126,7 +126,7 @@ test("healthy prepared data returns even when the latest refresh failed", async 
   });
   assert.equal((await readPreparedChanges()).items[0].story.title, story().title);
 });
-test("background research drops unsubstantiated candidates and stores quote/article pairs together", async () => {
+test("background research keeps numerical candidates with or without an article", async () => {
   const kv = memoryKV();
   const first = freshItem(), second = { ...freshItem(), quote: { ...freshItem().quote, symbol: "NONE" } };
   const { refreshPreparedChanges } = loadTypescript("src/features/market/server/changes-refresh.ts", {
@@ -136,14 +136,15 @@ test("background research drops unsubstantiated candidates and stores quote/arti
   });
   await refreshPreparedChanges({ NEWS_CACHE: kv });
   const stored = JSON.parse(kv.values.get(CHANGES_KEY));
-  assert.equal(stored.feed.items.length, 1);
+  assert.equal(stored.feed.items.length, 2);
+  assert.equal(stored.feed.items[1].story, null);
   assert.equal(stored.feed.items[0].quote.quotedAt, first.quote.quotedAt);
   assert.equal(stored.feed.items[0].story.title, story().title);
 });
-test("failed research preserves the previous complete snapshot and backs off", async () => {
+test("failed numerical research preserves the previous snapshot and backs off", async () => {
   const prior = priorSnapshot(), kv = memoryKV([[CHANGES_KEY, prior]]);
   const { refreshPreparedChanges } = loadTypescript("src/features/market/server/changes-refresh.ts", {
-    "./market-changes": { fetchMarketChanges: async () => feed([freshItem()]) },
+    "./market-changes": { fetchMarketChanges: async () => { throw Error("offline"); } },
     "./news": { fetchCompanyNews: async () => { throw Error("offline"); } },
     "./translation-provider": { createNewsTitleTranslator: () => async stories => stories },
   });
@@ -153,10 +154,10 @@ test("failed research preserves the previous complete snapshot and backs off", a
   await refreshPreparedChanges({ NEWS_CACHE: kv }); // cooldown returns without changing the snapshot
   assert.equal(kv.values.get(CHANGES_KEY), prior);
 });
-test("a successful collection without relevant stories removes obsolete cards", async () => {
+test("a successful collection without numerical signals removes obsolete cards", async () => {
   const kv = memoryKV([[CHANGES_KEY, priorSnapshot()]]);
   const { refreshPreparedChanges } = loadTypescript("src/features/market/server/changes-refresh.ts", {
-    "./market-changes": { fetchMarketChanges: async () => feed([freshItem()]) },
+    "./market-changes": { fetchMarketChanges: async () => feed([]) },
     "./news": { fetchCompanyNews: async () => ({ stories: [], partial: false }) },
     "./translation-provider": { createNewsTitleTranslator: () => async stories => stories },
   });
@@ -188,6 +189,7 @@ test("representative cards show the article directly; a researched empty feed re
   const { MarketChanges } = loadTypescript("src/features/home/MarketChanges.tsx", {
     "@/features/market/use-market-changes": { useMarketChanges: () => ({ data, failed: false, retry: () => {} }) },
     "@/features/watchlist/WatchStockButton": { WatchStockButton: () => null },
+    "@/hooks/useAuth": { useAuth: () => ({ user: null }) },
     "@/hooks/useWatchlist": { useWatchlist: () => ({ items: [] }) },
     "@/features/market/use-watched-reports": { useWatchedReports: () => ({}) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
@@ -205,7 +207,7 @@ test("representative cards show the article directly; a researched empty feed re
   assert.equal(renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data })), "");
 });
 
-test("summary cards link to detailed history and longer lists are paged three at a time", () => {
+test("home keeps three cards and links the member list without paging the preview", () => {
   const React = requireForRender("react");
   const { renderToStaticMarkup } = requireForRender("react-dom/server");
   const recentMoves = [-1.1, 1.3, -0.5, 0.8, 2.2].map((percent, index) => ({
@@ -219,6 +221,7 @@ test("summary cards link to detailed history and longer lists are paged three at
   const { MarketChanges } = loadTypescript("src/features/home/MarketChanges.tsx", {
     "@/features/market/use-market-changes": { useMarketChanges: () => ({ data, failed: false, retry: () => {} }) },
     "@/features/watchlist/WatchStockButton": { WatchStockButton: () => null },
+    "@/hooks/useAuth": { useAuth: () => ({ user: null }) },
     "@/hooks/useWatchlist": { useWatchlist: () => ({ items: [] }) },
     "@/features/market/use-watched-reports": { useWatchedReports: () => ({}) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
@@ -231,7 +234,8 @@ test("summary cards link to detailed history and longer lists are paged three at
   assert.doesNotMatch(html, /<time |직전 5거래일/);
   assert.match(html, /이번 장 등락률/);
   assert.match(html, /이번 장/);
-  assert.match(html, /다음 종목/);
+  assert.match(html, /로그인하고 전체 보기/);
+  assert.match(html, /href="\/movements"/);
   assert.doesNotMatch(html, /Company event 3|<details|<summary|aria-expanded|흐름 전환/);
   data = feed([{ ...data.items[0], context: undefined }]);
   html = renderToStaticMarkup(React.createElement(MarketChanges, { initialData: data }));

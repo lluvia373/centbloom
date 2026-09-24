@@ -4,6 +4,7 @@ import {
   TRANSACTION_BACKUP_VERSION,
 } from "./transaction-backup";
 import type { Transaction } from "./types";
+import { projectStorageKey } from "./project-storage";
 
 export const TRANSACTIONS_KEY = "stock-transactions";
 const LEGACY_HOLDINGS_KEY = "stock-portfolio";
@@ -19,7 +20,7 @@ export type StoredTransactionsResult = {
 };
 
 export function scopedKey(baseKey: string, userId?: string | null): string {
-  return userId ? `${baseKey}:${userId}` : baseKey;
+  return projectStorageKey(userId ? `${baseKey}:${userId}` : baseKey);
 }
 
 function validatedTransactions(value: unknown): Transaction[] {
@@ -52,7 +53,7 @@ export function loadStoredTransactions(
 
     // Validate and copy legacy records while retaining the original recovery source.
     if (userId) {
-      const unscoped = storage.getItem(TRANSACTIONS_KEY);
+      const unscoped = storage.getItem(scopedKey(TRANSACTIONS_KEY));
       if (unscoped !== null) {
         const transactions = validatedTransactions(JSON.parse(unscoped));
         storage.setItem(transactionKey, unscoped);
@@ -63,7 +64,7 @@ export function loadStoredTransactions(
     let legacyKey = scopedKey(LEGACY_HOLDINGS_KEY, userId);
     let legacy = storage.getItem(legacyKey);
     if (legacy === null && userId) {
-      legacyKey = LEGACY_HOLDINGS_KEY;
+      legacyKey = scopedKey(LEGACY_HOLDINGS_KEY);
       legacy = storage.getItem(legacyKey);
     }
     if (legacy === null) return { transactions: [], error: null };

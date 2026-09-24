@@ -1,6 +1,7 @@
 import { runSupabaseRequest } from "@/features/auth/session-request";
 import { readBrandedStorage } from "@/lib/branded-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { projectStorageKey } from "@/lib/project-storage";
 import { applyWatchlistCommand, parseStoredWatchlist, validateItems, type WatchlistCommand, type WatchlistItem } from "./model";
 
 export interface WatchlistRead {
@@ -11,7 +12,7 @@ export interface WatchlistRepository {
   read(signal: AbortSignal): Promise<WatchlistRead>;
   commit(command: WatchlistCommand, requestId: string, signal: AbortSignal): Promise<WatchlistRead>;
 }
-export const watchlistStorageKey = (userId: string | null) => "centbloom:watchlist:v1:" + (userId ?? "guest");
+export const watchlistStorageKey = (userId: string | null) => projectStorageKey("centbloom:watchlist:v1:" + (userId ?? "guest"));
 
 function recordsToItems(data: unknown): WatchlistItem[] {
   if (!Array.isArray(data)) throw new Error("관심종목을 불러오지 못했습니다. 다시 시도해 주세요.");

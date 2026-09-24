@@ -1,0 +1,1549 @@
+[
+  {
+    "slug": "berkshire-hathaway",
+    "name": "Berkshire Hathaway",
+    "manager": "Warren Buffett",
+    "reportingEntity": "BERKSHIRE HATHAWAY INC",
+    "cik": "0001067983",
+    "aliases": [
+      "Warren Buffett",
+      "워런 버핏",
+      "워렌 버핏",
+      "버크셔 해서웨이",
+      "BERKSHIRE HATHAWAY INC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/warren-buffett",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001067983.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001067983.json",
+      "filerName": "BERKSHIRE HATHAWAY INC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "ark-invest",
+    "name": "ARK Invest",
+    "manager": "Cathie Wood",
+    "reportingEntity": "ARK Investment Management LLC",
+    "cik": "0001697748",
+    "aliases": [
+      "Cathie Wood",
+      "캐시 우드",
+      "아크 인베스트",
+      "ARK Investment Management LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/cathie-wood",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001697748.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001697748.json",
+      "filerName": "ARK Investment Management LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "himalaya-capital",
+    "name": "Himalaya Capital",
+    "manager": "Li Lu",
+    "reportingEntity": "Himalaya Capital Management LLC",
+    "cik": "0001709323",
+    "aliases": [
+      "Li Lu",
+      "리 루",
+      "리루",
+      "히말라야 캐피털",
+      "Himalaya Capital Management LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/himalaya-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001709323.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001709323.json",
+      "filerName": "Himalaya Capital Management LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "bridgewater",
+    "name": "Bridgewater Associates",
+    "manager": "Ray Dalio",
+    "reportingEntity": "Bridgewater Associates, LP",
+    "cik": "0001350694",
+    "aliases": [
+      "Ray Dalio",
+      "레이 달리오",
+      "브리지워터",
+      "Bridgewater Associates, LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ray-dalio",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001350694.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001350694.json",
+      "filerName": "Bridgewater Associates, LP",
+      "checkedAt": "2026-09-24",
+      "note": "인물명은 검색용 관련 인물이며, 현재 운용 담당자나 개인 전체 자산이라는 의미가 아닙니다."
+    }
+  },
+  {
+    "slug": "pershing-square",
+    "name": "Pershing Square",
+    "manager": "Bill Ackman",
+    "reportingEntity": "Pershing Square Capital Management, L.P.",
+    "cik": "0001336528",
+    "aliases": [
+      "Bill Ackman",
+      "빌 애크먼",
+      "빌 애크만",
+      "퍼싱 스퀘어",
+      "Pershing Square Capital Management, L.P."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/bill-ackman",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001336528.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001336528.json",
+      "filerName": "Pershing Square Capital Management, L.P.",
+      "checkedAt": "2026-09-24",
+      "note": "별도 CIK 0002026053(PERSHING SQUARE INC.)를 이 신고자와 자동 합치지 않습니다."
+    }
+  },
+  {
+    "slug": "daily-journal",
+    "name": "Daily Journal",
+    "manager": "Charlie Munger",
+    "reportingEntity": "DAILY JOURNAL CORP",
+    "cik": "0000783412",
+    "aliases": [
+      "Charlie Munger",
+      "찰리 멍거",
+      "데일리 저널",
+      "DAILY JOURNAL CORP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/charlie-munger",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000783412.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "DAILY JOURNAL CORP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001437749-26-023711",
+      "note": "인물명은 검색용 관련 인물이며, 현재 운용 담당자나 개인 전체 자산이라는 의미가 아닙니다."
+    }
+  },
+  {
+    "slug": "situational-awareness",
+    "name": "Situational Awareness LP",
+    "manager": "Situational Awareness LP",
+    "reportingEntity": "Situational Awareness LP",
+    "cik": "0002045724",
+    "aliases": [
+      "Situational Awareness LP",
+      "레오폴드 아셴브레너",
+      "Leopold Aschenbrenner",
+      "시추에이셔널 어웨어니스"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/situational-awareness",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0002045724.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Situational Awareness LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0000935836-26-000418"
+    }
+  },
+  {
+    "slug": "scion-asset-management",
+    "name": "Scion Asset Management",
+    "manager": "Michael Burry",
+    "reportingEntity": "Scion Asset Management, LLC",
+    "cik": "0001649339",
+    "aliases": [
+      "Michael Burry",
+      "마이클 버리",
+      "사이온 자산운용",
+      "Scion Asset Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/michael-burry",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001649339.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001649339.json",
+      "filerName": "Scion Asset Management, LLC",
+      "checkedAt": "2026-09-24",
+      "note": "확인된 최신 HR 보고일은 2025-09-30입니다. 이후 공시 미확인을 폐업이나 은퇴로 단정하지 않습니다."
+    }
+  },
+  {
+    "slug": "blackrock",
+    "name": "BlackRock",
+    "manager": "BlackRock",
+    "reportingEntity": "BlackRock, Inc.",
+    "cik": "0002012383",
+    "aliases": [
+      "BlackRock",
+      "블랙록",
+      "BlackRock, Inc."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/blackrock",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0002012383.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "BlackRock, Inc.",
+      "checkedAt": "2026-09-24",
+      "accession": "0002012383-26-003238",
+      "note": "현재 신고 CIK이며, 이전 BlackRock 신고자의 과거 공시를 자동 합치지 않습니다."
+    }
+  },
+  {
+    "slug": "fisher-asset-management",
+    "name": "Fisher Asset Management",
+    "manager": "Ken Fisher",
+    "reportingEntity": "Fisher Asset Management, LLC",
+    "cik": "0000850529",
+    "aliases": [
+      "Ken Fisher",
+      "켄 피셔",
+      "피셔 자산운용",
+      "Fisher Asset Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ken-fisher",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000850529.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Fisher Asset Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0000850529-26-000006"
+    }
+  },
+  {
+    "slug": "citadel-advisors",
+    "name": "Citadel Advisors",
+    "manager": "Ken Griffin",
+    "reportingEntity": "CITADEL ADVISORS LLC",
+    "cik": "0001423053",
+    "aliases": [
+      "Ken Griffin",
+      "켄 그리핀",
+      "시타델",
+      "CITADEL ADVISORS LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ken-griffin",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001423053.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "CITADEL ADVISORS LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001104659-26-097200"
+    }
+  },
+  {
+    "slug": "primecap-management",
+    "name": "PRIMECAP Management",
+    "manager": "PRIMECAP Management",
+    "reportingEntity": "PRIMECAP MANAGEMENT CO/CA/",
+    "cik": "0000763212",
+    "aliases": [
+      "PRIMECAP Management",
+      "프라임캡",
+      "PRIMECAP MANAGEMENT CO/CA/"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/primecap-management",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000763212.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "PRIMECAP MANAGEMENT CO/CA/",
+      "checkedAt": "2026-09-24",
+      "accession": "0000763212-26-000028"
+    }
+  },
+  {
+    "slug": "baillie-gifford",
+    "name": "Baillie Gifford",
+    "manager": "Baillie Gifford",
+    "reportingEntity": "BAILLIE GIFFORD & CO",
+    "cik": "0001088875",
+    "aliases": [
+      "Baillie Gifford",
+      "베일리 기포드",
+      "BAILLIE GIFFORD & CO"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/baillie-gifford",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001088875.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "BAILLIE GIFFORD & CO",
+      "checkedAt": "2026-09-24",
+      "accession": "0001088875-26-000057"
+    }
+  },
+  {
+    "slug": "first-eagle",
+    "name": "First Eagle Investments",
+    "manager": "First Eagle Investments",
+    "reportingEntity": "First Eagle Investment Management, LLC",
+    "cik": "0001325447",
+    "aliases": [
+      "First Eagle Investments",
+      "퍼스트 이글",
+      "First Eagle Investment Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/first-eagle-investments",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001325447.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "First Eagle Investment Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001325447-26-000020"
+    }
+  },
+  {
+    "slug": "renaissance-technologies",
+    "name": "Renaissance Technologies",
+    "manager": "Jim Simons",
+    "reportingEntity": "RENAISSANCE TECHNOLOGIES LLC",
+    "cik": "0001037389",
+    "aliases": [
+      "Jim Simons",
+      "짐 사이먼스",
+      "르네상스 테크놀로지",
+      "RENAISSANCE TECHNOLOGIES LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/jim-simons",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001037389.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001037389.json",
+      "filerName": "RENAISSANCE TECHNOLOGIES LLC",
+      "checkedAt": "2026-09-24",
+      "note": "인물명은 검색용 관련 인물이며, 현재 운용 담당자나 개인 전체 자산이라는 의미가 아닙니다."
+    }
+  },
+  {
+    "slug": "bamco",
+    "name": "Baron Funds / BAMCO",
+    "manager": "Ron Baron",
+    "reportingEntity": "BAMCO INC /NY/",
+    "cik": "0001017918",
+    "aliases": [
+      "Ron Baron",
+      "론 배런",
+      "배런 펀드",
+      "Baron Funds",
+      "BAMCO INC /NY/"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ron-baron-funds",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001017918.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "BAMCO INC /NY/",
+      "checkedAt": "2026-09-24",
+      "accession": "0001017918-26-000067"
+    }
+  },
+  {
+    "slug": "point72",
+    "name": "Point72 Asset Management",
+    "manager": "Steven Cohen",
+    "reportingEntity": "Point72 Asset Management, L.P.",
+    "cik": "0001603466",
+    "aliases": [
+      "Steven Cohen",
+      "스티븐 코헨",
+      "스티브 코헨",
+      "포인트72",
+      "Point72 Asset Management, L.P."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/steven-cohen",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001603466.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Point72 Asset Management, L.P.",
+      "checkedAt": "2026-09-24",
+      "accession": "0000919574-26-005520"
+    }
+  },
+  {
+    "slug": "tci-fund",
+    "name": "TCI Fund Management",
+    "manager": "Chris Hohn",
+    "reportingEntity": "TCI Fund Management Ltd",
+    "cik": "0001647251",
+    "aliases": [
+      "Chris Hohn",
+      "크리스 혼",
+      "TCI",
+      "TCI Fund Management Ltd"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/chris-hohn",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001647251.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001647251.json",
+      "filerName": "TCI Fund Management Ltd",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "gmo",
+    "name": "GMO",
+    "manager": "Jeremy Grantham",
+    "reportingEntity": "Grantham, Mayo, Van Otterloo & Co. LLC",
+    "cik": "0001352662",
+    "aliases": [
+      "Jeremy Grantham",
+      "제러미 그랜섬",
+      "GMO Asset Management",
+      "Grantham, Mayo, Van Otterloo & Co. LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/jeremy-grantham",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001352662.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Grantham, Mayo, Van Otterloo & Co. LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001072613-26-000636"
+    }
+  },
+  {
+    "slug": "gotham-asset-management",
+    "name": "Gotham Asset Management",
+    "manager": "Joel Greenblatt",
+    "reportingEntity": "Gotham Asset Management, LLC",
+    "cik": "0001510387",
+    "aliases": [
+      "Joel Greenblatt",
+      "조엘 그린블라트",
+      "고담 자산운용",
+      "Gotham Asset Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/joel-greenblatt",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001510387.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Gotham Asset Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001398344-26-014644"
+    }
+  },
+  {
+    "slug": "gardner-russo-quinn",
+    "name": "Gardner Russo & Quinn",
+    "manager": "Tom Russo",
+    "reportingEntity": "GARDNER RUSSO & QUINN LLC",
+    "cik": "0000860643",
+    "aliases": [
+      "Tom Russo",
+      "톰 루소",
+      "Gardner Russo & Gardner",
+      "GARDNER RUSSO & QUINN LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/tom-russo",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000860643.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "GARDNER RUSSO & QUINN LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0000860643-26-000005"
+    }
+  },
+  {
+    "slug": "ako-capital",
+    "name": "AKO Capital",
+    "manager": "AKO Capital",
+    "reportingEntity": "AKO CAPITAL LLP",
+    "cik": "0001376879",
+    "aliases": [
+      "AKO Capital",
+      "에이케이오 캐피털",
+      "AKO CAPITAL LLP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ako-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001376879.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "AKO CAPITAL LLP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001376879-26-000006"
+    }
+  },
+  {
+    "slug": "pzena-investment",
+    "name": "Pzena Investment Management",
+    "manager": "Richard Pzena",
+    "reportingEntity": "PZENA INVESTMENT MANAGEMENT LLC",
+    "cik": "0001027796",
+    "aliases": [
+      "Richard Pzena",
+      "리처드 프제나",
+      "프제나 투자운용",
+      "PZENA INVESTMENT MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/pzena-investment",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001027796.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "PZENA INVESTMENT MANAGEMENT LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001027796-26-000049"
+    }
+  },
+  {
+    "slug": "viking-global",
+    "name": "Viking Global Investors",
+    "manager": "Andreas Halvorsen",
+    "reportingEntity": "VIKING GLOBAL INVESTORS LP",
+    "cik": "0001103804",
+    "aliases": [
+      "Andreas Halvorsen",
+      "안드레아스 할보르센",
+      "바이킹 글로벌",
+      "VIKING GLOBAL INVESTORS LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/viking-global-investors",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001103804.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001103804.json",
+      "filerName": "VIKING GLOBAL INVESTORS LP",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "gates-foundation",
+    "name": "Gates Foundation Trust",
+    "manager": "Bill Gates",
+    "reportingEntity": "GATES FOUNDATION TRUST",
+    "cik": "0001166559",
+    "aliases": [
+      "Bill Gates",
+      "빌 게이츠",
+      "게이츠 재단",
+      "Bill & Melinda Gates Foundation Trust",
+      "GATES FOUNDATION TRUST"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/bill-gates",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001166559.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "GATES FOUNDATION TRUST",
+      "checkedAt": "2026-09-24",
+      "accession": "0001104659-26-097175"
+    }
+  },
+  {
+    "slug": "sands-capital",
+    "name": "Sands Capital",
+    "manager": "Sands Capital",
+    "reportingEntity": "SANDS CAPITAL MANAGEMENT, LLC",
+    "cik": "0001020066",
+    "aliases": [
+      "Sands Capital",
+      "샌즈 캐피털",
+      "SANDS CAPITAL MANAGEMENT, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/sands-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001020066.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "SANDS CAPITAL MANAGEMENT, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001020066-26-000018"
+    }
+  },
+  {
+    "slug": "tiger-global",
+    "name": "Tiger Global",
+    "manager": "Tiger Global",
+    "reportingEntity": "TIGER GLOBAL MANAGEMENT LLC",
+    "cik": "0001167483",
+    "aliases": [
+      "Tiger Global",
+      "타이거 글로벌",
+      "TIGER GLOBAL MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/tiger-global",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001167483.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001167483.json",
+      "filerName": "TIGER GLOBAL MANAGEMENT LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "tudor-investment",
+    "name": "Tudor Investment",
+    "manager": "Paul Tudor Jones II",
+    "reportingEntity": "TUDOR INVESTMENT CORP ET AL",
+    "cik": "0000923093",
+    "aliases": [
+      "Paul Tudor Jones II",
+      "폴 튜더 존스",
+      "튜더 인베스트먼트",
+      "TUDOR INVESTMENT CORP ET AL"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/tudor-investment",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000923093.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "TUDOR INVESTMENT CORP ET AL",
+      "checkedAt": "2026-09-24",
+      "accession": "0000902664-26-003485"
+    }
+  },
+  {
+    "slug": "davis-selected",
+    "name": "Davis Selected Advisers",
+    "manager": "Chris Davis",
+    "reportingEntity": "DAVIS SELECTED ADVISERS",
+    "cik": "0001036325",
+    "aliases": [
+      "Chris Davis",
+      "크리스 데이비스",
+      "데이비스 셀렉티드",
+      "DAVIS SELECTED ADVISERS"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/chris-davis",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001036325.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001036325.json",
+      "filerName": "DAVIS SELECTED ADVISERS",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "markel",
+    "name": "Markel Group",
+    "manager": "Tom Gayner",
+    "reportingEntity": "MARKEL GROUP INC.",
+    "cik": "0001096343",
+    "aliases": [
+      "Tom Gayner",
+      "톰 게이너",
+      "마켈",
+      "Markel Corporation",
+      "MARKEL GROUP INC."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/tom-gayner",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001096343.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001096343.json",
+      "filerName": "MARKEL GROUP INC.",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "brandes-investment",
+    "name": "Brandes Investment Partners",
+    "manager": "Charles Brandes",
+    "reportingEntity": "BRANDES INVESTMENT PARTNERS, LP",
+    "cik": "0001015079",
+    "aliases": [
+      "Charles Brandes",
+      "찰스 브랜즈",
+      "브랜디스",
+      "BRANDES INVESTMENT PARTNERS, LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/charles-brandes",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001015079.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "BRANDES INVESTMENT PARTNERS, LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001015079-26-000091"
+    }
+  },
+  {
+    "slug": "fundsmith",
+    "name": "Fundsmith",
+    "manager": "Terry Smith",
+    "reportingEntity": "Fundsmith LLP",
+    "cik": "0001569205",
+    "aliases": [
+      "Terry Smith",
+      "테리 스미스",
+      "펀드스미스",
+      "Fundsmith LLP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/terry-smith",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001569205.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Fundsmith LLP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001569205-26-000012"
+    }
+  },
+  {
+    "slug": "polen-capital",
+    "name": "Polen Capital",
+    "manager": "Polen Capital",
+    "reportingEntity": "POLEN CAPITAL MANAGEMENT LLC",
+    "cik": "0001034524",
+    "aliases": [
+      "Polen Capital",
+      "폴렌 캐피털",
+      "POLEN CAPITAL MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/polen-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001034524.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001034524.json",
+      "filerName": "POLEN CAPITAL MANAGEMENT LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "lone-pine-capital",
+    "name": "Lone Pine Capital",
+    "manager": "Steve Mandel",
+    "reportingEntity": "LONE PINE CAPITAL LLC",
+    "cik": "0001061165",
+    "aliases": [
+      "Steve Mandel",
+      "스티브 맨델",
+      "론 파인 캐피털",
+      "LONE PINE CAPITAL LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/steve-mandel",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001061165.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001061165.json",
+      "filerName": "LONE PINE CAPITAL LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "royce-associates",
+    "name": "Royce Investment Partners",
+    "manager": "Chuck Royce",
+    "reportingEntity": "ROYCE & ASSOCIATES LP",
+    "cik": "0000906304",
+    "aliases": [
+      "Chuck Royce",
+      "척 로이스",
+      "Royce Investment Partners",
+      "ROYCE & ASSOCIATES LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/chuck-royce",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000906304.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "ROYCE & ASSOCIATES LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0000906304-26-000154"
+    }
+  },
+  {
+    "slug": "generation-investment",
+    "name": "Generation Investment Management",
+    "manager": "Al Gore",
+    "reportingEntity": "GENERATION INVESTMENT MANAGEMENT LLP",
+    "cik": "0001375534",
+    "aliases": [
+      "Al Gore",
+      "앨 고어",
+      "제너레이션 투자운용",
+      "Generation Investment Management US LLP",
+      "GENERATION INVESTMENT MANAGEMENT LLP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/al-gore",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001375534.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "GENERATION INVESTMENT MANAGEMENT LLP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001752724-26-000044"
+    }
+  },
+  {
+    "slug": "jefferies",
+    "name": "Jefferies Financial Group",
+    "manager": "Jefferies Group",
+    "reportingEntity": "Jefferies Financial Group Inc.",
+    "cik": "0000096223",
+    "aliases": [
+      "Jefferies Group",
+      "제프리스",
+      "Jefferies Financial Group Inc."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/jefferies-financial-group",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000096223.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Jefferies Financial Group Inc.",
+      "checkedAt": "2026-09-24",
+      "accession": "0001085146-26-000619"
+    }
+  },
+  {
+    "slug": "gamco-investors",
+    "name": "GAMCO Investors",
+    "manager": "Mario Gabelli",
+    "reportingEntity": "GAMCO INVESTORS, INC. ET AL",
+    "cik": "0000807249",
+    "aliases": [
+      "Mario Gabelli",
+      "마리오 가벨리",
+      "감코",
+      "GAMCO INVESTORS, INC. ET AL"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/mario-gabelli",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000807249.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "GAMCO INVESTORS, INC. ET AL",
+      "checkedAt": "2026-09-24",
+      "accession": "0001140361-26-032508"
+    }
+  },
+  {
+    "slug": "icahn",
+    "name": "Icahn Capital Management",
+    "manager": "Carl Icahn",
+    "reportingEntity": "ICAHN CARL C",
+    "cik": "0000921669",
+    "aliases": [
+      "Carl Icahn",
+      "칼 아이칸",
+      "Icahn Capital Management",
+      "ICAHN CARL C"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/carl-icahn",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000921669.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0000921669.json",
+      "filerName": "ICAHN CARL C",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "ariel-investments",
+    "name": "Ariel Investments",
+    "manager": "John W. Rogers Jr.",
+    "reportingEntity": "ARIEL INVESTMENTS, LLC",
+    "cik": "0000936753",
+    "aliases": [
+      "John W. Rogers Jr.",
+      "존 로저스",
+      "아리엘 인베스트먼츠",
+      "ARIEL INVESTMENTS, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/john-rogers",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000936753.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "ARIEL INVESTMENTS, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0000936753-26-000050"
+    }
+  },
+  {
+    "slug": "yacktman",
+    "name": "Yacktman Asset Management",
+    "manager": "Donald Yacktman",
+    "reportingEntity": "YACKTMAN ASSET MANAGEMENT LP",
+    "cik": "0000905567",
+    "aliases": [
+      "Donald Yacktman",
+      "도널드 얙트먼",
+      "야크트먼",
+      "YACKTMAN ASSET MANAGEMENT LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/yacktman",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000905567.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "YACKTMAN ASSET MANAGEMENT LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0000905567-26-000003"
+    }
+  },
+  {
+    "slug": "soros-fund",
+    "name": "Soros Fund Management",
+    "manager": "George Soros",
+    "reportingEntity": "SOROS FUND MANAGEMENT LLC",
+    "cik": "0001029160",
+    "aliases": [
+      "George Soros",
+      "조지 소로스",
+      "소로스 펀드",
+      "SOROS FUND MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/george-soros",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001029160.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001029160.json",
+      "filerName": "SOROS FUND MANAGEMENT LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "dorsey-asset-management",
+    "name": "Dorsey Asset Management",
+    "manager": "Pat Dorsey",
+    "reportingEntity": "Dorsey Asset Management, LLC",
+    "cik": "0001671657",
+    "aliases": [
+      "Pat Dorsey",
+      "팻 도시",
+      "도시 자산운용",
+      "Dorsey Asset Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/pat-dorsey",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001671657.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Dorsey Asset Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001398344-26-014470"
+    }
+  },
+  {
+    "slug": "appaloosa",
+    "name": "Appaloosa",
+    "manager": "David Tepper",
+    "reportingEntity": "Appaloosa LP",
+    "cik": "0001656456",
+    "aliases": [
+      "David Tepper",
+      "데이비드 테퍼",
+      "애팔루사",
+      "Appaloosa LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/david-tepper",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001656456.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001656456.json",
+      "filerName": "Appaloosa LP",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "valueact",
+    "name": "ValueAct Holdings",
+    "manager": "Jeffrey Ubben",
+    "reportingEntity": "ValueAct Holdings, L.P.",
+    "cik": "0001418814",
+    "aliases": [
+      "Jeffrey Ubben",
+      "제프리 우벤",
+      "밸류액트",
+      "ValueAct Holdings, L.P."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/jeffrey-ubben",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001418814.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001418814.json",
+      "filerName": "ValueAct Holdings, L.P.",
+      "checkedAt": "2026-09-24",
+      "note": "인물명은 검색용 관련 인물이며, 현재 운용 담당자나 개인 전체 자산이라는 의미가 아닙니다."
+    }
+  },
+  {
+    "slug": "akre-capital",
+    "name": "Akre Capital Management",
+    "manager": "Chuck Akre",
+    "reportingEntity": "AKRE CAPITAL MANAGEMENT LLC",
+    "cik": "0001112520",
+    "aliases": [
+      "Chuck Akre",
+      "척 애크리",
+      "아크레 캐피털",
+      "AKRE CAPITAL MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/chuck-akre",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001112520.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001112520.json",
+      "filerName": "AKRE CAPITAL MANAGEMENT LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "baupost",
+    "name": "The Baupost Group",
+    "manager": "Seth Klarman",
+    "reportingEntity": "BAUPOST GROUP LLC/MA",
+    "cik": "0001061768",
+    "aliases": [
+      "Seth Klarman",
+      "세스 클라먼",
+      "바우포스트",
+      "BAUPOST GROUP LLC/MA"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/seth-klarman",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001061768.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001061768.json",
+      "filerName": "BAUPOST GROUP LLC/MA",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "abrams-capital",
+    "name": "Abrams Capital",
+    "manager": "David Abrams",
+    "reportingEntity": "ABRAMS CAPITAL MANAGEMENT, L.P.",
+    "cik": "0001358706",
+    "aliases": [
+      "David Abrams",
+      "데이비드 에이브럼스",
+      "에이브럼스 캐피털",
+      "ABRAMS CAPITAL MANAGEMENT, L.P."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/david-abrams",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001358706.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "ABRAMS CAPITAL MANAGEMENT, L.P.",
+      "checkedAt": "2026-09-24",
+      "accession": "0001172661-26-003402"
+    }
+  },
+  {
+    "slug": "altarock-partners",
+    "name": "Altarock Partners",
+    "manager": "Altarock Partners",
+    "reportingEntity": "ALTAROCK PARTNERS LP",
+    "cik": "0001631014",
+    "aliases": [
+      "Altarock Partners",
+      "알타록 파트너스",
+      "ALTAROCK PARTNERS LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/altarock-partners",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001631014.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "ALTAROCK PARTNERS LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001104659-26-097527"
+    }
+  },
+  {
+    "slug": "broad-run",
+    "name": "Broad Run Investment Management",
+    "manager": "Broad Run",
+    "reportingEntity": "Broad Run Investment Management, LLC",
+    "cik": "0001568621",
+    "aliases": [
+      "Broad Run",
+      "브로드 런",
+      "Broad Run Investment Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/broad-run",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001568621.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Broad Run Investment Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001568621-26-000009"
+    }
+  },
+  {
+    "slug": "brave-warrior",
+    "name": "Brave Warrior Advisors",
+    "manager": "Glenn Greenberg",
+    "reportingEntity": "Brave Warrior Advisors, LLC",
+    "cik": "0001553733",
+    "aliases": [
+      "Glenn Greenberg",
+      "글렌 그린버그",
+      "브레이브 워리어",
+      "Brave Warrior Advisors, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/glenn-greenberg",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001553733.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Brave Warrior Advisors, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001172661-26-003728"
+    }
+  },
+  {
+    "slug": "duquesne-family-office",
+    "name": "Duquesne Family Office",
+    "manager": "Stanley Druckenmiller",
+    "reportingEntity": "Duquesne Family Office LLC",
+    "cik": "0001536411",
+    "aliases": [
+      "Stanley Druckenmiller",
+      "스탠리 드러켄밀러",
+      "듀켄 패밀리 오피스",
+      "Duquesne Family Office LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/stanley-druckenmiller",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001536411.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001536411.json",
+      "filerName": "Duquesne Family Office LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "third-point",
+    "name": "Third Point",
+    "manager": "Daniel Loeb",
+    "reportingEntity": "Third Point LLC",
+    "cik": "0001040273",
+    "aliases": [
+      "Daniel Loeb",
+      "다니엘 로브",
+      "댄 로브",
+      "서드 포인트",
+      "Third Point LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/daniel-loeb",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001040273.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001040273.json",
+      "filerName": "Third Point LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "oaktree",
+    "name": "Oaktree Capital Management",
+    "manager": "Howard Marks",
+    "reportingEntity": "OAKTREE CAPITAL MANAGEMENT LP",
+    "cik": "0000949509",
+    "aliases": [
+      "Howard Marks",
+      "하워드 막스",
+      "오크트리",
+      "OAKTREE CAPITAL MANAGEMENT LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/howard-marks",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000949509.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "OAKTREE CAPITAL MANAGEMENT LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0000949509-26-000005"
+    }
+  },
+  {
+    "slug": "fairfax",
+    "name": "Fairfax Financial Holdings",
+    "manager": "Prem Watsa",
+    "reportingEntity": "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN",
+    "cik": "0000915191",
+    "aliases": [
+      "Prem Watsa",
+      "프렘 왓사",
+      "페어팩스",
+      "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/prem-watsa",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000915191.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN",
+      "checkedAt": "2026-09-24",
+      "accession": "0001104659-26-096276"
+    }
+  },
+  {
+    "slug": "paulson",
+    "name": "Paulson & Co",
+    "manager": "John Paulson",
+    "reportingEntity": "PAULSON & CO. INC.",
+    "cik": "0001035674",
+    "aliases": [
+      "John Paulson",
+      "존 폴슨",
+      "폴슨 앤 코",
+      "PAULSON & CO. INC."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/john-paulson",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001035674.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "PAULSON & CO. INC.",
+      "checkedAt": "2026-09-24",
+      "accession": "0001013594-26-000913"
+    }
+  },
+  {
+    "slug": "greenlight-capital",
+    "name": "Greenlight Capital",
+    "manager": "David Einhorn",
+    "reportingEntity": "GREENLIGHT CAPITAL INC",
+    "cik": "0001079114",
+    "aliases": [
+      "David Einhorn",
+      "데이비드 아인혼",
+      "그린라이트 캐피털",
+      "GREENLIGHT CAPITAL INC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/david-einhorn",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001079114.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001079114.json",
+      "filerName": "GREENLIGHT CAPITAL INC",
+      "checkedAt": "2026-09-24",
+      "note": "확인된 최신 HR은 2023-12-31 기준입니다. 관련 별도 신고자 DME Capital Management LP(CIK 0001489933)의 공시를 자동 합치지 않습니다."
+    }
+  },
+  {
+    "slug": "cas-investment",
+    "name": "CAS Investment Partners",
+    "manager": "Cliff Sosin",
+    "reportingEntity": "CAS Investment Partners, LLC",
+    "cik": "0001697591",
+    "aliases": [
+      "Cliff Sosin",
+      "클리프 소신",
+      "CAS 인베스트먼트",
+      "CAS Investment Partners, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/cliff-sosin",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001697591.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "CAS Investment Partners, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001697591-26-000004"
+    }
+  },
+  {
+    "slug": "fairholme",
+    "name": "Fairholme Capital Management",
+    "manager": "Bruce Berkowitz",
+    "reportingEntity": "FAIRHOLME CAPITAL MANAGEMENT LLC",
+    "cik": "0001056831",
+    "aliases": [
+      "Bruce Berkowitz",
+      "브루스 버코위츠",
+      "페어홀름",
+      "FAIRHOLME CAPITAL MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/bruce-berkowitz",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001056831.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001056831.json",
+      "filerName": "FAIRHOLME CAPITAL MANAGEMENT LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "tweedy-browne",
+    "name": "Tweedy Browne",
+    "manager": "Tweedy Browne",
+    "reportingEntity": "Tweedy, Browne Co LLC",
+    "cik": "0000732905",
+    "aliases": [
+      "Tweedy Browne",
+      "트위디 브라운",
+      "Tweedy, Browne Co LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/tweedy-browne",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0000732905.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0000732905.json",
+      "filerName": "Tweedy, Browne Co LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "ensemble-capital",
+    "name": "Ensemble Capital Management",
+    "manager": "Ensemble Capital",
+    "reportingEntity": "Ensemble Capital Management, LLC",
+    "cik": "0001387366",
+    "aliases": [
+      "Ensemble Capital",
+      "앙상블 캐피털",
+      "Ensemble Capital Management, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/ensemble-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001387366.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1387366/000194104024000498/0001941040-24-000498-index.html",
+      "filerName": "Ensemble Capital Management, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001941040-24-000498"
+    }
+  },
+  {
+    "slug": "third-avenue",
+    "name": "Third Avenue Management",
+    "manager": "Third Avenue Management",
+    "reportingEntity": "THIRD AVENUE MANAGEMENT LLC",
+    "cik": "0001099281",
+    "aliases": [
+      "Third Avenue Management",
+      "서드 애비뉴",
+      "THIRD AVENUE MANAGEMENT LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/third-avenue-management",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001099281.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "THIRD AVENUE MANAGEMENT LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001099281-26-000008"
+    }
+  },
+  {
+    "slug": "aquamarine",
+    "name": "Aquamarine Capital",
+    "manager": "Guy Spier",
+    "reportingEntity": "Aquamarine Zurich AG",
+    "cik": "0001953324",
+    "aliases": [
+      "Guy Spier",
+      "가이 스파이어",
+      "아쿠아마린",
+      "Aquamarine Capital",
+      "Aquamarine Zurich AG"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/guy-spier",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001953324.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1953324/000195332426000003/0001953324-26-000003-index.htm",
+      "filerName": "Aquamarine Zurich AG",
+      "checkedAt": "2026-09-24",
+      "accession": "0001953324-26-000003",
+      "identityUrl": "https://www.prnewswire.com/news-releases/aquamarine-zurich-ag-appoints-new-chairman-and-new-board-member-301317423.html",
+      "note": "2021-06-22 회사 발표가 Guy Spier를 같은 법인의 CEO와 주주로 명시합니다. 확인한 13F-HR은 2026-06-30 기준입니다. 해당 법인의 공개 보고분이며 개인 전체 자산이나 동명 법인 공시를 뜻하지 않습니다."
+    }
+  },
+  {
+    "slug": "miller-value",
+    "name": "Miller Value Partners",
+    "manager": "Bill Miller",
+    "reportingEntity": "MILLER VALUE PARTNERS, LLC",
+    "cik": "0001135778",
+    "aliases": [
+      "Bill Miller",
+      "빌 밀러",
+      "밀러 밸류",
+      "MILLER VALUE PARTNERS, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/bill-miller",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001135778.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "MILLER VALUE PARTNERS, LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001135778-26-000016"
+    }
+  },
+  {
+    "slug": "dalal-street",
+    "name": "Dalal Street",
+    "manager": "Mohnish Pabrai",
+    "reportingEntity": "Dalal Street, LLC",
+    "cik": "0001549575",
+    "aliases": [
+      "Mohnish Pabrai",
+      "모니시 파브라이",
+      "달랄 스트리트",
+      "Dalal Street, LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/mohnish-pabrai",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001549575.json",
+    "mappingEvidence": {
+      "url": "https://data.sec.gov/submissions/CIK0001549575.json",
+      "filerName": "Dalal Street, LLC",
+      "checkedAt": "2026-09-24"
+    }
+  },
+  {
+    "slug": "bruce-fund",
+    "name": "Bruce Fund / Bruce & Co",
+    "manager": "Robert Bruce",
+    "reportingEntity": "Bruce & Co., Inc.",
+    "cik": "0001358331",
+    "aliases": [
+      "Robert Bruce",
+      "로버트 브루스",
+      "브루스 펀드",
+      "Bruce Fund",
+      "Bruce & Co., Inc."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/robert-bruce",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001358331.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/full-index/2026/QTR3/master.idx",
+      "filerName": "Bruce & Co., Inc.",
+      "checkedAt": "2026-09-24",
+      "accession": "0001104659-26-096709"
+    }
+  },
+  {
+    "slug": "tiger-management",
+    "name": "Tiger Management",
+    "manager": "Julian Robertson",
+    "reportingEntity": "TIGER MANAGEMENT L.L.C.",
+    "cik": "0001027451",
+    "aliases": [
+      "Julian Robertson",
+      "줄리언 로버트슨",
+      "타이거 매니지먼트",
+      "TIGER MANAGEMENT L.L.C."
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/julian-robertson",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001027451.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1027451/000091957424006401/0000919574-24-006401-index.html",
+      "filerName": "TIGER MANAGEMENT L.L.C.",
+      "checkedAt": "2026-09-24",
+      "accession": "0000919574-24-006401",
+      "note": "인물명은 검색용 관련 인물이며, 현재 운용 담당자나 개인 전체 자산이라는 의미가 아닙니다."
+    }
+  },
+  {
+    "slug": "kynikos",
+    "name": "Kynikos Associates",
+    "manager": "Jim Chanos",
+    "reportingEntity": "Kynikos Associates LP",
+    "cik": "0001446440",
+    "aliases": [
+      "Jim Chanos",
+      "짐 채노스",
+      "키니코스",
+      "Kynikos Associates LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/jim-chanos",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001446440.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1446440/000117266120002238/0001172661-20-002238-index.html",
+      "filerName": "Kynikos Associates LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0001172661-20-002238"
+    }
+  },
+  {
+    "slug": "mfp-investors",
+    "name": "MFP Investors",
+    "manager": "Michael Price",
+    "reportingEntity": "MFP INVESTORS LLC",
+    "cik": "0001105685",
+    "aliases": [
+      "Michael Price",
+      "마이클 프라이스",
+      "MFP 인베스터스",
+      "MFP INVESTORS LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/michael-price",
+    "status": "non-13f",
+    "reason": "확인한 2024-09-30 기준 13F-NT는 자체 보유 내역 없이 다른 신고자 Jennifer C. Price(CIK 0001930102)의 보고를 안내하는 통지입니다. 해당 신고자의 보유 이력을 자동 연결하지 않습니다.",
+    "secSource": "https://data.sec.gov/submissions/CIK0001105685.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1105685/000110568524000001/0001105685-24-000001-index.html",
+      "filerName": "MFP INVESTORS LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001105685-24-000001",
+      "note": "2024-11-14 제출한 13F-NT 표지가 다른 신고자 Price Jennifer C.(CIK 0001930102)를 명시합니다. non-13f는 보유내역 수집 제외 상태이며 SEC 신고 자체가 없다는 뜻은 아닙니다. Michael Price 관련 과거 원본은 별도 범위 검증 전까지 연결하지 않습니다."
+    }
+  },
+  {
+    "slug": "makaira-partners",
+    "name": "Makaira Partners",
+    "manager": "Tom Bancroft",
+    "reportingEntity": "Makaira Partners LLC",
+    "cik": "0001540866",
+    "aliases": [
+      "Tom Bancroft",
+      "톰 밴크로프트",
+      "마카이라",
+      "Makaira Partners LLC"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/makaira-partners",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001540866.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1540866/000154086626000002/0001540866-26-000002-index.html",
+      "filerName": "Makaira Partners LLC",
+      "checkedAt": "2026-09-24",
+      "accession": "0001540866-26-000002"
+    }
+  },
+  {
+    "slug": "melvin-capital",
+    "name": "Melvin Capital",
+    "manager": "Gabe Plotkin",
+    "reportingEntity": "Melvin Capital Management LP",
+    "cik": "0001628110",
+    "aliases": [
+      "Gabe Plotkin",
+      "게이브 플롯킨",
+      "멜빈 캐피털",
+      "Melvin Capital Management LP"
+    ],
+    "referenceUrl": "https://stockcircle.com/portfolio/melvin-capital",
+    "status": "mapped",
+    "secSource": "https://data.sec.gov/submissions/CIK0001628110.json",
+    "mappingEvidence": {
+      "url": "https://www.sec.gov/Archives/edgar/data/1628110/000090266423005012/0000902664-23-005012-index.html",
+      "filerName": "Melvin Capital Management LP",
+      "checkedAt": "2026-09-24",
+      "accession": "0000902664-23-005012",
+      "note": "과거 13F 신고자 매핑입니다. 최신 보유 자료가 확인되기 전에는 현재 포트폴리오로 표시하지 않습니다."
+    }
+  }
+]

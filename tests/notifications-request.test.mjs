@@ -120,3 +120,12 @@ test('an empty unread query means none; failed or malformed results never mean n
   response={data:null,error:null};
   await assert.rejects(repo.hasUnread(),/새 알림 여부/);
 });
+
+test('price HTTP checks pin the account and reject a late response after account switching', async t => {
+  const state=setup(t),wait=deferred();let authorization;
+  t.mock.method(globalThis,'fetch',async(_url,options)=>{authorization=options.headers.Authorization;return wait.promise;});
+  const pending=state.notificationRepository('A',new AbortController().signal).evaluatePrices();
+  const rejected=assert.rejects(pending,/계정이 변경/);
+  await settle();assert.equal(authorization,'Bearer test-token');state.setAccount('B');
+  wait.resolve({ok:true,json:async()=>({evaluated:1,emitted:1,unavailable:0})});await rejected;
+});

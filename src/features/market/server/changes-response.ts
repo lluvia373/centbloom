@@ -3,6 +3,7 @@ import { after, connection } from "next/server";
 import { cache } from "react";
 import { refreshPreparedChanges } from "./changes-refresh";
 import { CHANGES_KEY, CHANGES_REFRESH_MS, usableChanges } from "./prepared-changes";
+import { changesView } from "../change-research";
 
 /** Render and API requests only read the complete, previously researched snapshot. */
 export const readPreparedChanges = cache(async () => {
@@ -21,6 +22,6 @@ export const readPreparedChanges = cache(async () => {
   return snapshot?.feed ?? null;
 });
 export async function initialChanges() {
-  try { return await readPreparedChanges(); }
+  try { const feed = await readPreparedChanges(); return feed ? changesView(feed) : null; }
   catch { return null; }
 }

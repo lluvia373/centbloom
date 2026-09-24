@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {loadTypescript} from './load-typescript.mjs';
-const {createLedgerStore}=loadTypescript('src/features/portfolio/data/ledger-store.ts');
+const moduleCache=new Map();
+const {createLedgerStore}=loadTypescript('src/features/portfolio/data/ledger-store.ts',{},moduleCache);
+const {LedgerStorageError}=loadTypescript('src/features/portfolio/data/storage-error.ts',{},moduleCache);
 const tx=(id='a',price=100)=>({id,symbol:id.toUpperCase(),name:id,type:'buy',date:'2026-09-01',quantity:10,price,fee:0,currency:'USD',fxRateToKRW:1300,usdKrwRateAtTransaction:1300,createdAt:'2026-09-01T00:00:00Z'});
 const validId=i=>`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`;
 const record=(i,price=100)=>({...tx(validId(i),price),symbol:`QA${i}`});
@@ -37,7 +39,7 @@ test('overlapping edits and add/delete run against latest committed records',asy
 test('failed server save is not successful and leaves confirmed records unchanged',async()=> {
  const {store,read}=setup({fail:true});await store.start();
  const result=await store.execute({type:'import',mode:'replace',records:[record(3)]});
- assert.match(result.error,/server failed/);assert.equal(read().transactions.length,2);assert.equal(store.getSnapshot().transactions.length,2);
+ assert.match(result.error,/저장하지 못했어요/);assert.doesNotMatch(result.error,/server failed/);assert.equal(store.getSnapshot().issue,'command');assert.equal(read().transactions.length,2);assert.equal(store.getSnapshot().transactions.length,2);
 });
 test('late completion after account disposal never publishes into a new session',async()=> {
  let release;const gate=new Promise(r=>release=r);const {store}=setup({gate});await store.start();
@@ -47,11 +49,11 @@ test('late completion after account disposal never publishes into a new session'
 test('a failed local outbox write prevents any server mutation',async()=> {
  const cache={pending:()=>null,stage:()=>{throw new Error('quota')},confirm:()=>{},abandon:()=>{}};
  const {store,writes}=setup({cache});await store.start();
- assert.match((await store.execute({type:'add',transaction:record(3)})).error,/quota/);assert.equal(writes(),0);
+ assert.match((await store.execute({type:'add',transaction:record(3)})).error,/저장을 시작하지 않았어요/);assert.equal(store.getSnapshot().issue,'command');assert.equal(writes(),0);
 });
 
 function memoryStorage(){const values=new Map();return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key),values};}
-const {transactionCache,localRepository}=loadTypescript('src/features/portfolio/data/local.ts');
+const {transactionCache,localRepository}=loadTypescript('src/features/portfolio/data/local.ts',{},moduleCache);
 test('replacement then concurrent add/restore merges against replacement, not pre-import state',async()=> {
  const {store,read}=setup();await store.start();
  await Promise.all([store.execute({type:'import',mode:'replace',records:[record(3)]}),store.execute({type:'add',transaction:record(4)}),store.execute({type:'restore',transaction:record(2)})]);
@@ -62,7 +64,7 @@ test('remote deletions never resurrect from local cache; uncertain commit retrie
  const cache=transactionCache(storage,'user');let current={transactions:[],revision:'0',writable:true},receipt,requests=[];
  const repository={read:async()=>current,commit:async change=>{requests.push(change.id);if(!receipt){receipt=change.id;current={transactions:change.transactions,revision:'1',writable:true};throw new Error('connection lost after commit');}assert.equal(change.id,receipt);return current;}};
  const store=createLedgerStore({repository,cache});await store.start();assert.equal(store.getSnapshot().transactions.length,0);
- assert.ok((await store.execute({type:'add',transaction:record(2)})).error);assert.equal(store.getSnapshot().status,'failed');
+ assert.ok((await store.execute({type:'add',transaction:record(2)})).error);assert.equal(store.getSnapshot().status,'failed');assert.equal(store.getSnapshot().issue,'pending-save');
  assert.ok((await store.execute({type:'add',transaction:record(3)})).error);
  await store.retry();assert.equal(store.getSnapshot().status,'ready');assert.equal(requests[0],requests[1]);assert.equal(current.transactions.length,1);
  assert.equal(JSON.parse(storage.getItem('centbloom-local-original:user'))[0].id,validId(1));
@@ -72,7 +74,7 @@ test('server success with cache quota failure is explicit, recoverable, and not 
  const cache={...base,confirm:records=>{if(fail)throw new Error('quota');base.confirm(records);}};
  let revision='0',records=[],receipt;
  const repository={read:async()=>({transactions:records,revision,writable:true}),commit:async c=>{if(!receipt){receipt=c.id;records=c.transactions;revision='1';}return {transactions:records,revision,writable:true};}};
- const store=createLedgerStore({repository,cache});await store.start();assert.ok((await store.execute({type:'add',transaction:record(1)})).error);assert.equal(store.getSnapshot().status,'cache-failed');
+ const store=createLedgerStore({repository,cache});await store.start();assert.ok((await store.execute({type:'add',transaction:record(1)})).error);assert.equal(store.getSnapshot().status,'cache-failed');assert.equal(store.getSnapshot().issue,'cache');
  fail=false;await store.retry();assert.equal(store.getSnapshot().status,'ready');assert.equal(records.length,1);
 });
 test('corrupt original local records block writes without overwriting recovery data',async()=> {
@@ -93,7 +95,7 @@ test('local commit quota, stale revisions, invalid outbox and reload lock failur
  const original=storage.getItem('stock-transactions');storage.setItem=()=>{throw Error('quota');};
  await assert.rejects(repo.commit({id:validId(11),revision:JSON.stringify([record(1)]),transactions:[]}));assert.equal(storage.getItem('stock-transactions'),original);
  const broken=memoryStorage();broken.setItem('centbloom-pending-transaction:user',JSON.stringify({id:validId(1),revision:'r',transactions:[{id:'bad'}]}));assert.throws(()=>transactionCache(broken,'user').pending());
- const store=createLedgerStore({repository:{read:async()=>({transactions:[],revision:'0',writable:true})},lock:async()=>{throw Error('lock unavailable');}});await store.start();await store.reload();assert.match(store.getSnapshot().error,/lock unavailable/);
+ const store=createLedgerStore({repository:{read:async()=>({transactions:[],revision:'0',writable:true})},lock:async()=>{throw Error('lock unavailable');}});await store.start();await store.reload();assert.match(store.getSnapshot().error,/불러오지 못했어요/);assert.equal(store.getSnapshot().issue,'load');
 });
 
 test('pre-rename pending requests keep their identity and do not resurrect after confirmation',()=>{
@@ -151,3 +153,41 @@ for (const committedBeforeDisconnect of [false,true]) {
   first.dispose();second.dispose();
  });
 }
+
+test('read failure is distinct from readonly compatibility and validation failure',async()=>{
+ const failed=createLedgerStore({repository:{read:async()=>{throw Error('private SQL token');}}});
+ await failed.start();assert.equal(failed.getSnapshot().issue,'load');assert.doesNotMatch(failed.getSnapshot().error,/private SQL|token/);
+ const readonly=createLedgerStore({repository:{read:async()=>({transactions:[record(1)],revision:'0',writable:false})}});
+ await readonly.start();assert.equal(readonly.getSnapshot().status,'ready');assert.equal(readonly.getSnapshot().issue,null);assert.equal(readonly.getSnapshot().error,null);
+ const {store}=setup();await store.start();const result=await store.execute({type:'delete',id:'missing'});
+ assert.equal(store.getSnapshot().issue,'command');assert.match(result.error,/삭제할 거래를 찾지/);
+});
+
+test('a conflict stays distinct and normal reload never retires the pending request',async()=>{
+ const storage=memoryStorage(),cache=transactionCache(storage,'user');
+ const repository={read:async()=>({transactions:[record(1)],revision:'0',writable:true}),commit:async()=>{throw new LedgerStorageError('conflict','다른 화면에서 거래가 바뀌었어요.');}};
+ const store=createLedgerStore({repository,cache});await store.start();await store.execute({type:'add',transaction:record(2)});
+ assert.equal(store.getSnapshot().issue,'conflict');const original=storage.getItem('centbloom-pending-transaction:user');
+ await store.reload();assert.equal(storage.getItem('centbloom-pending-transaction:user'),original);assert.equal(store.getSnapshot().issue,'conflict');
+ await store.reload({discardPending:true});assert.equal(cache.pending(),null);assert.equal(store.getSnapshot().issue,null);
+ assert.ok([...storage.values.entries()].some(([key,value])=>key.includes(':recovery:')&&value===original));
+});
+
+test('failed explicit recovery read preserves the exact pending request and confirmed records',async()=>{
+ const storage=memoryStorage(),cache=transactionCache(storage,'user');let failRead=false;
+ const repository={read:async()=>{if(failRead)throw Error('network down');return {transactions:[record(1)],revision:'0',writable:true};},commit:async()=>{throw Error('connection lost');}};
+ const store=createLedgerStore({repository,cache});await store.start();await store.execute({type:'add',transaction:record(2)});
+ const original=storage.getItem('centbloom-pending-transaction:user');failRead=true;
+ await store.reload({discardPending:true});assert.equal(storage.getItem('centbloom-pending-transaction:user'),original);assert.equal(store.getSnapshot().transactions.length,1);assert.equal(store.getSnapshot().issue,'pending-save');
+ assert.equal([...storage.values.keys()].some(key=>key.includes(':recovery:')),false);
+});
+
+test('account disposal during explicit recovery cannot retire the previous account outbox',async()=>{
+ const storage=memoryStorage(),cache=transactionCache(storage,'user');let resolveRead;let delayed=false;
+ const snapshot={transactions:[record(1)],revision:'0',writable:true};
+ const repository={read:()=>delayed?new Promise(resolve=>resolveRead=resolve):Promise.resolve(snapshot),commit:async()=>{throw Error('offline');}};
+ const store=createLedgerStore({repository,cache});await store.start();await store.execute({type:'add',transaction:record(2)});
+ const original=storage.getItem('centbloom-pending-transaction:user');delayed=true;
+ const reload=store.reload({discardPending:true});await new Promise(resolve=>setTimeout(resolve,0));store.dispose();resolveRead(snapshot);await reload;
+ assert.equal(storage.getItem('centbloom-pending-transaction:user'),original);assert.equal([...storage.values.keys()].some(key=>key.includes(':recovery:')),false);
+});

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { archiveEnabled, saveReleases } from "@/features/calendar/server/repository";
+import { archiveEnabled, calendarStorageConfiguration, saveReleases } from "@/features/calendar/server/repository";
 import { fetchReleases } from "@/features/calendar/server/provider";
 import { validMonth, shiftMonth } from "@/features/calendar/model";
 export async function POST(request: NextRequest) {
@@ -12,11 +12,12 @@ export async function POST(request: NextRequest) {
   const month = request.nextUrl.searchParams.get("month");
   if (!validMonth(month ?? undefined)) return NextResponse.json({error:"Invalid month"},{status:400});
   try {
+    calendarStorageConfiguration(request.nextUrl.hostname);
     // UTC padding captures releases at KST month boundaries. Stable IDs deduplicate overlaps.
     const from = new Date(Date.parse(month+"-01T00:00:00Z")-86400_000).toISOString().slice(0,10);
     const to = shiftMonth(month!,1)+"-01";
     const events = await fetchReleases(from,to,key,request.signal);
-    await saveReleases(events,request.signal);
+    await saveReleases(events,request.signal,request.nextUrl.hostname);
     return NextResponse.json({saved:events.length});
   } catch {
     return NextResponse.json({error:"Calendar ingestion failed; saved history preserved"},{status:502});

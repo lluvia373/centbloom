@@ -22,9 +22,9 @@ test("a newer quiet observation removes the old anomaly, without borrowing its n
   assert.equal(mergeWatchedChanges([prior], ["WATCH"], { WATCH: report(quiet, null) }).length, 0);
   assert.equal(mergeWatchedChanges([quiet], ["WATCH"], { WATCH: report(prior, null) }).length, 1);
 });
-test("missing news does not manufacture a representative card; removed account selections are ignored", () => {
+test("numerical signals survive missing news; removed account selections are ignored", () => {
   const item = make("WATCH");
-  assert.equal(mergeWatchedChanges([], ["WATCH"], { WATCH: { ...report(item), story: null } }).length, 0);
+  assert.equal(mergeWatchedChanges([], ["WATCH"], { WATCH: { ...report(item), story: null } }).length, 1);
   assert.equal(mergeWatchedChanges([], [], { WATCH: report(item) }).length, 0);
 });
 test("watched candidates lead, with public discovery retained and no duplicates", () => {

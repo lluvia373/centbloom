@@ -29,12 +29,12 @@ test('shared history retains a complete result and failure throughout retry unti
 });
 
 test('history hook masks previous account revision date and disabled ledger or auth inputs',()=>{
- const input={user:{id:'account'},authLoading:false,revision:'r1',status:'ready',today:'2026-09-21',transactions:[]};
+ const input={user:{id:'account'},selectedPortfolioId:'all',authLoading:false,revision:'r1',status:'ready',today:'2026-09-21',transactions:[]};
  const states=new Map();let resource;const subscriptions=[];
  const {usePerformanceHistory:readHistoryState}=loadTypescript('src/hooks/usePerformanceHistory.ts',{
   '@/features/performance/service':{loadPerformance:()=>{throw new Error('No network in hook scope test');}},
   '@/hooks/useAuth':{useAuth:()=>({user:input.user,loading:input.authLoading})},
-  '@/hooks/usePortfolio':{useTransactions:()=>input},
+  '@/hooks/usePortfolio':{useTransactions:()=>input,usePortfolios:()=>input},
   '@/shared/time/use-kst-date':{useKstDate:()=>input.today},
   '@/shared/async/shared-resource':{createSharedResource:(_,empty)=>resource={
    initial:{value:empty,loading:true,error:null},
@@ -43,16 +43,16 @@ test('history hook masks previous account revision date and disabled ledger or a
   }},
   react:{useCallback:callback=>callback,useSyncExternalStore:(subscribe,snapshot)=>{subscribe(()=>{});return snapshot();}},
  });
- const key=JSON.stringify(['account','r1','2026-09-21']);
+ const key=JSON.stringify(['account','all','r1','2026-09-21']);
  const result={points:[{date:'2026-09-21',assetValueKRW:123}],trackingStartedAt:'2026-09-01',error:null};
  states.set(key,{value:result,loading:false,error:'시세 조회 실패'});
  let state=readHistoryState();assert.equal(state.points,result.points);
  assert.equal(state.scopeKey,key);assert.equal(state.refreshError,'시세 조회 실패');
- for(const change of [{user:{id:'other'}},{revision:'r2'},{today:'2026-09-22'}]){
-  Object.assign(input,{user:{id:'account'},revision:'r1',today:'2026-09-21'},change);
+ for(const change of [{user:{id:'other'}},{selectedPortfolioId:'separate'},{revision:'r2'},{today:'2026-09-22'}]){
+  Object.assign(input,{user:{id:'account'},selectedPortfolioId:'all',revision:'r1',today:'2026-09-21'},change);
   state=readHistoryState();assert.equal(state.points.length,0);assert.equal(state.loading,true);assert.equal(state.refreshError,null);
  }
- Object.assign(input,{user:{id:'account'},revision:'r1',today:'2026-09-21'});
+ Object.assign(input,{user:{id:'account'},selectedPortfolioId:'all',revision:'r1',today:'2026-09-21'});
  for(const change of [{status:'loading'},{authLoading:true},{today:''}]){
   Object.assign(input,{status:'ready',authLoading:false,today:'2026-09-21'},change);
   const count=subscriptions.length;state=readHistoryState();
@@ -72,7 +72,7 @@ test('history hook distinguishes an unconfirmed ledger failure from a confirmed 
  const {usePerformanceHistory:readHistoryState}=loadTypescript('src/hooks/usePerformanceHistory.ts',{
   '@/features/performance/service':{loadPerformance:()=>{throw new Error('No network in ledger state test');}},
   '@/hooks/useAuth':{useAuth:()=>({user:input.user,loading:input.authLoading})},
-  '@/hooks/usePortfolio':{useTransactions:()=>input},
+  '@/hooks/usePortfolio':{useTransactions:()=>input,usePortfolios:()=>({selectedPortfolioId:'all'})},
   '@/shared/time/use-kst-date':{useKstDate:()=>input.today},
   '@/shared/async/shared-resource':{createSharedResource:()=>({
    initial:{value:empty,loading:true,error:null},

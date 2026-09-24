@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:03:38.849Z",
+  "sourceCheckedAt": "2026-09-24T09:01:17.023Z",
+  "symbols": [
+    {
+      "symbol": "035420.KS",
+      "status": "supported",
+      "from": "2026-01-01",
+      "through": "2026-09-23",
+      "checkedAt": "2026-09-24T09:01:17.023Z",
+      "sourceUrl": "https://dart.fss.or.kr/dsae001/main.do?selectKey=corp&textCrpNm=035420"
+    }
+  ],
+  "events": [
+    {
+      "id": "dart:20260206800010:035420",
+      "symbol": "035420.KS",
+      "name": "NAVER",
+      "currency": "KRW",
+      "declaredDate": "2026-02-06",
+      "recordDate": "2026-02-27",
+      "paymentDate": null,
+      "exDate": "2026-02-26",
+      "amountPerShare": 2630,
+      "marketTimeZone": "Asia/Seoul",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2019-01-01",
+      "sourceUrl": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260206800010",
+      "issuerCountry": "KR",
+      "instrument": "ordinary-share",
+      "treatyEligible": false,
+      "withholding": null,
+      "rightsSourceUrl": "https://global.krx.co.kr/contents/GLB/06/0602/0602010204/GLB0602010204T1.jsp",
+      "factsCheckedUrl": "https://navercorp.com/navercorp_/ir/businessReport/2019/2018_NAVER_Business_Report.pdf",
+      "rightsCheckedAt": "2026-09-24",
+      "revisionReceipts": [
+        "20260206800010"
+      ]
+    }
+  ]
+}

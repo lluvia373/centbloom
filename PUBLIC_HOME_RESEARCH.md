@@ -37,14 +37,23 @@
 
 ### 실제 서비스에서 가져올 것
 
-2026-09-13 공식 공개 페이지·도움말 확인이며 로그인 후 전 과정이나 이용 빈도는 검증하지 않았다. 인기도 순위·전환율·성장 원인으로 해석하지 않는다.
+TradingView·Yahoo Finance·Barchart의 아래 선정/정보 비교는 2026-09-24~25 KST에 재확인했다. TradingView는 실제 공개 화면, Yahoo/Barchart는 공식 공개 페이지·도움말의 검색/본문 자료를 확인했다. Robinhood 행은 기존 2026-09-13 조사다. 로그인 후 전 과정·이용 빈도·이 기능의 만족도는 검증하지 않았으며 인기도 순위·전환율·성장 원인으로 해석하지 않는다.
 
 | 사례 | 확인한 제공 방식 | 참고 범위·한계 |
 | --- | --- | --- |
-| [TradingView Unusual Volume](https://www.tradingview.com/markets/stocks-usa/market-movers-unusual-volume/) | 상대 거래량순 표에 가격·등락률·거래량을 나란히 제공 | 대표 지표가 상대 거래량으로 같은 목록이다. 서로 다른 이상 신호를 묶는 Centbloom 전체 탭의 카드 제거 근거로 쓰지 않음 |
+| [TradingView Unusual Volume](https://www.tradingview.com/markets/stocks-usa/market-movers-unusual-volume/) | 실제 공개 화면의 목록 표시는 100종목. 상대 거래량·가격·등락률·거래량·시가총액·업종을 제공하며 기사 열은 없음. MGM과 VKTX도 관찰됨 | 넓은 후보와 회사 규모/업종 맥락을 참고한다. 홈 요약과 전용 목록의 수를 직접 비교해 홈에 100개가 필요하다고 결론 내리지 않는다. [공식 계산 안내](https://www.tradingview.com/support/solutions/43000635874-how-do-we-calculate-relative-volume-and-relative-volume-at-time/)는 최근 10개 구간 평균 및 별도의 같은 시각 비교를 설명하므로 Centbloom 3개월 하루 평균과 배수를 직접 대조하지 않는다 |
+| [Yahoo Finance Unusual Volume](https://finance.yahoo.com/research-hub/screener/unusual-volume-stocks) | 상대 거래량·현재가·등락·거래량·3개월 평균·시가총액과 필터를 제공 | 같은 종목의 평균값을 함께 읽게 하는 방식을 참고한다. 검색 결과 수는 ETF 등 다른 대상/필터를 포함할 수 있어 Centbloom 적격 기업 수로 사용하지 않는다 |
+| [Barchart Volume Advances](https://www.barchart.com/stocks/most-active/volume-advances?orderBy=percentVolume&orderDir=desc) / [Price Surprises](https://www.barchart.com/stocks/price-surprises/bearish) | 거래량은 20일 평균과 비교하며 가격·거래량 하한과 시장/규모 필터가 있다. 가격 이상은 20일 수익률 변동의 표준편차로 비교. [시장 홈](https://www.barchart.com/stocks)은 요약에서 전체 목록으로 연결 | 검사 대상과 홈 표시 수를 분리하고 거래가 드문 초소형주 편중을 검토한다. 통계 점수·매수 기회 표현·많은 표 열을 그대로 복제하지 않는다. 실제 목록 건수와 유료 화면은 미확인 |
 | [Robinhood Watchlists and Cards](https://robinhood.com/us/en/support/articles/lists/) | 관심목록 위 카드에 큰 등락·뉴스를 제공. 뉴스에서 원문 브라우저로 이동하고 종목 상세에서 별도로 관심목록 추가 | 발견·원문·지속 관찰의 연결을 참고. 가로 스와이프 카드나 거래 집중을 만드는 강조를 그대로 채택하지 않음 |
 
-Yahoo 미국 페이지는 직접 접근 429로 이번 비교 근거에서 제외한다. 서비스에 기능이 있다는 사실과 사람들이 그 경로를 실제로 많이 쓴다는 증거를 구분한다.
+선정 검토의 결론은 **홈의 3개 요약보다 작은 검사 범위와 기사 필수 조건이 발견 범위를 좁힌다**는 것이다. 사용자가 검사 확대·기사 조건 해제·비회원 3개/회원 전체 접근을 승인했다. 로컬 구현은 각 순위 최대 250개와 중복 제거, 적격 결과 개수 상한 제거로 바꿨으며 세부 기준은 [명세](./PRODUCT_SPEC.md#평소와-다른-움직임), 실제 수신/검증 상태는 [진행판](./PROJECT_STATUS.md#검증-기록)에 둔다.
+
+- 범위 확대의 직접 근거: 09-25 00:00:55 KST 공개 순위의 MGM은 하락 5위·거래량/3개월 평균 2.7525배였으나 기존 각 3개 검사 밖이었다. TradingView 이상 거래량 목록에도 있었지만 평균 기간/시세 시각이 달라 배수는 직접 비교하지 않는다. 새 로컬 목록은 MGM을 실제 포함했다.
+- 거래일 누락은 실제 미국 달력으로 확인하도록 수정했다. 공급원 MGM 일봉의 9/22 종가가 null인 원자료도 직접 확인했으며, 이 날짜를 휴장으로 간주하거나 가짜 가격으로 채우지 않는다. 이력 수신 성공과 20거래일 연속 비교 성공은 다르다.
+- 홈 요약/전체 목록 분리는 Barchart의 요약→목록 연결, 기사 없는 수치 발견은 TradingView/Yahoo의 목록 방식을 참고했다. 3개 공개/회원 전체는 Centbloom의 승인된 제품 선택이며 경쟁사의 전환 효과로 입증한 기준이 아니다. 장중 누적량/하루 평균은 같은 시각 비교가 아니다. 같은 시각 비교에는 분 단위 과거 자료의 범위·권한·비용 확인이 별도로 필요하다.
+- 추가 정보 우선순위는 현재값과 실제 비교 기준(예: 거래량 1,421만/3개월 평균 300만), 회사 업종·규모, 확인된 사건 종류와 원문이다. 이미 상세의 변화 근거에 있는 최근 흐름은 홈에 반복하지 않는다. 외부 서비스의 목표가·분석가 의견·여러 재무비율은 이 영역의 목적에 맞지 않아 우선 추가하지 않는다.
+
+사이트별 시장 범위·평균 기간·시세 갱신 시점이 다르므로 종목이 일치하지 않는다는 이유만으로 어느 쪽이 틀렸다고 판단하지 않는다. 서비스에 기능이 있다는 사실과 사람들이 그 경로를 실제로 많이 쓴다는 증거를 구분한다.
 
 ## 개인 투자 영역의 구조 제안
 

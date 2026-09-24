@@ -5,14 +5,19 @@ import {
 } from "@/lib/transaction-backup";
 import type { Transaction } from "@/lib/types";
 import type { TransactionCommand } from "./types";
+import { DEFAULT_PORTFOLIO_ID } from "./portfolios";
 
 export function applyCommand(
   current: Transaction[],
   command: TransactionCommand,
+  defaultPortfolioId = DEFAULT_PORTFOLIO_ID,
 ) {
   let next: Transaction[];
   let skippedCount = 0;
   switch (command.type) {
+    case "createPortfolio":
+    case "renamePortfolio":
+    case "deletePortfolio":
     case "enrich":
       next = current;
       break;
@@ -37,9 +42,9 @@ export function applyCommand(
       next = current.filter((tx) => tx.id !== command.id);
       break;
     case "deleteHolding":
-      if (!current.some((tx) => tx.symbol === command.symbol))
+      if (!current.some((tx) => tx.symbol === command.symbol && (!command.portfolioId || tx.portfolioId === command.portfolioId)))
         throw new Error("삭제할 종목을 찾지 못했습니다.");
-      next = current.filter((tx) => tx.symbol !== command.symbol);
+      next = current.filter((tx) => tx.symbol !== command.symbol || (command.portfolioId && tx.portfolioId !== command.portfolioId));
       break;
     case "import": {
       const ids = new Set(current.map((tx) => tx.id));
@@ -50,11 +55,12 @@ export function applyCommand(
           : 0;
       next =
         command.mode === "replace"
-          ? command.records
+          ? [...current.filter((tx) => command.portfolioId && tx.portfolioId !== command.portfolioId), ...command.records]
           : [...current, ...additions];
       break;
     }
   }
+  next = next.map((tx) => tx.portfolioId ? tx : { ...tx, portfolioId: defaultPortfolioId });
   const validation = parseTransactionBackup(
     {
       format: TRANSACTION_BACKUP_FORMAT,

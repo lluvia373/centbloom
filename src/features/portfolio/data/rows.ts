@@ -2,6 +2,8 @@ import type { Transaction, TransactionType } from "@/lib/types";
 export interface PortfolioTransactionRow {
   id: string;
   user_id: string;
+  portfolio_id?: string;
+  cost_basis_path?: string[];
   symbol: string;
   name: string;
   transaction_type: TransactionType;
@@ -19,6 +21,8 @@ export function transactionToRow(userId: string, tx: Transaction) {
   return {
     id: tx.id,
     user_id: userId,
+    portfolio_id: tx.portfolioId,
+    cost_basis_path: tx.costBasisPath ?? [],
     symbol: tx.symbol,
     name: tx.name,
     transaction_type: tx.type,
@@ -36,6 +40,8 @@ export function transactionToRow(userId: string, tx: Transaction) {
 export function rowToTransaction(row: PortfolioTransactionRow): Transaction {
   return {
     id: row.id,
+    ...(row.portfolio_id ? { portfolioId: row.portfolio_id } : {}),
+    ...(row.cost_basis_path?.length ? { costBasisPath: row.cost_basis_path } : {}),
     symbol: row.symbol,
     name: row.name,
     type: row.transaction_type,

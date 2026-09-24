@@ -12,7 +12,7 @@ export function mergeWatchedChanges(publicItems: ResearchedMarketChange[], symbo
     if (prior && Date.parse(prior.quote.quotedAt ?? "") > Date.parse(report.quote.quotedAt ?? "")) continue;
     // A newer quiet observation must retire an older anomaly for the same stock.
     merged.delete(symbol);
-    if (report.change && report.story) merged.set(symbol, { ...report.change, story: report.story });
+    if (report.change) merged.set(symbol, { ...report.change, story: report.story });
   }
   return [...merged.values()];
 }

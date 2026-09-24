@@ -254,3 +254,32 @@ test('returning to a visible tab refreshes the same visit, without polling or a 
   assert.equal(ids.length,2);assert.equal(ids[0],ids[1]);
   state.unmount();assert.equal(listeners.size,0);
 });
+
+test('price conditions load separately, baseline evaluation emits no invented alert, and saving keeps its request identity', async () => {
+  let rows=[{symbol:'AAPL',direction:'below',enabled:true,matched:null}],evaluations=0;
+  const saves=[];
+  const state=accountHarness(()=>({
+    visit:async()=>({since:null,visitedAt:'now'}),list:async()=>[],hasUnread:async()=>false,
+    priceAlerts:async()=>rows,
+    evaluatePrices:async()=>{evaluations++;rows=rows.map(row=>({...row,matched:true}));return {emitted:0,unavailable:0};},
+    savePriceAlerts:async(id,symbol,rules)=>{saves.push({id,symbol,rules});rows=rules.map(rule=>({...rule,symbol,matched:null}));return rows;},
+  }));
+  await settle();let inbox=state.inbox();
+  assert.equal(inbox.pricesReady,true);assert.equal(inbox.priceAlerts[0].matched,true);
+  assert.equal(inbox.items.length,0,'a baseline cannot create a UI alert');assert.equal(evaluations,1);
+  const id=crypto.randomUUID(),rules=[{direction:'above',threshold:120,currency:'USD',enabled:true}];
+  assert.equal(await inbox.savePrices('AAPL',rules,id),null);await settle();inbox=state.inbox();
+  assert.equal(saves[0].id,id);assert.equal(inbox.priceAlerts[0].direction,'above');
+  state.unmount();
+  assert.match(await inbox.savePrices('AAPL',rules,id),/계정 연결/);
+});
+
+test('an aborted price request cannot publish account rows or start evaluation', async()=>{
+  const wait=deferred();let evaluations=0;
+  const state=accountHarness(()=>({
+    visit:async()=>({since:null,visitedAt:'now'}),list:async()=>[],hasUnread:async()=>false,
+    priceAlerts:()=>wait.promise,evaluatePrices:async()=>{evaluations++;return {emitted:0,unavailable:0};},
+  }));
+  await settle();state.unmount();wait.resolve([{symbol:'SECRET',enabled:true}]);await settle();
+  assert.equal(evaluations,0);assert.equal(state.inbox().priceAlerts.length,0);
+});

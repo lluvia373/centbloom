@@ -8,7 +8,7 @@ async function prepare(symbol, changes=false) {
  const end=Date.now()+90_000;
  while(Date.now()<end){
   const response=await fetch(path,{signal:AbortSignal.timeout(10_000)});
-  if(response.status===200){const feed=await response.json();console.log(changes?"Changes ready:":"News ready:",symbol||"home",changes?feed.items.length:feed.stories.length);return;}
+  if(response.status===200){const feed=await response.json();console.log(changes?"Changes ready:":"News ready:",symbol||"home",changes?feed.total:feed.stories.length);return;}
   if(response.status!==202)throw Error("News preparation HTTP "+response.status);
   await pause(2_000);
  }

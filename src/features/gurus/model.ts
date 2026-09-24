@@ -24,6 +24,9 @@ export interface GuruFiling {
   parentAccession: string | null;
   expectedRows: number;
   expectedValueUsd: number;
+  // Completeness describes the public table, not all assets managed by the filer.
+  disclosureScope?: { reportType: "holdings" | "combination"; confidentialOmitted: boolean };
+  sourceNormalization?: "empty-placeholder";
   complete: boolean;
   holdings: GuruHolding[];
 }
@@ -33,6 +36,10 @@ export function secSource(source: string) {
 }
 export function validateFiling(filing: GuruFiling): string | null {
   if (!filing.complete || !secSource(filing.source) || !secSource(filing.tableSource)) return "원문 또는 전체 자료 확인이 필요합니다.";
+  if (filing.disclosureScope && (!["holdings", "combination"].includes(filing.disclosureScope.reportType) ||
+    typeof filing.disclosureScope.confidentialOmitted !== "boolean")) return "공시의 공개 범위를 확인해 주세요.";
+  if (filing.sourceNormalization !== undefined && (filing.sourceNormalization !== "empty-placeholder" ||
+    filing.expectedRows !== 0 || filing.expectedValueUsd !== 0 || filing.holdings.length !== 0)) return "빈 보유 보고의 원문 표현을 확인해 주세요.";
   if (!/^\d{10}-\d{2}-\d{6}$/.test(filing.accession) || !/^\d{4}-(03-31|06-30|09-30|12-31)$/.test(filing.period)
     || !Number.isFinite(Date.parse(filing.period)) || !Number.isFinite(Date.parse(filing.filedDate)) || filing.filedDate < filing.period
     || !Number.isInteger(filing.revision) || filing.revision < 0) return "공시 식별자·기준일을 확인해 주세요.";
@@ -74,6 +81,8 @@ export function ingestFiling(archive: FilingArchive, incoming: GuruFiling): { ar
 /** Raw reported quantity differences only. Never label these as executed buys/sells. */
 export function reportedChanges(previous: GuruFiling, current: GuruFiling) {
   if (validateFiling(previous) || validateFiling(current) || previous.guruId !== current.guruId || previous.period >= current.period) return null;
+  if ([previous, current].some(filing => filing.disclosureScope?.confidentialOmitted ||
+    filing.disclosureScope?.reportType === "combination")) return null;
   const quarter = (date:string) => Number(date.slice(0,4))*4 + Number(date.slice(5,7))/3;
   if (quarter(current.period)-quarter(previous.period)!==1) return null;
   const key = (r: GuruHolding) => [r.cusip, r.shareClass, r.shareType, r.option ?? ""].join(":");

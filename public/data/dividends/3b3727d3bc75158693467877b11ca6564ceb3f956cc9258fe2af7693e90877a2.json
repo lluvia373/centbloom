@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:03:38.849Z",
+  "sourceCheckedAt": "2026-09-24T09:01:13.013Z",
+  "symbols": [
+    {
+      "symbol": "005930.KS",
+      "status": "supported",
+      "from": "2026-01-01",
+      "through": "2026-09-23",
+      "checkedAt": "2026-09-24T09:01:13.013Z",
+      "sourceUrl": "https://dart.fss.or.kr/dsae001/main.do?selectKey=corp&textCrpNm=005930"
+    }
+  ],
+  "events": [
+    {
+      "id": "dart:20260129800004:005930",
+      "symbol": "005930.KS",
+      "name": "삼성전자",
+      "currency": "KRW",
+      "declaredDate": "2026-01-29",
+      "recordDate": "2025-12-31",
+      "paymentDate": null,
+      "exDate": "2025-12-29",
+      "amountPerShare": 566,
+      "marketTimeZone": "Asia/Seoul",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2018-05-04",
+      "sourceUrl": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260129800004",
+      "issuerCountry": "KR",
+      "instrument": "ordinary-share",
+      "treatyEligible": false,
+      "withholding": null,
+      "rightsSourceUrl": "https://www.samsungpop.com/mbw/o2Info/contents.do?boardId=1590&cmd=detail&isEbd=Y",
+      "factsCheckedUrl": "https://www.samsung.com/global/ir/stock-information/listing-Info/",
+      "rightsCheckedAt": "2026-09-24",
+      "revisionReceipts": [
+        "20260129800004"
+      ]
+    },
+    {
+      "id": "dart:20260430800106:005930",
+      "symbol": "005930.KS",
+      "name": "삼성전자",
+      "currency": "KRW",
+      "declaredDate": "2026-04-30",
+      "recordDate": "2026-03-31",
+      "paymentDate": "2026-05-29",
+      "exDate": "2026-03-30",
+      "amountPerShare": 372,
+      "marketTimeZone": "Asia/Seoul",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2018-05-04",
+      "sourceUrl": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260430800106",
+      "issuerCountry": "KR",
+      "instrument": "ordinary-share",
+      "treatyEligible": false,
+      "withholding": null,
+      "rightsSourceUrl": "https://global.krx.co.kr/contents/GLB/06/0602/0602010204/GLB0602010204T1.jsp",
+      "factsCheckedUrl": "https://www.samsung.com/global/ir/stock-information/listing-Info/",
+      "rightsCheckedAt": "2026-09-24",
+      "revisionReceipts": [
+        "20260430800106"
+      ]
+    },
+    {
+      "id": "dart:20260730800137:005930",
+      "symbol": "005930.KS",
+      "name": "삼성전자",
+      "currency": "KRW",
+      "declaredDate": "2026-07-30",
+      "recordDate": "2026-06-30",
+      "paymentDate": "2026-08-28",
+      "exDate": "2026-06-29",
+      "amountPerShare": 374,
+      "marketTimeZone": "Asia/Seoul",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2018-05-04",
+      "sourceUrl": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730800137",
+      "issuerCountry": "KR",
+      "instrument": "ordinary-share",
+      "treatyEligible": false,
+      "withholding": null,
+      "rightsSourceUrl": "https://global.krx.co.kr/contents/GLB/06/0602/0602010204/GLB0602010204T1.jsp",
+      "factsCheckedUrl": "https://www.samsung.com/global/ir/stock-information/listing-Info/",
+      "rightsCheckedAt": "2026-09-24",
+      "revisionReceipts": [
+        "20260730800137"
+      ]
+    }
+  ]
+}

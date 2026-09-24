@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
+
+const a='00000000-0000-4000-8000-000000000001', b='00000000-0000-4000-8000-000000000002';
+test('price SQL: opt-in, baseline, boundary re-entry, timestamps, receipts, account isolation and server-only evaluation', async () => {
+  const db=new PGlite();
+  try {
+    await db.exec("create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;");
+    await db.query('insert into auth.users values($1),($2)',[a,b]);
+    for(const name of ['20260912112710_account_watchlists.sql','20260923030710_guru_notifications.sql','20260924035345_watchlist_price_alerts.sql'])
+      await db.exec(readFileSync('supabase/migrations/'+name,'utf8'));
+    const account=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
+    const rpc=async(sql,args=[])=>(await db.query(sql,args)).rows[0]?.value;
+    const watch=async()=>rpc("select public.commit_watchlist($1,'add',$2) value",[crypto.randomUUID(),JSON.stringify({symbol:'AAPL',name:'Apple',targetPrice:100,targetCurrency:'USD',addedAt:new Date().toISOString()})]);
+    const list=()=>rpc('select public.read_notifications() value');
+    const rules=()=>rpc('select public.read_price_alerts() value');
+    const save=(input,id=crypto.randomUUID())=>rpc("select public.set_price_alerts($1,'AAPL',$2) value",[id,JSON.stringify(input)]);
+    const below={direction:'below',threshold:100,currency:'USD',enabled:true};
+    const above={direction:'above',threshold:120,currency:'USD',enabled:true};
+    const origin=Date.now()-60_000;
+    let offset=0;
+    const quote=(price,extra={})=>({symbol:'AAPL',price,currency:'USD',quotedAt:new Date(origin+(offset+=1000)).toISOString(),fetchedAt:new Date().toISOString(),sourceUrl:'https://finance.yahoo.com/quote/AAPL/',...extra});
+    const evaluate=async q=>{await db.exec('reset role;set role service_role');return rpc('select public.evaluate_price_alerts($1,$2) value',[a,JSON.stringify([q])]);};
+    await account(a);await watch();await rpc("select public.commit_watchlist($1,'target',$2) value",[crypto.randomUUID(),JSON.stringify({symbol:'AAPL',targetPrice:100,targetCurrency:'USD'})]);
+    assert.deepEqual(await rules(),[],'an old target does not subscribe');
+    const request=crypto.randomUUID();await save([below,above],request);
+    await db.exec('reset role');await db.query("update public.watchlist_price_alerts set configured_at=$1",[new Date(origin-1000).toISOString()]);
+    assert.equal(await evaluate(quote(95)),0,'already satisfied on first observation is only baseline');
+    await account(a);assert.deepEqual(await list(),[]);assert.equal((await rules()).find(r=>r.direction==='below').matched,true);
+    assert.equal(await evaluate(quote(110)),0);const first=quote(100);assert.equal(await evaluate(first),1,'equality is a crossing');
+    assert.equal(await evaluate(first),0,'same quote cannot duplicate');
+    assert.equal(await evaluate(quote(99)),0,'staying satisfied does not repeat');
+    assert.equal(await evaluate(quote(110)),0);assert.equal(await evaluate(quote(90)),1,'re-entry allows a second event');
+    assert.equal(await evaluate(quote(125)),1,'above direction is independent');
+    await account(a);let rows=await list();assert.equal(rows.length,3);assert.ok(rows.every(row=>row.kind==='watch_price'));
+    assert.equal(rows.find(row=>Date.parse(row.occurred_at)===Date.parse(first.quotedAt))?.title,'Apple · 100 USD 이하 도달');
+    const prior=await rules();
+    await evaluate(quote(110,{quotedAt:new Date(Date.now()-21*60_000).toISOString()}));
+    await evaluate(quote(110,{fetchedAt:new Date(Date.now()-3*60_000).toISOString()}));
+    await evaluate(quote(110,{quotedAt:new Date(Date.now()+1000).toISOString()}));
+    await evaluate(quote(110,{currency:'KRW'}));
+    await account(a);assert.deepEqual(await rules(),prior,'stale, future, wrong-currency quotes never mutate state');
+    await assert.rejects(rpc('select public.evaluate_price_alerts($1,$2) value',[a,'[]']),/permission denied/);
+    await assert.rejects(db.exec("update public.watchlist_price_alerts set matched=false"),/permission denied/);
+    await rpc('select public.mark_notification_read($1) value',[rows[0].event_id]);assert.ok((await list())[0].read_at);
+    await account(b);await watch();await save([below]);assert.deepEqual(await list(),[]);
+    assert.equal((await db.query('select count(*)::int n from public.notification_events')).rows[0].n,0,'personal event evidence is not public');
+    assert.ok((await rules()).every(row=>row.user_id===b));
+    await account(a);await save([{...below,enabled:false}]);await save([below,above],request);
+    assert.equal((await rules())[0].enabled,false,'replaying old save cannot re-enable a later disabled rule');
+    await assert.rejects(save([below],request),/Request ID reused/);
+    await save([below]);assert.equal((await rules())[0].matched,null,'re-enable resets the baseline');
+    await evaluate(quote(80));await account(a);assert.equal((await list()).length,3);
+    assert.equal((await rules())[0].matched,null,'a delayed quote from before configuration cannot establish a new baseline');
+    await evaluate(quote(80,{quotedAt:new Date().toISOString()}));await account(a);
+    assert.equal((await rules())[0].matched,true,'first post-save satisfied quote records current reached state only');
+    assert.equal((await list()).length,3);
+    await rpc("select public.commit_watchlist($1,'remove',$2) value",[crypto.randomUUID(),JSON.stringify({symbol:'AAPL'})]);
+    assert.deepEqual(await rules(),[]);await watch();assert.equal((await rules())[0].enabled,false,'re-add never silently subscribes');
+    await db.exec('reset role;set role anon');await assert.rejects(rules(),/permission denied/);
+  } finally { await db.close(); }
+});

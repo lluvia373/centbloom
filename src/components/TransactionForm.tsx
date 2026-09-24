@@ -2,6 +2,9 @@
 import { TradeStockPicker } from "@/features/portfolio/ui/TradeStockPicker";
 import { useTransactionEntry } from "@/features/portfolio/ui/use-transaction-entry";
 import { useAuth } from "@/hooks/useAuth";
+import { usePortfolios } from "@/hooks/usePortfolio";
+import { PortfolioSwitcher } from "@/features/portfolio/ui/PortfolioSwitcher";
+import { StorageNotice } from "@/components/StorageNotice";
 import { formatCurrency, todayISO } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
@@ -18,7 +21,8 @@ const inputClass =
 
 export function TransactionForm(props: { initialSymbol?: string }) {
   const { user } = useAuth();
-  return <TransactionFormSession key={user?.id ?? "guest"} {...props} />;
+  const { selectedPortfolioId } = usePortfolios();
+  return <TransactionFormSession key={`${user?.id ?? "guest"}:${selectedPortfolioId}`} {...props} />;
 }
 function TransactionFormSession({
   initialSymbol = "",
@@ -31,6 +35,7 @@ function TransactionFormSession({
     success, setSuccess, setRetry, marketLoading, marketError, validMarket,
     availableQty, saving, chooseStock, handleSubmit, totalAmount,
   } = useTransactionEntry(initialSymbol);
+  const { isAggregate, writable, status } = usePortfolios();
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1.05fr_1fr]">
@@ -48,6 +53,11 @@ function TransactionFormSession({
           <h2 className="text-base font-semibold text-[#202329]">
             거래 입력
           </h2>
+        </div>
+        <StorageNotice placement="inline" />
+        <div className="mb-6 space-y-2">
+          <p className="text-cf-label text-cf-muted">기록할 포트폴리오</p>
+          <PortfolioSwitcher destination disabled={saving} />
         </div>
         {selected ? (
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -274,7 +284,7 @@ function TransactionFormSession({
               {user && <p className="text-cf-caption text-cf-muted break-all">저장할 계정: {user.email ?? user.id}</p>}
               <button
                 type="submit"
-                disabled={saving || !validMarket || marketLoading}
+                disabled={saving || isAggregate || writable === false || status === "loading" || status === "failed" || status === "cache-failed" || !validMarket || marketLoading}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25282e] py-3.5 text-sm font-medium text-[#ffffff] transition hover:bg-[#25282e] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" />

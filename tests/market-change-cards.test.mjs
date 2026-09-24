@@ -18,6 +18,7 @@ function render(items, { selected, page = 0, failed = false, partial = false, mi
   const state = [selected, page];
   const { MarketChanges } = loadTypescript("src/features/home/MarketChanges.tsx", {
     react: { ...React, useState: () => [state[stateIndex++], () => {}] },
+    "@/hooks/useAuth": { useAuth: () => ({ user: watched.length ? { id: "member" } : null }) },
     "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
     "@/components/AssetAvatar": { AssetAvatar: () => null },
     "@/features/watchlist/WatchStockButton": { WatchStockButton: ({ name }) => React.createElement("button", { "aria-label": name + " 관심종목에 담기" }, "관심 저장") },
@@ -57,17 +58,17 @@ test("volume metric remains a ratio while six-session history is reached through
   assert.match(encoded, /href="\/stock\/BRK%2FB#market-movement"/);
 });
 
-test("pagination, filter changes and shrinking feeds always show valid groups of three", () => {
+test("home never exposes more than three and sends further browsing through login", () => {
   const items = Array.from({ length: 7 }, (_, i) => make(`T${i}`));
   const first = render(items);
   assert.equal((first.match(/<article /g) ?? []).length, 3);
-  assert.match(first, /1 \/ 3/);
+  assert.match(first, /로그인하고 전체 보기/);
   const second = render(items, { page: 1 });
-  assert.match(second, /href="\/stock\/T3"/);
-  assert.doesNotMatch(second, /href="\/stock\/T0"/);
-  assert.equal((render(items, { page: 99 }).match(/<article /g) ?? []).length, 1);
+  assert.doesNotMatch(second, /href="\/stock\/T3"/);
+  assert.match(second, /href="\/stock\/T0"/);
+  assert.equal((render(items, { page: 99 }).match(/<article /g) ?? []).length, 3);
   const reset = render(items, { selected: "volume", page: 2 });
-  assert.match(reset, /1 \/ 3/);
+  assert.match(reset, /로그인하고 전체 보기/);
   assert.doesNotMatch(reset, />거래량 급증<\/button>/);
 });
 

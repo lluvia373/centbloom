@@ -2,11 +2,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { notificationRepository, type NotificationItem, type VisitWindow } from "./repository";
+import type { PriceAlert, PriceAlertInput } from "@/features/watchlist/price-alerts";
 
 interface Inbox {
+  accountId: string;
   items: NotificationItem[]; window: VisitWindow|null; ready:boolean; error:string|null; pending:boolean; more:boolean;
   hasUnread:boolean|null; unreadError:string|null;
   reload:()=>void; next:()=>void; markRead:(item:NotificationItem)=>void;
+  priceAlerts: PriceAlert[]; pricesReady: boolean; priceError: string | null; pricesPending: boolean;
+  checkPrices: () => void;
+  savePrices: (symbol: string, rules: PriceAlertInput[], requestId: string) => Promise<string | null>;
 }
 const Context=createContext<Inbox|null>(null);
 interface AccountScope { userId: string }
@@ -30,6 +35,9 @@ function AccountInbox({account,publish}:{account:AccountScope;publish:(snapshot:
   const [items,setItems]=useState<NotificationItem[]>([]),[window,setWindow]=useState<VisitWindow|null>(null);
   const [ready,setReady]=useState(false),[error,setError]=useState<string|null>(null),[pending,setPending]=useState(false),[more,setMore]=useState(false);
   const [hasUnread,setHasUnread]=useState<boolean|null>(null),[unreadError,setUnreadError]=useState<string|null>(null);
+  const [priceAlerts,setPriceAlerts]=useState<PriceAlert[]>([]),[pricesReady,setPricesReady]=useState(false);
+  const [priceError,setPriceError]=useState<string|null>(null),[pricesPending,setPricesPending]=useState(false);
+  const pricesBusy=useRef(false);
   const scope=useRef<AbortController|null>(null),visit=useRef<string|null>(null),busy=useRef(false),loaded=useRef(false);
   const readIds=useRef(new Set<string>());
   const refreshUnread=useCallback(async(repo:ReturnType<typeof notificationRepository>,signal:AbortSignal)=>{
@@ -75,12 +83,6 @@ function AccountInbox({account,publish}:{account:AccountScope;publish:(snapshot:
     finally{if(initialRead)await initialRead;if(scope.current?.signal===signal){busy.current=false;if(!signal.aborted)setPending(false);}}
   },[userId,refreshUnread]);
   useEffect(()=>{const controller=new AbortController();scope.current=controller;void load(controller.signal);return()=>{controller.abort();busy.current=false;};},[load]);
-  useEffect(()=>{
-    if(typeof document==="undefined")return;
-    const refresh=()=>{if(document.visibilityState==="visible"&&scope.current)void load(scope.current.signal);};
-    document.addEventListener("visibilitychange",refresh);
-    return()=>document.removeEventListener("visibilitychange",refresh);
-  },[load]);
   const markRead=useCallback(async(item:NotificationItem)=>{
     const signal=scope.current?.signal;if(!signal||signal.aborted||busy.current||item.read_at||readIds.current.has(item.event_id))return;
     busy.current=true;setPending(true);setError(null);
@@ -95,11 +97,54 @@ function AccountInbox({account,publish}:{account:AccountScope;publish:(snapshot:
     catch(e){if(!signal.aborted)setError(e instanceof Error?e.message:"읽음 저장 실패");}
     finally{if(scope.current?.signal===signal){busy.current=false;if(!signal.aborted)setPending(false);}}
   },[userId,refreshUnread]);
+  const checkPrices=useCallback(async()=>{
+    const signal=scope.current?.signal;
+    if(!signal||signal.aborted||pricesBusy.current)return;
+    pricesBusy.current=true;setPricesPending(true);setPriceError(null);
+    try {
+      const repo=notificationRepository(userId,signal);
+      const initial=await repo.priceAlerts();
+      if(signal.aborted)return;
+      setPriceAlerts(initial);setPricesReady(true);
+      if(initial.some(rule=>rule.enabled)) {
+        const result=await repo.evaluatePrices();
+        if(signal.aborted)return;
+        const updated=await repo.priceAlerts();
+        if(signal.aborted)return;
+        setPriceAlerts(updated);
+        if(result.unavailable)setPriceError("일부 종목은 최신 시세가 확인되면 가격 도달 여부를 다시 확인합니다.");
+        if(result.emitted)void load(signal);
+      }
+    }catch(e){if(!signal.aborted)setPriceError(e instanceof Error?e.message:"가격 알림 확인 실패");}
+    finally{pricesBusy.current=false;if(!signal.aborted)setPricesPending(false);}
+  },[userId,load]);
+  const savePrices=useCallback(async(symbol:string,rules:PriceAlertInput[],requestId:string)=>{
+    const signal=scope.current?.signal;
+    if(!signal||signal.aborted)return "계정 연결을 다시 확인해 주세요.";
+    if(pricesBusy.current)return "가격 확인이 끝난 뒤 다시 저장해 주세요.";
+    pricesBusy.current=true;setPricesPending(true);
+    let saved=false;
+    try {
+      const rows=await notificationRepository(userId,signal).savePriceAlerts(requestId,symbol,rules);
+      if(signal.aborted)return "계정이 변경되어 저장 결과를 표시하지 않았습니다.";
+      setPriceAlerts(rows);setPricesReady(true);setPriceError(null);saved=true;
+      return null;
+    }catch(e){return e instanceof Error?e.message:"가격 알림을 저장하지 못했습니다.";}
+    finally{pricesBusy.current=false;if(!signal.aborted){setPricesPending(false);if(saved)void checkPrices();}}
+  },[userId,checkPrices]);
   useEffect(()=>{
-    publish({account,inbox:{items,window,ready,error,pending,more,hasUnread,unreadError,
+    void checkPrices();
+    if(typeof document==="undefined")return;
+    const refresh=()=>{if(document.visibilityState==="visible"&&scope.current){void load(scope.current.signal);void checkPrices();}};
+    document.addEventListener("visibilitychange",refresh);
+    return()=>document.removeEventListener("visibilitychange",refresh);
+  },[checkPrices,load]);
+  useEffect(()=>{
+    publish({account,inbox:{accountId:userId,items,window,ready,error,pending,more,hasUnread,unreadError,priceAlerts,pricesReady,priceError,pricesPending,
+      checkPrices:()=>void checkPrices(),savePrices,
       reload:()=>{if(scope.current)void load(scope.current.signal);},
       next:()=>{if(scope.current)void load(scope.current.signal,items.at(-1));},
       markRead:(item)=>void markRead(item)}});
-  },[account,publish,items,window,ready,error,pending,more,hasUnread,unreadError,load,markRead]);
+  },[account,userId,publish,items,window,ready,error,pending,more,hasUnread,unreadError,load,markRead,priceAlerts,pricesReady,priceError,pricesPending,checkPrices,savePrices]);
   return null;
 }

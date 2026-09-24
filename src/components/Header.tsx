@@ -5,10 +5,10 @@ import { StockDiscovery } from "@/features/home/StockDiscovery";
 import { HeaderAccountControls } from "@/features/navigation/HeaderAccountControls";
 import marketHeader from "@/features/market/MarketHeader.module.css";
 import { usePreferences } from "@/hooks/usePortfolio";
-import { LayoutDashboard, Plus, Wallet } from "lucide-react";
+import { LayoutDashboard, Plus, Wallet, Landmark } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-const icons = { market: LayoutDashboard, investment: Wallet };
+const icons = { market: LayoutDashboard, investment: Wallet, gurus: Landmark };
 const links = primaryNavigation.map((item) => ({ ...item, icon: icons[item.area] }));
 export function Header() {
   const pathname = usePathname();

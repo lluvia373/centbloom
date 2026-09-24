@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/hooks/useAuth";
-import { useTransactions } from "@/hooks/usePortfolio";
+import { usePortfolios, useTransactions } from "@/hooks/usePortfolio";
 import { useKstDate } from "@/shared/time/use-kst-date";
 import { createSharedResource } from "@/shared/async/shared-resource";
 import type { IntradayRange } from "@/features/market/intraday";
@@ -15,8 +15,9 @@ const intraday = createSharedResource(loadIntradayPerformance, {
 export function useIntradayPerformance(range: IntradayRange, currency: DisplayCurrency) {
   const { user, loading: authLoading } = useAuth();
   const { transactions, revision, status, error: ledgerError } = useTransactions();
+  const { selectedPortfolioId } = usePortfolios();
   const day = useKstDate();
-  const key = JSON.stringify([user?.id ?? null, revision, day, range, currency]);
+  const key = JSON.stringify([user?.id ?? null, selectedPortfolioId, revision, day, range, currency]);
   const enabled = !authLoading && status !== "loading" && !!revision && !!day;
   const subscribe = useCallback((listener: () => void) => enabled
     ? intraday.subscribe(key, { transactions, range, day, currency }, listener) : () => {},

@@ -2,6 +2,10 @@ import { currencyUnitScale, normalizeCurrency, toKRW } from "./currency";
 import type { Holding, Transaction } from "./types";
 
 const QUANTITY_EPSILON = 1e-8;
+const poolKey = (tx: Transaction) => JSON.stringify([tx.portfolioId ?? "legacy", tx.symbol, ...(tx.costBasisPath ?? [])]);
+const isCostPool = (pool: { portfolioId?: string; symbol: string; path: string[] }, tx: Transaction) =>
+  pool.portfolioId === tx.portfolioId && pool.symbol === tx.symbol &&
+  (tx.costBasisPath ?? []).every((part, index) => pool.path[index] === part);
 
 export function validateTransactionHistory(
   transactions: Transaction[],
@@ -10,10 +14,11 @@ export function validateTransactionHistory(
     (a, b) =>
       a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
   );
-  const quantities = new Map<string, number>();
+  const quantities = new Map<string, { portfolioId?: string; symbol: string; path: string[]; quantity: number }>();
   const currencyUnits = new Map<string, string>();
 
   for (const tx of sorted) {
+    const positionKey = poolKey(tx);
     if (!Number.isFinite(tx.quantity) || tx.quantity <= 0) {
       return `${tx.symbol} 거래 수량은 0보다 커야 합니다.`;
     }
@@ -33,18 +38,20 @@ export function validateTransactionHistory(
       currencyUnits.set(tx.symbol, unit);
     }
 
-    const available = quantities.get(tx.symbol) ?? 0;
     if (tx.type === "buy") {
-      quantities.set(tx.symbol, available + tx.quantity);
+      const previous = quantities.get(positionKey);
+      quantities.set(positionKey, { portfolioId: tx.portfolioId, symbol: tx.symbol, path: tx.costBasisPath ?? [], quantity: (previous?.quantity ?? 0) + tx.quantity });
       continue;
     }
+    const pools = [...quantities.values()].filter((pool) => isCostPool(pool, tx));
+    const available = pools.reduce((sum, pool) => sum + pool.quantity, 0);
 
     if (tx.quantity > available + QUANTITY_EPSILON) {
       return `${tx.date} ${tx.symbol} 매도 수량(${tx.quantity})이 당시 보유 수량(${available})을 초과합니다.`;
     }
 
-    const next = available - tx.quantity;
-    quantities.set(tx.symbol, Math.abs(next) < QUANTITY_EPSILON ? 0 : next);
+    const remaining = available > 0 ? Math.max(0, 1 - tx.quantity / available) : 0;
+    for (const pool of pools) pool.quantity *= remaining;
   }
 
   return null;
@@ -62,12 +69,15 @@ export function createHoldingAccumulator() {
       totalCostUSD?: number;
       currency?: string;
       firstDate: string;
+      portfolioId?: string;
+      path: string[];
     }
   >();
 
   const apply = (tx: Transaction) => {
+    const key = poolKey(tx);
     if (tx.type === "buy") {
-      const existing = positions.get(tx.symbol);
+      const existing = positions.get(key);
       const cost = tx.quantity * tx.price + tx.fee;
       const costKRW =
         tx.currency && tx.fxRateToKRW != null
@@ -109,7 +119,7 @@ export function createHoldingAccumulator() {
           existing.totalCostUSD = undefined;
         }
       } else {
-        positions.set(tx.symbol, {
+        positions.set(key, {
           symbol: tx.symbol,
           name: tx.name,
           quantity: tx.quantity,
@@ -118,39 +128,38 @@ export function createHoldingAccumulator() {
           totalCostUSD: costUSD,
           currency: tx.currency,
           firstDate: tx.date,
+          portfolioId: tx.portfolioId,
+          path: tx.costBasisPath ?? [],
         });
       }
     } else {
-      const existing = positions.get(tx.symbol);
-      if (!existing || existing.quantity <= 0) return;
-
-      const avgCost = existing.totalCost / existing.quantity;
-      const avgCostKRW =
-        existing.totalCostKRW != null
-          ? existing.totalCostKRW / existing.quantity
-          : undefined;
-      const avgCostUSD =
-        existing.totalCostUSD != null
-          ? existing.totalCostUSD / existing.quantity
-          : undefined;
-
-      existing.quantity -= tx.quantity;
-      existing.totalCost -= avgCost * tx.quantity;
-      if (avgCostKRW != null && existing.totalCostKRW != null) {
-        existing.totalCostKRW -= avgCostKRW * tx.quantity;
-      }
-      if (avgCostUSD != null && existing.totalCostUSD != null) {
-        existing.totalCostUSD -= avgCostUSD * tx.quantity;
-      }
-
-      if (existing.quantity < QUANTITY_EPSILON) {
-        positions.delete(tx.symbol);
+      const pools = [...positions.entries()].filter(([, pool]) => isCostPool(pool, tx));
+      const available = pools.reduce((sum, [, pool]) => sum + pool.quantity, 0);
+      if (available <= 0) return;
+      const remaining = Math.max(0, 1 - tx.quantity / available);
+      for (const [poolId, pool] of pools) {
+        pool.quantity *= remaining;
+        pool.totalCost *= remaining;
+        if (pool.totalCostKRW != null) pool.totalCostKRW *= remaining;
+        if (pool.totalCostUSD != null) pool.totalCostUSD *= remaining;
+        if (pool.quantity < QUANTITY_EPSILON) positions.delete(poolId);
       }
     }
   };
 
-  const holdings = () =>
-    Array.from(positions.values()).map((p) => ({
+  const holdings = () => {
+    // Cost bases are reduced inside each portfolio before same-listing positions merge.
+    const combined = new Map<string, (typeof positions extends Map<string, infer P> ? P : never)>();
+    for (const position of positions.values()) {
+      const previous = combined.get(position.symbol);
+      if (!previous) { combined.set(position.symbol, { ...position }); continue; }
+      previous.quantity += position.quantity;
+      previous.totalCost += position.totalCost;
+      previous.totalCostKRW = previous.totalCostKRW != null && position.totalCostKRW != null ? previous.totalCostKRW + position.totalCostKRW : undefined;
+      previous.totalCostUSD = previous.totalCostUSD != null && position.totalCostUSD != null ? previous.totalCostUSD + position.totalCostUSD : undefined;
+      if (position.firstDate < previous.firstDate) previous.firstDate = position.firstDate;
+    }
+    return Array.from(combined.values()).map((p) => ({
       id: p.symbol,
       symbol: p.symbol,
       name: p.name,
@@ -161,6 +170,7 @@ export function createHoldingAccumulator() {
       costBasisUSD: p.totalCostUSD,
       addedAt: p.firstDate,
     }));
+  };
   return { apply, holdings };
 }
 

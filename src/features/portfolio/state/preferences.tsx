@@ -36,7 +36,7 @@ export function PreferencesProvider({
       try {
         const local =
           localStorage.getItem(key) ??
-          localStorage.getItem("stock-display-currency");
+          localStorage.getItem(scopedKey("stock-display-currency"));
         setCurrency(local === "USD" ? "USD" : "KRW");
         setError(null);
         const remote = await readDisplayCurrency(userId);

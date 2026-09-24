@@ -1,5 +1,6 @@
 import { isBrandedStorageKey } from "@/lib/branded-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
+import { projectStorageKey } from "@/lib/project-storage";
 import { accountWatchlistRepository, localWatchlistRepository, watchlistStorageKey, type WatchlistRepository } from "./repository";
 import { createWatchlistStore } from "./store";
 
@@ -66,7 +67,7 @@ function createBrowserStore(userId: string | null, configured: boolean, scope: s
 
 export function getWatchlistStore(userId: string | null, configured: boolean) {
   if (typeof window === "undefined" || (configured && !userId)) return null;
-  const scope = (configured ? "account:" : "local:") + (userId ?? "guest");
+  const scope = projectStorageKey((configured ? "account:" : "local:") + (userId ?? "guest"));
   let store = stores.get(scope);
   if (!store) {
     store = createBrowserStore(userId, configured, scope);

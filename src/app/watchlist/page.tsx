@@ -3,6 +3,7 @@
 import { WatchlistRow } from "@/features/watchlist/WatchlistRow";
 import { WatchlistSearch } from "@/features/watchlist/WatchlistSearch";
 import { useWatchlist } from "@/hooks/useWatchlist";
+import { useNotificationInbox } from "@/features/notifications/NotificationProvider";
 import {
   Check,
   CircleAlert,
@@ -12,7 +13,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const panel = "rounded-cf-card border border-cf-line bg-cf-surface";
 
@@ -33,6 +34,15 @@ export default function WatchlistPage() {
     failedSymbols,
     refreshQuotes,
   } = useWatchlist();
+  const inbox = useNotificationInbox();
+  const checkPrices = inbox?.checkPrices;
+  const quoteVersion = Object.values(quotes).map(quote => `${quote.symbol}:${quote.quotedAt ?? ""}`).sort().join("|");
+  const checkedVersion = useRef("");
+  useEffect(() => {
+    if (!checkPrices || !quoteVersion || checkedVersion.current === quoteVersion) return;
+    checkedVersion.current = quoteVersion;
+    checkPrices();
+  }, [checkPrices, quoteVersion]);
   const [notice, setNotice] = useState<string | null>(null);
   const searchInput = useRef<HTMLInputElement>(null);
 
@@ -128,6 +138,9 @@ export default function WatchlistPage() {
         </div>
       ) : null}
       {pending ? <p role="status" className="text-cf-caption text-cf-muted">저장 중…</p> : null}
+      {items.length > 0 && inbox?.priceError && <div role="status" className="flex flex-wrap items-center gap-2 text-cf-caption text-cf-muted">
+        <span>{inbox.priceError}</span><button type="button" className="button-secondary" disabled={inbox.pricesPending} onClick={inbox.checkPrices}>가격 알림 다시 확인</button>
+      </div>}
       {notice ? (
         <div
           role="status"
@@ -150,7 +163,7 @@ export default function WatchlistPage() {
           <h2 className="text-cf-body font-semibold">내 관심종목</h2>
           <button
             type="button"
-            onClick={refreshQuotes}
+            onClick={() => { refreshQuotes(); inbox?.checkPrices(); }}
             disabled={!items.length || quotesRefreshing}
             className="button-secondary"
           >
@@ -168,7 +181,7 @@ export default function WatchlistPage() {
           </p>
         ) : items.length ? (
           <>
-            <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_72px] gap-4 border-b border-cf-line px-6 py-3 text-cf-caption text-cf-muted md:grid">
+            <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_152px] gap-4 border-b border-cf-line px-6 py-3 text-cf-caption text-cf-muted md:grid">
               <span>종목</span>
               <span>현재가 · 전일 대비</span>
               <span>목표 매수가</span>
@@ -176,7 +189,7 @@ export default function WatchlistPage() {
             </div>
             {items.map((item) => (
               <WatchlistRow
-                key={item.symbol}
+                key={`${inbox?.accountId ?? "local"}:${item.symbol}`}
                 item={item}
                 quote={quotes[item.symbol]}
                 loading={quotesLoading}
@@ -185,6 +198,11 @@ export default function WatchlistPage() {
                 onTarget={(price, currency) =>
                   setTarget(item.symbol, price, currency)
                 }
+                priceAlerts={inbox?.priceAlerts.filter(rule => rule.symbol === item.symbol)}
+                pricesReady={inbox?.pricesReady}
+                pricesPending={inbox?.pricesPending}
+                priceAccountScope={inbox?.accountId}
+                onPrices={inbox ? (rules, requestId) => inbox.savePrices(item.symbol, rules, requestId) : undefined}
               />
             ))}
           </>
@@ -196,7 +214,7 @@ export default function WatchlistPage() {
           <span>
             {failedSymbols.length
               ? `${failedSymbols.length}개 종목의 시세를 확인하지 못했어요.`
-              : "지연 시세 가능 · 목표가 알림 없음"}
+              : "지연 시세 가능"}
           </span>
         </div>}
       </section>}

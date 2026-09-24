@@ -3,6 +3,10 @@ export type DisplayCurrency = "KRW" | "USD";
 
 export interface Transaction {
   id: string;
+  /** Absent only in legacy imports; the ledger assigns it before saving. */
+  portfolioId?: string;
+  /** Historical cost pool retained when every trade moves to another portfolio. */
+  costBasisPath?: string[];
   symbol: string;
   name: string;
   type: TransactionType;

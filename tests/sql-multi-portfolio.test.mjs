@@ -1,0 +1,44 @@
+import { portfolioSchema } from './fixtures/portfolio-schema.mjs';
+import { PGlite } from '@electric-sql/pglite';
+import { readFileSync } from 'node:fs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+const owner='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002';
+const A=owner,B='20000000-0000-4000-8000-000000000002';
+const id=n=>`10000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+const row=(n,portfolio=A,type='buy')=>({id:id(n),user_id:owner,portfolio_id:portfolio,cost_basis_path:[],symbol:'QA',name:'QA',transaction_type:type,trade_date:type==='buy'?'2026-01-01':'2026-01-02',quantity:1,price:100,fee:0,currency:'KRW',fx_rate_to_krw:1,usd_krw_rate_at_transaction:1300,created_at:'2026-01-01T00:00:00Z'});
+test('SQL portfolio migration preserves trades; RLS, membership, CAS, atomic transfer/delete and retry are enforced',async()=>{
+ const db=new PGlite();
+ try {
+  await db.exec(portfolioSchema(owner));
+  for(const table of ['portfolio_transactions','portfolio_preferences','portfolio_snapshots']) await db.exec(`alter table public.${table} enable row level security; create policy own on public.${table} for all to authenticated using(auth.uid()=user_id) with check(auth.uid()=user_id); grant select,insert,update,delete on public.${table} to authenticated;`);
+  const legacy=row(1);delete legacy.portfolio_id;delete legacy.cost_basis_path;
+  await db.query('insert into public.portfolio_transactions select * from jsonb_populate_recordset(null::public.portfolio_transactions,$1)',[JSON.stringify([legacy])]);
+  await db.exec(readFileSync('supabase/migrations/20260905225656_atomic_portfolio_ledger.sql','utf8'));
+  await db.exec(`begin; ${readFileSync('supabase/migrations/20260924035408_multi_portfolio_workspace.sql','utf8')} commit;`);
+  await db.exec(`set role authenticated; set request.jwt.claim.sub='${owner}';`);
+  const read=async()=>(await db.query('select public.read_portfolio_ledger() snapshot')).rows[0].snapshot;
+  const commit=async(snapshot,n,portfolios,transactions)=>(await db.query('select public.commit_portfolio_workspace($1,$2,$3,$4) snapshot',[snapshot.revision,id(n),JSON.stringify(portfolios),JSON.stringify(transactions)])).rows[0].snapshot;
+  const first=await read();assert.equal(first.portfolios.length,1);assert.equal(first.transactions.length,1);assert.equal(first.transactions[0].id,legacy.id);assert.equal(first.transactions[0].portfolio_id,A);
+  assert.deepEqual(await read(),first,'repeat reads never duplicate migration');
+  const folders=[...first.portfolios,{id:B,user_id:owner,name:'Second',created_at:'2026-01-01',is_default:false}];
+  const added=await commit(first,10,folders,first.transactions);assert.equal(added.portfolios.length,2);
+  await assert.rejects(commit(first,11,folders,first.transactions),/changed/);
+  await assert.rejects(commit(added,12,folders,[...added.transactions,row(2,B,'sell')]),/Sale exceeds/);
+  assert.deepEqual(await read(),added,'failed validation rolls metadata back too');
+  await assert.rejects(commit(added,13,folders.filter(p=>p.id!==A).map(p=>({...p,is_default:true})),added.transactions),/foreign key/);
+  assert.deepEqual(await read(),added,'deleting a nonempty folder is impossible');
+  const movedRows=added.transactions.map(tx=>({...tx,portfolio_id:B,cost_basis_path:[A]}));
+  const remaining=folders.filter(p=>p.id===B).map(p=>({...p,is_default:true}));
+  const moved=await commit(added,14,remaining,movedRows);assert.equal(moved.portfolios.length,1);assert.equal(moved.transactions[0].portfolio_id,B);assert.deepEqual(moved.transactions[0].cost_basis_path,[A]);
+  assert.deepEqual(await commit(added,14,remaining,movedRows),moved,'lost response retry is idempotent');
+  await assert.rejects(commit(moved,14,[{...remaining[0],name:'changed'}],movedRows),/reused/);
+  await assert.rejects(commit(moved,15,[{...remaining[0],user_id:other}],movedRows),/Invalid portfolios/);
+  await assert.rejects(commit(moved,16,remaining,[{...row(3,B),user_id:other}]),/Invalid transaction/);
+  await assert.rejects(commit(moved,17,[],[]),/Expected 1/);
+  await db.exec(`set request.jwt.claim.sub='${other}'`);const isolated=await read();assert.equal(isolated.transactions.length,0);assert.equal(isolated.portfolios.length,1);assert.equal(isolated.portfolios[0].user_id,other);
+  assert.equal((await db.query('select count(*)::int n from public.portfolios where user_id=$1',[owner])).rows[0].n,0);
+  await assert.rejects(db.query('insert into public.portfolios(user_id,id,name) values($1,$2,$3)',[owner,id(70),'wrong']),/row-level/);
+  await db.exec('set role anon');await assert.rejects(db.query('select * from public.portfolios'),/permission denied/);
+ } finally { await db.close(); }
+});

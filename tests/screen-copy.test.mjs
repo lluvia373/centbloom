@@ -119,20 +119,23 @@ test('settings exposes the account and selected currency while retaining prefere
  assert.match(signedIn,/settings-test@example.com/); assert.match(signedIn,/로그아웃/);
  assert.match(signedIn,/검증 사용자/); assert.match(signedIn,/2026년 9월 7일/); assert.match(signedIn,/Google/); assert.match(signedIn,/다시 저장/); assert.doesNotMatch(signedIn,/<details[^>]* open/); assert.match(signedIn,/role="alert"/); assert.ok(signedIn.includes(preferenceError));
 });
-test('settings shows currency failures once while keeping transaction failures visible',()=>{
- let pathname='/settings'; let error=null;
+test('settings owns currency feedback; only unresolved transactions need a global recovery link',()=>{
+ let pathname='/settings'; let issue=null;
  const preferenceError='통화 저장 실패';
  const {StorageNotice}=loadTypescript('src/components/StorageNotice.tsx',{
   'next/navigation':{usePathname:()=>pathname},
+  '@/hooks/useAuth':{useAuth:()=>({user:null})},
+  './StorageNotice.module.css':{default:{}},
   '@/hooks/usePortfolio':{
-   useTransactions:()=>({error,status:'ready',writable:true}),
+   useTransactions:()=>({issue,status:'ready',writable:true}),
    useTransactionCommands:()=>({retryStorage:()=>{},reloadTransactions:()=>{}}),
    usePreferences:()=>({preferenceError}),
   },
  });
  assert.equal(render(StorageNotice),'');
- error='거래 저장 실패';assert.match(render(StorageNotice),/거래 저장 실패/);
- error=null;pathname='/portfolio';assert.match(render(StorageNotice),/통화 저장 실패/);
+ issue='pending-save';assert.match(render(StorageNotice),/거래 확인/);
+ issue=null;pathname='/portfolio';assert.equal(render(StorageNotice),'');
+ assert.match(render(StorageNotice,{placement:'inline'}),/표시 통화 설정을 확인하지 못했습니다/);
 });
 
 test('calculation disclosure is named, closed initially, and retains its full definition',()=>{

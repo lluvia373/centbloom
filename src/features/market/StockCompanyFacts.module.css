@@ -1,0 +1,13 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: var(--cf-space-6); }
+.section { min-width: 0; }
+.section h2 { margin: 0 0 var(--cf-space-3); font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); line-height: var(--cf-leading-title); }
+.card { padding: var(--cf-space-4); border: 1px solid var(--cf-color-line); border-radius: var(--cf-radius-card); background: var(--cf-color-surface); }
+.card ul { margin: 0; padding: 0; list-style: none; }
+.card li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--cf-space-3); padding-block: var(--cf-space-3); border-bottom: 1px solid var(--cf-color-line); font-size: var(--cf-text-body); overflow-wrap: anywhere; }
+.card li > div { display: flex; flex-direction: column; gap: var(--cf-space-1); min-width: 0; }
+.card strong { font-weight: var(--cf-weight-medium); }
+.amount { text-align: right; font-variant-numeric: tabular-nums; }
+.label, .note { font-size: var(--cf-text-caption); color: var(--cf-color-muted); line-height: var(--cf-leading-body); }
+.note { margin-top: var(--cf-space-3); }
+.note a { text-decoration: underline; }
+.note a:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: var(--cf-space-1); }

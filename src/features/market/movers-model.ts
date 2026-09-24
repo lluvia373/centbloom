@@ -16,6 +16,7 @@ export interface MoversResult {
 export function normalizeMovers(
   items: unknown[],
   kind: MoverKind,
+  limit = 10,
 ): MoverQuote[] {
   const seen = new Set<string>();
   return items
@@ -95,5 +96,5 @@ export function normalizeMovers(
           ? a.changePercent - b.changePercent
           : (b.volume ?? 0) - (a.volume ?? 0),
     )
-    .slice(0, 10);
+    .slice(0, limit);
 }

@@ -3,9 +3,11 @@ import { AssetAvatar } from "@/components/AssetAvatar";
 import { QuoteStatus } from "@/components/QuoteStatus";
 import { formatWatchPrice, type WatchlistItem } from "@/hooks/useWatchlist";
 import type { StockQuote } from "@/lib/types";
-import { ArrowDownRight, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowDownRight, ArrowUpRight, Bell, Pencil, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { TargetEditor } from "./TargetEditor";
+import { PriceAlertEditor } from "./PriceAlertEditor";
+import { conditionReached, type PriceAlert, type PriceAlertInput } from "./price-alerts";
 const smallButton =
   "inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#e6e8eb] bg-[#ffffff] px-3 py-2 text-xs font-medium text-[#727680] transition hover:bg-[#f3f4f6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25282e] disabled:cursor-not-allowed disabled:opacity-40";
 export function WatchlistRow({
@@ -15,6 +17,11 @@ export function WatchlistRow({
   failed,
   onRemove,
   onTarget,
+  priceAlerts = [],
+  pricesReady = false,
+  pricesPending = false,
+  onPrices,
+  priceAccountScope,
 }: {
   item: WatchlistItem;
   quote?: StockQuote;
@@ -22,12 +29,19 @@ export function WatchlistRow({
   failed: boolean;
   onRemove: () => string | null | Promise<string | null>;
   onTarget: (price: number | null, currency: string | null) => string | null | Promise<string | null>;
+  priceAlerts?: PriceAlert[];
+  pricesReady?: boolean;
+  pricesPending?: boolean;
+  onPrices?: (rules: PriceAlertInput[], requestId: string) => Promise<string | null>;
+  priceAccountScope?: string;
 }) {
   const [pending, setPending] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editingPrices, setEditingPrices] = useState(false);
+  const priceButton = useRef<HTMLButtonElement>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currency = quote?.currency ?? item.targetCurrency;
+  const currency = quote?.currency ?? item.targetCurrency ?? priceAlerts[0]?.currency;
   const targetComparable =
     !!quote &&
     !failed &&
@@ -41,7 +55,7 @@ export function WatchlistRow({
     : null;
   return (
     <article className="border-t border-[#e6e8eb] p-5 first:border-t-0 sm:px-6">
-      <div className="grid items-center gap-4 md:grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_auto]">
+      <div className="grid items-center gap-4 md:grid-cols-[minmax(180px,1.2fr)_minmax(130px,1fr)_minmax(155px,1fr)_152px]">
         <div className="flex min-w-0 items-center gap-3">
           <AssetAvatar symbol={item.symbol} logoUrl={quote?.logoUrl} />
           <div className="min-w-0">
@@ -112,6 +126,13 @@ export function WatchlistRow({
           </div>
         </div>
         <div className="flex justify-end gap-1">
+          {onPrices && <button type="button" ref={priceButton} aria-label={`${item.name} 가격 알림 설정`}
+            title={currency ? "가격 알림 설정" : "시세를 불러온 뒤 가격 알림을 설정할 수 있습니다"}
+            aria-expanded={editingPrices} disabled={!currency || !pricesReady || pending}
+            onClick={() => { setEditingPrices(!editingPrices); setEditing(false); setConfirmRemove(false); }}
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-cf-control text-cf-muted hover:bg-cf-soft focus-visible:outline-2 focus-visible:outline-cf-focus disabled:opacity-40">
+            <Bell size={16} aria-hidden="true" />
+          </button>}
           <button
             type="button"
             title={
@@ -123,9 +144,10 @@ export function WatchlistRow({
             disabled={!currency || pending}
             onClick={() => {
               setEditing(!editing);
+              setEditingPrices(false);
               setConfirmRemove(false);
             }}
-            className="rounded-lg p-2 text-[#727680] hover:bg-[#f3f4f6] hover:text-[#727680] disabled:opacity-30"
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-cf-control text-cf-muted hover:bg-cf-soft focus-visible:outline-2 focus-visible:outline-cf-focus disabled:opacity-40"
           >
             <Pencil size={15} />
           </button>
@@ -136,13 +158,22 @@ export function WatchlistRow({
             onClick={() => {
               setConfirmRemove(!confirmRemove);
               setEditing(false);
+              setEditingPrices(false);
             }}
-            className="rounded-lg p-2 text-[#727680] hover:bg-[#ffffff] hover:text-[#d65353]"
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-cf-control text-cf-muted hover:bg-cf-soft hover:text-cf-negative focus-visible:outline-2 focus-visible:outline-cf-focus disabled:opacity-40"
           >
             <Trash2 size={15} />
           </button>
         </div>
       </div>
+      {priceAlerts.some(rule => rule.enabled) && <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-cf-caption text-cf-muted">
+        {priceAlerts.filter(rule => rule.enabled).map(rule => {
+          const state = conditionReached(rule, quote, failed);
+          return <span key={rule.direction}>알림 {formatWatchPrice(rule.threshold, rule.currency)} {rule.direction === "below" ? "이하" : "이상"} · {state === null ? "시세 확인 대기" : state ? "현재 도달" : "도달 대기"}</span>;
+        })}
+      </div>}
+      {editingPrices && currency && onPrices && <PriceAlertEditor symbol={item.symbol} currency={currency} rules={priceAlerts}
+        accountScope={priceAccountScope} pending={pricesPending} onSave={onPrices} onClose={() => { setEditingPrices(false); priceButton.current?.focus(); }} />}
       {editing && currency ? (
         <TargetEditor
           item={item}

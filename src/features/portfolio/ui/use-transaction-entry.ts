@@ -1,7 +1,7 @@
 "use client";
 import { useTradeMarket } from "@/features/market/use-trade-market";
 import { useAuth } from "@/hooks/useAuth";
-import { useTransactionCommands, useTransactions } from "@/hooks/usePortfolio";
+import { useTransactionCommands, useTransactions, usePortfolios } from "@/hooks/usePortfolio";
 import { todayISO } from "@/lib/format";
 import { discoveryStocks } from "@/lib/markets";
 import { getAvailableQuantity } from "@/lib/portfolio";
@@ -12,8 +12,9 @@ import { useRef, useState, type FormEvent } from "react";
 /** Owns one account-keyed form's draft and save lifecycle; storage remains in the ledger. */
 export function useTransactionEntry(initialSymbol: string) {
   const { transactions } = useTransactions();
+  const { selectedPortfolioId, isAggregate } = usePortfolios();
   const { user } = useAuth();
-  const captureScope = useOperationScope(user?.id ?? "guest");
+  const captureScope = useOperationScope(`${user?.id ?? "guest"}:${selectedPortfolioId}`);
   const { addTransaction } = useTransactionCommands();
   const [selected, setSelected] = useState<StockSearchResult | null>(
     () => discoveryStocks("all").find((stock) => stock.symbol === initialSymbol) ?? null,
@@ -33,7 +34,7 @@ export function useTransactionEntry(initialSymbol: string) {
   const [saving, setSaving] = useState(false);
 
   const validMarket = market?.symbol === selected?.symbol && market?.date === effectiveDate ? market : null;
-  const availableQty = selected ? getAvailableQuantity(transactions, selected.symbol) : 0;
+  const availableQty = selected && !isAggregate ? getAvailableQuantity(transactions, selected.symbol) : 0;
 
   const chooseStock = (stock: StockSearchResult) => {
     if (submitting.current) return;
@@ -46,6 +47,7 @@ export function useTransactionEntry(initialSymbol: string) {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isAggregate) { setError("거래를 기록할 포트폴리오를 선택해 주세요."); return; }
     if (!selected || !validMarket || marketLoading || submitting.current) return;
     const qty = Number(quantity);
     const unitPrice = Number(price);

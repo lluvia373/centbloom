@@ -1,8 +1,10 @@
 import type { Transaction } from "./types";
 import { validateTransactionHistory } from "./portfolio";
+import type { Portfolio } from "@/features/portfolio/model/types";
+import { normalizeWorkspace } from "@/features/portfolio/model/portfolios";
 
 export const TRANSACTION_BACKUP_FORMAT = "centbloom-transactions";
-export const TRANSACTION_BACKUP_VERSION = 1;
+export const TRANSACTION_BACKUP_VERSION = 2;
 export const MAX_BACKUP_FILE_BYTES = 5 * 1024 * 1024;
 
 const MAX_TRANSACTION_COUNT = 20_000;
@@ -13,6 +15,7 @@ export interface TransactionBackup {
   version: typeof TRANSACTION_BACKUP_VERSION;
   exportedAt: string;
   transactions: Transaction[];
+  portfolios?: Portfolio[];
 }
 
 export type TransactionBackupParseResult =
@@ -62,6 +65,12 @@ function parseTransaction(
   }
 
   const id = typeof value.id === "string" ? value.id.trim() : "";
+  const portfolioId = value.portfolioId == null ? undefined : typeof value.portfolioId === "string" ? value.portfolioId : "";
+  if (portfolioId !== undefined && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(portfolioId))
+    errors.push(`${label}의 포트폴리오 ID가 올바르지 않습니다.`);
+  const costBasisPath = value.costBasisPath as string[] | undefined;
+  if (costBasisPath !== undefined && (!Array.isArray(costBasisPath) || costBasisPath.length > 100 || costBasisPath.some((id) => typeof id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))))
+    errors.push(`${label}의 매입원가 연결이 올바르지 않습니다.`);
   const symbol =
     typeof value.symbol === "string" ? value.symbol.trim().toUpperCase() : "";
   const name = typeof value.name === "string" ? value.name.trim() : "";
@@ -144,6 +153,8 @@ function parseTransaction(
 
   return {
     id,
+    ...(portfolioId ? { portfolioId } : {}),
+    ...(costBasisPath ? { costBasisPath } : {}),
     symbol,
     name,
     type,
@@ -161,11 +172,13 @@ function parseTransaction(
 export function createTransactionBackup(
   transactions: Transaction[],
   exportedAt = new Date().toISOString(),
+  portfolios?: Portfolio[],
 ): TransactionBackup {
   return {
     format: TRANSACTION_BACKUP_FORMAT,
     version: TRANSACTION_BACKUP_VERSION,
     exportedAt,
+    ...(portfolios ? { portfolios } : {}),
     transactions: [...transactions].sort(
       (a, b) =>
         a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt),
@@ -175,8 +188,9 @@ export function createTransactionBackup(
 
 export function serializeTransactionBackup(
   transactions: Transaction[],
+  portfolios?: Portfolio[],
 ): string {
-  return JSON.stringify(createTransactionBackup(transactions), null, 2);
+  return JSON.stringify(createTransactionBackup(transactions, undefined, portfolios), null, 2);
 }
 
 export function parseTransactionBackup(
@@ -199,7 +213,7 @@ export function parseTransactionBackup(
   ) {
     errors.push("센트블룸 거래 백업 파일이 아닙니다.");
   }
-  if (value.version !== TRANSACTION_BACKUP_VERSION) {
+  if (value.version !== 1 && value.version !== TRANSACTION_BACKUP_VERSION) {
     errors.push(
       `지원하지 않는 백업 버전입니다. 현재 지원 버전은 ${TRANSACTION_BACKUP_VERSION}입니다.`,
     );
@@ -250,8 +264,18 @@ export function parseTransactionBackup(
 
   if (errors.length > 0) return { ok: false, errors: errors.slice(0, 8) };
 
+  let portfolios: Portfolio[] | undefined;
+  if (value.portfolios !== undefined) {
+    try {
+      if (!Array.isArray(value.portfolios)) throw new Error();
+      portfolios = normalizeWorkspace({ portfolios: value.portfolios as Portfolio[], transactions, revision: "", writable: false }).portfolios;
+    } catch {
+      return { ok: false, errors: ["백업의 포트폴리오와 거래 연결이 올바르지 않습니다."] };
+    }
+  }
+
   return {
     ok: true,
-    backup: createTransactionBackup(transactions, exportedAt),
+    backup: createTransactionBackup(transactions, exportedAt, portfolios),
   };
 }

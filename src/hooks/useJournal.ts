@@ -1,6 +1,7 @@
 "use client";
 
 import { isBrandedStorageKey,readBrandedStorage } from "@/lib/branded-storage";
+import { projectStorageKey } from "@/lib/project-storage";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useCallback,useSyncExternalStore } from "react";
@@ -129,7 +130,7 @@ function writeEntries(key: string, entries: JournalEntry[]): string | null {
 
 export function useJournal() {
   const { user, loading } = useAuth();
-  const storageKey = `centbloom-journal:v1:${user?.id ?? "local"}`;
+  const storageKey = projectStorageKey(`centbloom-journal:v1:${user?.id ?? "local"}`);
   const subscribe = useCallback(
     (listener: () => void) => {
       const handleStorage = (event: StorageEvent) => {

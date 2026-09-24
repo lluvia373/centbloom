@@ -84,7 +84,7 @@ test("handoff selection keeps the correct symbol and newest observed session, in
 test("public handoff survives home unsubscription only until its original expiry, without another public request", () => {
   const effects = [];
   const item = make();
-  const feed = { items: [item], expiresAt: 200 };
+  const feed = { items: [item], expiresAt: 200, access: "preview" };
   let snapshot = { loading: false, failed: false };
   const hook = loadTypescript("src/features/market/use-market-changes.ts", {
     react: { useCallback: fn => fn, useMemo: fn => fn(), useState: () => [0, () => {}],

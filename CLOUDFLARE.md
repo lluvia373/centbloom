@@ -29,7 +29,7 @@ npx wrangler login
 
 - 공개 주소는 https://centbloom.stock-web-demo.workers.dev 이다. .com은 구매·연결하지 않았다.
 - 이전 centifolio Worker와 연결된 배포·버전·Git Builds는 삭제했으며 다시 배포하지 않는다. 계정 거래·DB·브라우저 저장 데이터와 이전 브랜드 데이터 호환은 별도이므로 보존한다. 이전 주소의 로컬 노트·관심종목은 새 주소로 자동 이전되지 않는다.
-- Auth Site URL과 공개 Redirect URL은 센트블룸만 사용한다. 이전 공개 주소를 허용 목록에서 제거했으며 localhost:3000·127.0.0.1:3000 개발 주소는 유지한다.
+- 실제 서비스 Auth Site URL과 공개 Redirect URL은 센트블룸을 사용한다. 이전 공개 주소는 제거했다. 실제 서비스에 남은 localhost·127.0.0.1 허용 목록은 이번 로컬 작업에서 수정하지 않았으며, 새 개발 코드는 실제 저장소에 연결하지 않는다. 개발 로그인은 [별도 시험용 설정](#로컬-google-로그인)을 따른다.
 - Git Builds: centbloom만 npm run lint, 전체 테스트, build:cloudflare를 거쳐 opennextjs-cloudflare deploy --keep-vars를 실행한다. 기존 Supabase 공개 빌드 값·NODE_VERSION=24.19.0을 유지한다.
 - 로컬 전체 검사는 [README 검증](./README.md#검증)에 따라 pre-push 훅에 모으며 개발 중에는 변경 부분만 빠르게 확인한다. 배포 CI의 prepare는 로컬 훅 설치를 건너뛴다. 배포 환경에서 하는 검사와 OpenNext 빌드는 환경이 다른 필수 확인이므로 로컬 중복 검사로 간주해 제거하지 않는다.
 
@@ -40,6 +40,19 @@ npx wrangler login
 - Cloudflare의 centbloom → Settings → Build → Build watch paths에서 Includes는 `*`, Excludes는 JSON의 정확한 파일 경로로 맞춘다. 기존 빌드·배포 명령, 브랜치, 캐시, 환경 변수·권한은 바꾸지 않는다. 제외 설정은 Git 파일 변경만으로 적용되지 않으므로 저장 뒤 재조회하고 실제 적용 여부는 [진행판](./PROJECT_STATUS.md#환경별-진행-상태)에 기록한다.
 - [Cloudflare 경로 판정](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/)은 제외되지 않은 변경이 하나라도 있으면 빌드한다. 빈 변경 이벤트·3,000개 이상 파일·20개 이상 커밋은 경로 판정을 생략하고 빌드하므로 모든 문서 푸시의 생략을 보장하지 않는다. 수동 재배포는 이 최적화와 별개다.
 - 배포 후 결과 문서만 갱신할 때는 문서 검사·저장으로 끝내며, 새 앱 배포를 기다리거나 완료 보고를 위해 상태 문서를 다시 반복 갱신하지 않는다. 배포 설정 자체를 고친 커밋은 문서 전용이 아니므로 전체 검사 대상이다. 검사 로그는 성공 요약과 실패한 부분만 확인하고 동일 조건의 성공 검사를 수동으로 반복하지 않는다. 토큰·시간 절감률은 실측 없이 주장하지 않는다.
+
+## 기업 자료 로컬 평가
+
+FMP는 **로컬 평가용·기본 꺼짐**이며 Cloudflare 설정/스케줄러를 변경하지 않는다. [공급 명세](./PRODUCT_SPEC.md#기업-자료-공급-전환)를 먼저 확인한다. Node 24+에서 Git 제외 `.env.development.local`에 `FMP_API_KEY`와 `FMP_EVALUATION_ENABLED=true`를 설정한다. 공개 변수(`NEXT_PUBLIC_`)로 만들지 않는다. 무료 평가 키는 공개 서비스 표시·실시간 이용 권한을 대신하지 않는다.
+
+```sh
+npm run market:prepare:company -- --symbols=AAPL,MSFT --requests=20
+npm run market:prepare:company -- --symbols=AAPL,MSFT --audit
+```
+
+- 종목당 기업 정보·현재 시세·일별 이력·배당·실적 5개 경로를 호출한다. 배당·실적은 무료 계정이 허용한 `limit=5`로 요청한다. 명시한 공급원 종목 코드만 처리하며 시장별 자동 매핑은 미검증이다. 기본 20회/실행(최대 4종목의 5종 자료), 재시작에도 보존하는 최대 200회/UTC 날짜 예산을 적용한다. 다른 도구의 같은 키 사용량은 포함하지 않으므로 공급원의 남은 한도를 보장하지 않는다. `--audit`은 외부 호출 없이 저장된 결과만 점검한다.
+- `work/company-data/fmp/<종목>.json`과 `coverage.json`은 Git 제외 비공개 평가 파일이다. 기존 정상 자료는 실패/부분/모호한 정정에 덮어쓰지 않는다. 같은 수집기의 동시 실행을 막고 파일을 원자적으로 교체한다. `coverage.json`의 성공은 전체 종목·실시간·화면 표시 완료 판정이 아니다. 요청 자료 미확보는 종료 코드 2, 설정/파일 검사 오류는 1로 구분한다.
+- 앱이 개발 모드이고 평가 플래그가 켜져야 준비된 배당·실적을 읽는다. 공개 폴더에 복사하거나 생산 빌드에서 파일을 읽지 않는다. 키/플래그 변경 후 개발 서버의 환경 설정 다시 읽기를 확인하고, 반영되지 않을 때만 재시작한다. 현재 가격·차트의 기존 공급원은 자동 전환하지 않으며 FMP 원자료를 개인 예상 배당에 합치는 작업도 별도다. 공급 확인 전 운영 배포·정기 수집·유료 전환 없음.
 
 ## 일별 환율 공통 저장소
 
@@ -71,16 +84,52 @@ npx wrangler login
 
 ## Supabase 연결
 
-**빌드 시점**에 필요한 공개 변수다. 로컬은 `.env.local`, Git 자동 배포는 Workers Builds의 빌드 변수에 설정한다.
+**빌드 시점**에 필요한 공개 변수다. Git 자동 배포는 Workers Builds에 실제 서비스 값을 설정한다. 로컬 시험 값은 생산 빌드에 자동 포함되지 않는 `.env.development.local`에만 둔다.
 
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 ```
 
-- 브라우저 공개 값이므로 publishable 키만 사용한다. `service_role`·비밀 키 금지. 값 변경 후 재빌드·재배포한다. 미설정 시 로컬 저장 모드다.
-- Google 로그인: Supabase Google 제공자를 활성화한다. Auth Site URL은 `https://centbloom.stock-web-demo.workers.dev`, Redirect URLs는 이 공개 주소, `http://localhost:3000`, `http://127.0.0.1:3000`을 사용한다.
+- 브라우저 공개 값이므로 publishable 키만 사용한다. `service_role`·비밀 키 금지. 로컬 값 변경 후 개발 서버를 다시 시작하고, 배포 빌드 값 변경은 재빌드·재배포가 필요하다. URL과 키가 모두 없을 때만 기존 브라우저 저장 모드이며, 일부 누락·잘못된 키·잘못된 프로젝트 연결은 오류로 중단한다.
+- 실제 서비스 Google 로그인은 실제 서비스 Supabase Google 제공자와 `https://centbloom.stock-web-demo.workers.dev` 반환 주소를 사용한다. 로컬 개발용 Google 프로젝트/키와 혼용하지 않는다.
 - Google OAuth 리디렉션 URI는 앱 주소가 아니라 Supabase 대시보드의 `/auth/v1/callback` 주소다.
+
+### 로컬 Google 로그인
+
+**목표:** `http://localhost:3000`에서 평소 Google 계정으로 로그인하되, 거래·관심종목은 실제 사이트와 다른 시험용 저장소에 보관한다. 같은 이메일을 사용해도 두 프로젝트의 계정·자료는 별개다. 외부 Google 설정과 실제 왕복 완료 여부는 [T02·T04](./PROJECT_STATUS.md#작업별-진행판)를 먼저 확인한다.
+
+| 구분 | 실제 사이트 | 내 컴퓨터 시험 |
+| --- | --- | --- |
+| Supabase 프로젝트 | centbloom · `cvuqzetasndsjtpaqbmr` | centbloom-dev · `tocdnobpkbpczjzbenbd` |
+| 주소 | `https://centbloom.stock-web-demo.workers.dev` | `http://localhost:3000` |
+| 설정 위치 | Workers Builds의 공개 URL·키 | Git 제외 `.env.development.local` |
+| 자료 | 실제 계정 기록 | 빈 저장소에서 시작. 실제 계정·거래·관심목록은 복사하지 않음 |
+
+#### 최초 연결
+
+1. 시험용 Supabase에 거래·관심목록·구루 저장/알림의 기존 스키마를 준비한다. 누락됐던 최초 스키마 두 파일은 실제 서비스의 migration 기록에서 복원했으며 새로운 구조로 바꾼 것이 아니다. `20260809042243_create_portfolio_storage` → `20260809114515_add_portfolio_performance_snapshots` → `atomic_portfolio_ledger` → `account_watchlists` → `guru_notifications` 순서를 따른다. 미연결 경제 캘린더 migration은 이 로그인 시험에 적용하지 않는다. 사용자 데이터 덤프·실제 계정 복제·가짜 영구 기록을 넣지 않는다.
+2. Google Cloud 시험용 프로젝트는 `Centbloom Development` · `centbloom-development`다. 결제 계정 없이 만들었으며, Google Auth Platform의 같은 앱 이름·외부 시험 대상·사용자 승인 정책 동의까지 저장했다. 로그인에 필요한 `openid`·이메일·프로필만 사용하며 Gmail/Drive 권한을 추가하지 않는다. 필요한 시험 사용자를 등록한다.
+3. 그 프로젝트에서 웹 애플리케이션용 OAuth 클라이언트를 만든다. 자바스크립트 출처는 `http://localhost:3000`, 승인된 리디렉션 URI는 `https://tocdnobpkbpczjzbenbd.supabase.co/auth/v1/callback`이다. **기존 실제 서비스 클라이언트는 수정하지 않는다.** 발급된 Client ID·Client Secret은 시험용 Supabase의 Authentication → Sign In / Providers → Google에 직접 입력·저장한다. Client ID는 앞의 숫자와 하이픈까지 포함한 전체 값을 복사한다. `Google · Enabled` 확인은 활성화 확인일 뿐이며 실제 로그인 왕복 성공과 구분한다. 비밀키는 대화·Git·브라우저 공개 변수에 넣지 않는다.
+4. 시험용 Supabase Auth의 Site URL은 `http://localhost:3000`을 사용한다. 현재는 이 주소 하나로 시험한다. 다른 포트·127.0.0.1·휴대폰 LAN 주소를 쓰려면 Google/Supabase 반환 허용 목록을 먼저 일치시킨다. 전체 주소를 허용하는 와일드카드는 사용하지 않는다.
+5. 저장소 루트 `.env.development.local`에 시험용 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_DEV_PROJECT_REF=tocdnobpkbpczjzbenbd`를 넣고 `npm run dev -- --hostname localhost --port 3000`으로 실행한다. 이 Mac에는 시험용 공개 연결 값을 준비했다. 파일은 Git 제외이므로 다른 PC에서는 별도로 설정한다. Google 비밀키·관리자 키는 이 파일에 필요하지 않다.
+
+#### 사용하는 방법
+
+1. `http://localhost:3000`에서 우상단 로그인 또는 관심 저장/거래 기록을 누른다.
+2. Google 계정을 선택한다. 처음이면 **시험용 계정**이 만들어지고 시작했던 종목/행동으로 돌아온다.
+3. 화면의 계정을 확인하고 직접 저장을 누른다. 새로고침·로그아웃 후 재로그인으로 유지되는지 확인한다. 시험용 거래 수정/삭제도 여기서만 한다. 실제 사이트에서 시험 삭제를 하지 않는다.
+4. 기존 비로그인 로컬 시험 자료는 삭제·자동 업로드하지 않는다. 개발 프로젝트 접두어 안의 별도 브라우저 기록을 쓰므로 예전 8종목이 새 계정에 자동으로 나타나지 않는 것이 정상이다. 필요하면 기존 자료를 백업한 뒤 명시적 가져오기를 사용한다. 투자 노트는 아직 해당 계정·해당 브라우저에만 저장하며 기기 간 동기화를 보장하지 않는다.
+
+#### 분리와 실패 기준
+
+- 로컬·개발 실행에서 실제 서비스 프로젝트를 사용하거나 시험용 ID와 URL이 다르면 SDK 연결·하위 저장 화면을 차단한다. 배포 주소에 시험용 프로젝트를 넣어도 차단한다. 공개 키 형식 확인은 서버의 키 유효성/권한 검증을 대신하지 않는다.
+- 개발 프로젝트가 지정된 경우 거래 캐시·대기/복구·성과 사본·관심목록·노트·통화·최근 검색·로그인 복귀를 프로젝트별로 분리한다. 운영과 설정 없는 기존 로컬 키는 보존한다. 오류를 무시하고 다른 저장소나 비회원 저장으로 성공 처리하지 않는다.
+- 시험용 DB의 관리 도구 적용 시각과 원본 SQL 파일의 과거 버전 이름은 다를 수 있다. 같은 이름·내용의 다섯 변경이 적용됐는지 먼저 대조하며, 버전 차이만 보고 전체 재적용·초기화·이력 덮어쓰기를 하지 않는다.
+- Google 제공자 미설정·반환 주소 오류는 설정을 고친 뒤 다시 로그인한다. 로그인 성공으로 자동 저장하지 않으며 취소·실패·계정 전환 시 원래 계정에 저장됐다고 표시하지 않는다.
+- 개발 저장소는 현재 무료 요금제로 개설했다. 유료 전환·새 비용은 별도 승인 대상이다. 무료 프로젝트의 비활성 일시 정지·백업 제한을 실제 서비스 안정성 보장으로 해석하지 않는다.
+
+근거(2026-09-24 확인): [Supabase Google 연결](https://supabase.com/docs/guides/auth/social-login/auth-google), [Google 개발·실제 서비스 프로젝트 분리 정책](https://developers.google.com/identity/protocols/oauth2/policies), [요금·프로젝트 한도](https://supabase.com/docs/guides/platform/billing-on-supabase). 코드/검사 시작점은 [로그인 연결](./DEVELOPMENT.md#로그인-복귀구루알림의-시작점)을 따른다.
 
 구루/앱 안 알림의 [증분 SQL](./supabase/migrations/20260923030710_guru_notifications.sql)은 원본 main 전체 배포 범위에 포함하며 운영 centbloom에 적용하고 스키마·RLS·함수/직접 쓰기 권한을 확인했다. 상세 근거와 남은 보안 경고는 [진행 상태](./PROJECT_STATUS.md#검증-기록)의 기존 알림 행을 따른다. 실제 계정 쓰기·다중 기기는 미검증이다. GitHub/Cloudflare 앱 배포만으로 DB 변경이 적용되지는 않으므로 기존 `auth.users`와 계정 관심목록 migration 이후의 적용 여부, RLS·계정별 읽기/저장·영수증·복구를 별도로 확인한다. 공개 사건 기록 함수는 신뢰된 서버 `service_role`에만 허용하고 브라우저에는 권한/비밀 키를 주지 않는다. 현재 수집기/예약 실행/메일·푸시 공급은 연결하지 않았으며 앱·DB 배포를 사건 자동 수집 완료로 해석하지 않는다.
 
@@ -110,6 +159,12 @@ NEXT_PUBLIC_ADSENSE_PORTFOLIO_ENABLED=false
 5. 운영에는 원본/사본 비교 결과와 함수 실행 권한을 읽기 전용으로 확인한다. 앱 빌드·배포 후 공개 페이지/API를 검증한다. 실제 로그인 후 쓰기·다중 기기 검증은 별도 결과로 기록하고 격리 테스트로 대체했다고 표시하지 않는다.
 
 복구: 우선 앱의 거래 쓰기를 중단하고 정상 버전과 DB 백업을 확보한다. 거래 데이터 자체를 되돌릴 필요가 없으면 [스키마 롤백](./supabase/rollback/atomic_portfolio_ledger.sql)을 관리 연결에서 실행할 수 있다. 이 파일은 거래 행을 삭제하지 않지만 revision·안정 정렬·요청 영수증을 제거한다. **먼저 영수증과 각 브라우저의 미확인 요청을 보존·정리하고 모든 새 쓰기 클라이언트를 중단해야 한다.** 영수증 삭제 후 미확인 요청을 재전송하면 중복 실행 위험이 있다. 롤백 후 자동으로 이전 쓰기 방식을 재개하지 말고 동시성 문제를 해소한 버전을 사용한다. 실제 데이터 복원은 백업 시점 이후 정상 거래와 대조한 별도 절차다. advisory lock 트리거는 auth.uid 없는 직접 거래 DML을 거부하므로 관리 작업은 점검 시간에 수행한다.
+
+### 여러 포트폴리오·가격 알림 연결 — 미적용
+
+이번 구현은 로컬 파일만 변경했다. [포트폴리오 migration](./supabase/migrations/20260924035408_multi_portfolio_workspace.sql)과 [가격 알림 migration](./supabase/migrations/20260924035345_watchlist_price_alerts.sql)은 개발/운영 DB에 아직 적용하지 않았으며, Git 푸시만으로 적용되지 않는다. 이후 연결을 승인받으면 먼저 프로젝트와 적용 이력을 확인해 해당 두 변경만 적용한다. 기존 거래 ID·수량·가격·건수와 기본 포트폴리오 귀속을 전후 대조하고 반복 이관·계정별 권한·원자적 이동/삭제를 확인한다. 기존 migration 전체 재실행은 하지 않는다.
+
+가격 확인 API는 같은 프로젝트의 서버 전용 `SUPABASE_SERVICE_ROLE_KEY`가 필요하며 공개 환경변수·브라우저·Git에 넣지 않는다. 실제 로그인 계정에서 조건 저장→정상 시세 기준 상태→경계 통과→한 번 배달→읽음→재진입을 검증한 뒤 연결 완료로 표시한다. 운영 비접속 알림은 별도의 수집 스케줄러·실제 무료 공급 최신성/권리·실패 감시 검증 전 보장하지 않는다. 현재 브라우저 확인 요청은 운영 예약 수집을 대체하지 않는다. [좁은 검사와 구현 시작점](./DEVELOPMENT.md#여러-포트폴리오가격-알림의-시작점), [현재 상태](./PROJECT_STATUS.md#작업별-진행판)를 따른다.
 
 ## 관심종목 계정 저장
 

@@ -9,12 +9,17 @@ import { HoldingsTable } from "@/components/HoldingsTable";
 import { PerformanceAnalytics } from "@/components/PerformanceAnalytics";
 import { PortfolioMetrics } from "@/components/PortfolioMetrics";
 import { PortfolioDetails } from "@/features/portfolio/ui/PortfolioDetails";
+import { PortfolioSwitcher } from "@/features/portfolio/ui/PortfolioSwitcher";
+import { StorageNotice } from "@/components/StorageNotice";
 import { InvestmentHistory } from "@/features/performance/InvestmentHistory";
+import { SharedDividendSchedule } from "@/features/dividends/SharedDividendSchedule";
 import styles from "@/features/portfolio/ui/PortfolioHoldings.module.css";
-import { usePortfolioDailyChange, usePortfolioMarket, usePreferences, useTransactions } from "@/hooks/usePortfolio";
+import { usePortfolioDailyChange, usePortfolioMarket, usePreferences, useTransactions, usePortfolios } from "@/hooks/usePortfolio";
 import { Download } from "lucide-react";
 export default function PortfolioPage() {
   const { transactions } = useTransactions();
+  const { portfolios, selectedPortfolioId } = usePortfolios();
+  const portfolioName = selectedPortfolioId === "all" ? "전체" : portfolios.find(item => item.id === selectedPortfolioId)?.name ?? "";
   const { displayCurrency } = usePreferences();
   const { summary, loading, marketDataError, valuationFxNotice } = usePortfolioMarket();
   const dailyChange = usePortfolioDailyChange();
@@ -22,6 +27,7 @@ export default function PortfolioPage() {
   const exportHoldings = () => {
     const rows = [
       ["내 보유 자산", "표시 통화", displayCurrency],
+      ["포트폴리오", portfolioName],
       ...(valuationFxNotice ? [["적용 환율", valuationFxNotice]] : []),
       ["종목", "이름", "수량", "평가액", "평가손익", "수익률(%)"],
       ...(summary?.holdings ?? []).map((h) => [
@@ -61,12 +67,12 @@ export default function PortfolioPage() {
   return (
     <>
       <div className={styles.pageHeading}>
-        <PageHeading title="보유자산">
+        <PageHeading title="보유자산" titleAction={<PortfolioSwitcher />}>
           <CurrencySwitch />
           <AddTransactionLink />
         </PageHeading>
       </div>
-
+      <StorageNotice placement="inline" />
       {marketDataError && (
         <p
           role="status"
@@ -82,8 +88,9 @@ export default function PortfolioPage() {
         </section>
       </div>
       <PortfolioDetails
+        key={selectedPortfolioId}
         history={<InvestmentHistory />}
-        holdings={summary != null ? <HoldingsTable
+        holdings={<>{summary != null ? <HoldingsTable
           holdings={summary.holdings}
           transactions={transactions}
           displayCurrency={displayCurrency}
@@ -101,6 +108,8 @@ export default function PortfolioPage() {
             </button>
           ) : undefined}
         /> : <p className={styles.empty} role={loading ? "status" : "alert"}>{loading ? "보유종목 확인 중" : "보유종목을 확인하지 못했습니다."}</p>}
+        {process.env.NODE_ENV === "development" && <SharedDividendSchedule key={selectedPortfolioId} transactions={transactions} portfolioId={selectedPortfolioId} />}
+        </>}
       />
 
       <PortfolioAd hasContent={transactions.length > 0} />

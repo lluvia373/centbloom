@@ -1,0 +1,60 @@
+.notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--cf-space-2);
+  margin-bottom: var(--cf-space-4);
+  padding: var(--cf-space-2) var(--cf-space-3);
+  border: 1px solid var(--cf-color-line);
+  border-radius: var(--cf-radius-control);
+  background: var(--cf-color-surface);
+  color: var(--cf-color-muted);
+  font-family: var(--cf-font-ui);
+  font-size: var(--cf-text-label);
+  line-height: var(--cf-leading-body);
+}
+.icon, .warning { flex: 0 0 auto; }
+.warning { color: var(--cf-color-warning); }
+.message { flex: 1; min-width: 160px; margin: 0; overflow-wrap: anywhere; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--cf-space-2); }
+.actions:empty { display: none; }
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: calc(var(--cf-space-12) - var(--cf-space-1));
+  padding-inline: var(--cf-space-2);
+  border-radius: var(--cf-radius-control);
+  font-size: var(--cf-text-label);
+  font-weight: var(--cf-weight-medium);
+  color: var(--cf-color-ink);
+  text-decoration: underline;
+  text-underline-offset: var(--cf-space-1);
+}
+.action:hover { background: var(--cf-color-soft); }
+.action:disabled { opacity: .5; cursor: wait; }
+.action:focus-visible, .dialog button:focus-visible { outline: 2px solid var(--cf-color-focus); outline-offset: 2px; }
+.dialog {
+  margin: auto;
+  width: min(480px, calc(100% - var(--cf-space-8)));
+  max-height: calc(100dvh - var(--cf-space-8));
+  overflow: auto;
+  padding: var(--cf-space-6);
+  border: 1px solid var(--cf-color-line);
+  border-radius: var(--cf-radius-card);
+  background: var(--cf-color-surface);
+  color: var(--cf-color-ink);
+  box-shadow: var(--cf-shadow-dialog);
+  font-family: var(--cf-font-ui);
+}
+.dialog::backdrop { background: var(--cf-color-ink); opacity: .35; }
+.dialog h2 { font-size: var(--cf-text-section); font-weight: var(--cf-weight-semibold); margin-bottom: var(--cf-space-3); }
+.dialog p { font-size: var(--cf-text-body); line-height: var(--cf-leading-body); color: var(--cf-color-muted); }
+.dialogActions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--cf-space-2); margin-top: var(--cf-space-6); }
+@media (max-width: 600px) {
+  .notice { align-items: flex-start; }
+  .icon, .warning { margin-top: var(--cf-space-1); }
+  .actions { width: 100%; padding-left: var(--cf-space-6); }
+  .dialog { padding: var(--cf-space-4); }
+}

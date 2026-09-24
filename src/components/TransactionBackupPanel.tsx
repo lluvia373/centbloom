@@ -5,7 +5,8 @@ import { useOperationScope } from "@/shared/react/use-operation-scope";
 
 import {
   useTransactionCommands,
-  useTransactions,
+  useAllTransactions,
+  usePortfolios,
   type TransactionImportMode,
 } from "@/hooks/usePortfolio";
 import {
@@ -32,10 +33,12 @@ function backupFileName(): string {
 
 export function TransactionBackupPanel() {
   const { user } = useAuth();
-  return <BackupSession key={user?.id ?? "guest"} />;
+  const { selectedPortfolioId } = usePortfolios();
+  return <BackupSession key={`${user?.id ?? "guest"}:${selectedPortfolioId}`} />;
 }
 function BackupSession() {
-  const { transactions } = useTransactions();
+  const { transactions } = useAllTransactions();
+  const { portfolios, selectedPortfolioId } = usePortfolios();
   const { user } = useAuth();
   const captureScope = useOperationScope(user?.id ?? "guest");
   const fileVersion = useRef(0);
@@ -67,7 +70,7 @@ function BackupSession() {
   };
 
   const handleExport = () => {
-    const json = serializeTransactionBackup(transactions);
+    const json = serializeTransactionBackup(transactions, portfolios);
     const url = URL.createObjectURL(
       new Blob([json], { type: "application/json;charset=utf-8" }),
     );
@@ -124,7 +127,7 @@ function BackupSession() {
     setErrors([]);
 
     try {
-      const result = await importTransactions(preview.transactions, mode);
+      const result = await importTransactions(preview.transactions, mode, preview.portfolios);
       if (!isCurrent()) return;
       if (result.error) {
         setErrors([result.error]);
@@ -135,7 +138,7 @@ function BackupSession() {
       setNotice(
         mode === "merge"
           ? `새 거래 ${result.importedCount}건을 병합했습니다${skipped}.`
-          : `백업의 거래 ${result.importedCount}건으로 전체 교체했습니다.`,
+          : `백업의 거래 ${result.importedCount}건으로 ${preview.portfolios ? "전체 포트폴리오를" : "선택한 포트폴리오를"} 교체했습니다.`,
       );
       setPreview(null);
       setFileName("");
@@ -158,7 +161,7 @@ function BackupSession() {
             </h3>
 
             <p className="mt-1 text-xs leading-5 text-[#727680]">
-              거래 백업: 관심종목·노트 제외 · 브라우저 데이터 삭제 전 백업
+              모든 포트폴리오의 거래 백업 · 관심종목·노트 제외
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -233,6 +236,7 @@ function BackupSession() {
           importingMode={importingMode}
           errors={errors}
           handleImport={handleImport}
+          destinationName={selectedPortfolioId === "all" ? null : portfolios.find(item => item.id === selectedPortfolioId)?.name ?? null}
         />
       )}
     </>

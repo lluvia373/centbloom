@@ -5,6 +5,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { loadTypescript } from "./load-typescript.mjs";
 const { navigationArea, investmentTab, navigationPageName } = loadTypescript("src/features/navigation/model.ts");
 
+test("guru navigation is a separate public area including quarter detail", () => {
+  for (const path of ["/gurus", "/gurus/", "/gurus/pershing-square"]) {
+    assert.equal(navigationArea(path), "gurus");
+    assert.equal(navigationPageName(path), "구루 포트폴리오");
+    assert.equal(investmentTab(path), undefined);
+  }
+  assert.equal(navigationArea("/gurus-other"), "market");
+});
+
 test("public detail pages stay in market; each private page and trade entry select the correct investment tab", () => {
   for (const path of ["/", "/discover", "/rankings/volume", "/rankings/gainers", "/rankings/losers", "/stock/AAPL", "/calendar", "/calendar/release", "/read/example", "/community"]) {
     assert.equal(navigationArea(path), "market");

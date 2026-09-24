@@ -1,13 +1,17 @@
 import type { Transaction } from "@/lib/types";
 import { applyCommand } from "../model/commands";
+import { ALL_PORTFOLIOS_ID, DEFAULT_PORTFOLIO_ID, changePortfolios, normalizeWorkspace } from "../model/portfolios";
 import type { Repository, Snapshot, TransactionCommand } from "../model/types";
 import type { transactionCache } from "./local";
+import { LedgerStorageError, ledgerFailure, ledgerMessage, type LedgerIssue } from "./storage-error";
 
 export type SaveStatus =
   "loading" | "ready" | "saving" | "failed" | "cache-failed";
 export interface LedgerState extends Snapshot {
+  selectedPortfolioId: string;
   status: SaveStatus;
   error: string | null;
+  issue: LedgerIssue | null;
 }
 type Options = {
   repository: Repository;
@@ -19,10 +23,7 @@ type Options = {
   ) => Promise<Transaction[]>;
   lock?: <T>(action: () => Promise<T>) => Promise<T>;
 };
-const UNCONFIRMED_SAVE_MESSAGE =
-  "확인되지 않은 저장 요청이 있습니다. 재시도하거나 서버 기록을 다시 불러오세요.";
-const errorText = (error: unknown) =>
-  error instanceof Error ? error.message : "거래 저장을 완료하지 못했습니다.";
+const UNCONFIRMED_SAVE_MESSAGE = ledgerMessage("pending-save");
 
 /** One queue owns a session's commands. Repositories own atomicity across sessions. */
 export function createLedgerStore({
@@ -32,11 +33,14 @@ export function createLedgerStore({
   lock = (action) => action(),
 }: Options) {
   let state: LedgerState = {
+    portfolios: [],
+    selectedPortfolioId: DEFAULT_PORTFOLIO_ID,
     transactions: [],
     revision: "",
     writable: false,
     status: "loading",
     error: null,
+    issue: null,
   };
   const listeners = new Set<() => void>();
   let tail: Promise<unknown> = Promise.resolve();
@@ -46,6 +50,8 @@ export function createLedgerStore({
     if (next.transactions && next.revision === state.revision)
       next = { ...next, transactions: state.transactions };
     state = { ...state, ...next };
+    if (state.portfolios?.length && state.selectedPortfolioId !== ALL_PORTFOLIOS_ID && !state.portfolios.some((p) => p.id === state.selectedPortfolioId))
+      state = { ...state, selectedPortfolioId: state.portfolios[0].id };
     listeners.forEach((listener) => listener());
   };
   const enqueue = <T>(action: () => Promise<T>): Promise<T> => {
@@ -54,18 +60,32 @@ export function createLedgerStore({
     return task;
   };
   const isCurrent = (token: number) => active && token === generation;
-  const load = async (token: number) => {
-    const result = await repository.read();
-    if (!isCurrent(token)) return;
+  const publishLoaded = (result: Snapshot) => {
     // Server is authoritative. Never upload or merge browser-only records here.
-    const pending = cache?.pending();
+    let pending;
+    try {
+      pending = cache?.pending();
+    } catch (error) {
+      const failure = ledgerFailure(error, "pending-save");
+      publish({ ...result, status: "failed", error: failure.message, issue: failure.issue });
+      return;
+    }
+    const issue = pending ? state.issue === "conflict" ? "conflict" : "pending-save" : null;
     publish({
       ...result,
       status: pending ? "failed" : "ready",
-      error: pending ? UNCONFIRMED_SAVE_MESSAGE : null,
+      error: issue ? ledgerMessage(issue) : null,
+      issue,
     });
   };
+  const load = async (token: number) => {
+    const result = normalizeWorkspace(await repository.read());
+    if (isCurrent(token)) publishLoaded(result);
+  };
   const store = {
+    setSelectedPortfolioId(id: string) {
+      if (id === ALL_PORTFOLIOS_ID || state.portfolios?.some((p) => p.id === id)) publish({ selectedPortfolioId: id });
+    },
     getSnapshot: () => state,
     subscribe(listener: () => void) {
       listeners.add(listener);
@@ -80,8 +100,10 @@ export function createLedgerStore({
         try {
           await load(token);
         } catch (error) {
-          if (isCurrent(token))
-            publish({ status: "failed", error: errorText(error) });
+          if (isCurrent(token)) {
+            const failure = ledgerFailure(error, "load");
+            publish({ status: "failed", error: failure.message, issue: failure.issue });
+          }
         }
       }).then(() => enrichIfNeeded(token));
     },
@@ -103,26 +125,35 @@ export function createLedgerStore({
               skippedCount: 0,
             };
           let skippedCount = 0;
+          let fallback: LedgerIssue = "command";
           try {
             if (state.status !== "ready")
-              throw new Error(
+              throw new LedgerStorageError(state.issue ?? "command",
                 state.error ??
                   "거래를 불러오거나 저장 중입니다. 다시 시도해 주세요.",
               );
             // Another tab may have left a pending request since this tab last loaded.
-            if (cache?.pending()) throw new Error(UNCONFIRMED_SAVE_MESSAGE);
+            if (cache?.pending()) throw new LedgerStorageError("pending-save", UNCONFIRMED_SAVE_MESSAGE);
             if (!state.writable)
-              throw new Error(
-                "거래 저장 서버 업데이트가 필요합니다. 기존 기록은 조회할 수 있습니다.",
+              throw new LedgerStorageError("command",
+                "지금은 거래를 추가하거나 수정할 수 없어요. 기존 기록은 볼 수 있어요.",
               );
-            publish({ status: "saving", error: null });
+            publish({ status: "saving", error: null, issue: null });
             // A guest tab reloads inside the shared browser lock before applying its command.
-            const current = cache ? state : await repository.read();
+            const current = normalizeWorkspace(cache ? state : await repository.read());
             if (!isCurrent(token))
               throw new Error("계정이 변경되어 저장을 중단했습니다.");
-            const changed = applyCommand(current.transactions, captured);
+            let workspace, changed;
+            try {
+              workspace = changePortfolios(current.portfolios, current.transactions, captured);
+              changed = applyCommand(workspace.transactions, captured, workspace.portfolios.find((p) => p.isDefault)?.id);
+            } catch (error) {
+              // These pure validators author actionable input messages, not upstream errors.
+              throw new LedgerStorageError("command", error instanceof Error ? error.message : ledgerMessage("command"));
+            }
             skippedCount = changed.skippedCount;
-            const next = prepare
+            const isPortfolioCommand = ["createPortfolio", "renamePortfolio", "deletePortfolio"].includes(captured.type);
+            const next = prepare && !isPortfolioCommand
               ? await prepare(
                   changed.transactions,
                   captured,
@@ -131,13 +162,21 @@ export function createLedgerStore({
               : changed.transactions;
             if (!isCurrent(token))
               throw new Error("계정이 변경되어 저장을 중단했습니다.");
+            const normalized = normalizeWorkspace({ ...current, portfolios: workspace.portfolios, transactions: next });
             const change = {
               id: crypto.randomUUID(),
               revision: current.revision,
-              transactions: next,
+              transactions: normalized.transactions,
+              portfolios: normalized.portfolios,
             };
-            cache?.stage(change); // A failed local journal write prevents the server write.
-            const confirmed = await repository.commit(change);
+            try {
+              cache?.stage(change); // A failed local journal write prevents the server write.
+            } catch (error) {
+              ledgerFailure(error, "command");
+              throw new LedgerStorageError("command", "이 브라우저에 거래를 보관하지 못해 저장을 시작하지 않았어요.");
+            }
+            fallback = cache ? "pending-save" : "command";
+            const confirmed = normalizeWorkspace(await repository.commit(change));
             if (!isCurrent(token))
               return {
                 error:
@@ -145,18 +184,20 @@ export function createLedgerStore({
                 importedCount: 0,
                 skippedCount,
               };
-            publish({ ...confirmed });
+            const deletedSelection = captured.type === "deletePortfolio" && state.selectedPortfolioId === captured.id;
+            publish({ ...confirmed, ...(deletedSelection && captured.type === "deletePortfolio" && captured.targetPortfolioId ? { selectedPortfolioId: captured.targetPortfolioId } : {}) });
+            if (captured.type === "createPortfolio") publish({ selectedPortfolioId: captured.portfolio.id });
             try {
               cache?.confirm(confirmed.transactions);
             } catch {
               publish({
                 status: "cache-failed",
-                error:
-                  "서버 저장은 완료됐지만 브라우저 사본 저장에 실패했습니다. 재시도해 주세요.",
+                error: ledgerMessage("cache"),
+                issue: "cache",
               });
               return { error: state.error, importedCount: 0, skippedCount };
             }
-            publish({ status: "ready", error: null });
+            publish({ status: "ready", error: null, issue: null });
             return {
               error: null,
               importedCount:
@@ -166,24 +207,27 @@ export function createLedgerStore({
               skippedCount,
             };
           } catch (error) {
+            let pending = false;
+            try {
+              pending = Boolean(cache?.pending());
+            } catch {
+              pending = true;
+            }
+            const failure = ledgerFailure(error, pending ? "pending-save" : fallback);
             if (isCurrent(token)) {
-              let pending = false;
-              try {
-                pending = Boolean(cache?.pending());
-              } catch {
-                pending = true;
-              }
               publish({
-                status: pending ? "failed" : "ready",
-                error: errorText(error),
+                status: pending || failure.issue === "load" ? "failed" : "ready",
+                error: failure.message,
+                issue: failure.issue,
               });
             }
-            return { error: errorText(error), importedCount: 0, skippedCount };
+            return { error: failure.message, importedCount: 0, skippedCount };
           }
         }),
       ).catch((error) => {
-        if (isCurrent(token)) publish({ error: errorText(error) });
-        return { error: errorText(error), importedCount: 0, skippedCount: 0 };
+        const failure = ledgerFailure(error, "command");
+        if (isCurrent(token)) publish({ error: failure.message, issue: failure.issue });
+        return { error: failure.message, importedCount: 0, skippedCount: 0 };
       });
     },
     retry(): Promise<void> {
@@ -191,49 +235,66 @@ export function createLedgerStore({
       return enqueue(() =>
         lock(async () => {
           if (!isCurrent(token)) return;
-          publish({ status: "saving", error: null });
+          const previousIssue = state.issue;
+          publish({ status: "saving", error: null, issue: null });
+          let fallback: LedgerIssue = "load";
           try {
             const pending = cache?.pending();
             if (pending) {
+              fallback = previousIssue === "cache" ? "cache" : "pending-save";
               await repository.commit(pending);
               if (!isCurrent(token)) return;
               // An idempotent retry may finish after another device's newer write.
-              const latest = await repository.read();
+              const latest = normalizeWorkspace(await repository.read());
               if (!isCurrent(token)) return;
+              fallback = "cache";
               cache?.confirm(latest.transactions);
-              publish({ ...latest, status: "ready", error: null });
+              publish({ ...latest, status: "ready", error: null, issue: null });
             } else {
               await load(token);
             }
           } catch (error) {
-            if (isCurrent(token))
-              publish({ status: "failed", error: errorText(error) });
+            if (isCurrent(token)) {
+              const failure = ledgerFailure(error, fallback);
+              publish({ status: failure.issue === "cache" ? "cache-failed" : "failed", error: failure.message, issue: failure.issue });
+            }
           }
         }),
       )
         .catch((error) => {
-          if (isCurrent(token))
-            publish({ status: "failed", error: errorText(error) });
+          if (isCurrent(token)) {
+            const failure = ledgerFailure(error, "load");
+            publish({ status: "failed", error: failure.message, issue: failure.issue });
+          }
         })
         .then(() => enrichIfNeeded(token));
     },
-    reload(): Promise<void> {
+    reload(options: { discardPending?: boolean } = {}): Promise<void> {
       const token = generation;
+      const unresolvedIssue = ["pending-save", "conflict", "cache"].includes(state.issue ?? "") ? state.issue : null;
       return enqueue(() =>
         lock(async () => {
           if (!isCurrent(token)) return;
           try {
-            cache?.abandon();
-            await load(token);
+            const latest = normalizeWorkspace(await repository.read());
+            if (!isCurrent(token)) return;
+            // Only an explicit, confirmed recovery action can retire the outbox.
+            // Preserve it if the read fails or the account changes while waiting.
+            if (options.discardPending) cache?.abandon();
+            publishLoaded(latest);
           } catch (error) {
-            if (isCurrent(token))
-              publish({ status: "failed", error: errorText(error) });
+            if (isCurrent(token)) {
+              const failure = ledgerFailure(error, "load");
+              publish({ status: "failed", error: failure.message, issue: unresolvedIssue ?? failure.issue });
+            }
           }
         }),
       )
         .catch((error) => {
-          if (isCurrent(token))
-            publish({ status: "failed", error: errorText(error) });
+          if (isCurrent(token)) {
+            const failure = ledgerFailure(error, "load");
+            publish({ status: "failed", error: failure.message, issue: unresolvedIssue ?? failure.issue });
+          }
         })
         .then(() => enrichIfNeeded(token));
     },

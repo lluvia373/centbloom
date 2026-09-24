@@ -1,6 +1,8 @@
 "use client";
 import {
   LedgerProvider,
+  useAllTransactions,
+  usePortfolios,
   useTransactionCommands,
   useTransactions,
 } from "@/features/portfolio/state/ledger";
@@ -18,6 +20,8 @@ export type {
 } from "@/features/portfolio/model/types";
 export { usePortfolioDailyChange } from "@/features/portfolio/state/use-daily-change";
 export {
+  useAllTransactions,
+  usePortfolios,
   usePortfolioMarket,
   usePreferences,
   useTransactionCommands,

@@ -11,39 +11,46 @@ import {
 } from "@/lib/transaction-backup";
 import type { Transaction } from "@/lib/types";
 import type { Commit, Repository, Snapshot } from "../model/types";
+import { normalizeWorkspace } from "../model/portfolios";
+import { LedgerStorageError, ledgerMessage } from "./storage-error";
 
 export function localRepository(
   storage: Storage,
   userId: string | null,
 ): Repository {
+  const workspaceKey = scopedKey("centbloom-portfolio-workspace", userId);
+  const revision = (snapshot: Snapshot) => JSON.stringify({ portfolios: snapshot.portfolios, transactions: snapshot.transactions });
   const read = async (): Promise<Snapshot> => {
+    const raw = storage.getItem(workspaceKey);
+    if (raw !== null) {
+      const value = JSON.parse(raw);
+      if (!Array.isArray(value.portfolios) || !Array.isArray(value.transactions)) throw new Error("포트폴리오 기록을 읽지 못했습니다. 원본은 유지됩니다.");
+      const parsed = parseTransactionBackup({ format: TRANSACTION_BACKUP_FORMAT, version: TRANSACTION_BACKUP_VERSION, exportedAt: "1970-01-01T00:00:00Z", transactions: value.transactions }, { maxTransactions: Infinity });
+      if (!parsed.ok) throw new Error("포트폴리오 거래를 읽지 못했습니다. 원본은 유지됩니다.");
+      const snapshot = normalizeWorkspace({ transactions: value.transactions, portfolios: value.portfolios, revision: "", writable: true });
+      return { ...snapshot, revision: revision(snapshot) };
+    }
     const result = loadStoredTransactions(storage, userId);
     if (result.error) throw new Error(result.error);
-    return {
+    const snapshot = normalizeWorkspace({
       transactions: result.transactions,
-      revision: JSON.stringify(result.transactions),
+      revision: "",
       writable: true,
-    };
+    });
+    return { ...snapshot, revision: revision(snapshot) };
   };
   return {
     read,
     async commit(change) {
       const current = await read();
+      const saved = storage.getItem(workspaceKey);
+      if (saved && JSON.parse(saved).requestId === change.id) return current;
       if (current.revision !== change.revision)
-        throw new Error(
-          "다른 화면에서 거래가 변경되었습니다. 새로 불러온 뒤 다시 시도해 주세요.",
-        );
-      const error = saveStoredTransactions(
-        storage,
-        change.transactions,
-        userId,
-      );
-      if (error) throw new Error(error);
-      return {
-        transactions: change.transactions,
-        revision: JSON.stringify(change.transactions),
-        writable: true,
-      };
+        throw new LedgerStorageError("conflict", ledgerMessage("conflict"));
+      const next = normalizeWorkspace({ ...current, transactions: change.transactions, portfolios: change.portfolios ?? current.portfolios });
+      // One storage write commits folders and trades together. Legacy bytes stay untouched for recovery.
+      storage.setItem(workspaceKey, JSON.stringify({ portfolios: next.portfolios, transactions: next.transactions, requestId: change.id }));
+      return { ...next, revision: revision(next) };
     },
   };
 }

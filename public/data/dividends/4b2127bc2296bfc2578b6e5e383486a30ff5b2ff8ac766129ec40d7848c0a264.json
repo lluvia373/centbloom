@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "checkedAt": "2026-09-24T09:10:47.607Z",
+  "sourceCheckedAt": "2026-09-24T09:00:57.071Z",
+  "symbols": [
+    {
+      "symbol": "OXY",
+      "status": "partial",
+      "from": "2026-01-01",
+      "through": "2026-09-24",
+      "checkedAt": "2026-09-24T09:00:57.071Z",
+      "reason": "2026년 7월 지급 배당의 날짜 자료를 사용 가능한 공급원에서 확인하지 못했습니다."
+    }
+  ],
+  "events": [
+    {
+      "symbol": "OXY",
+      "amountPerShare": 0.26,
+      "recordDate": "2026-03-10",
+      "paymentDate": "2026-04-15",
+      "declaredDate": "2026-02-18",
+      "declarationDateBasis": "filing-date",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/797468/000162828026009054/oxyex99112-31x25earningsre.htm",
+      "id": "OXY:2026-03-10",
+      "name": "Occidental Petroleum Corporation",
+      "currency": "USD",
+      "exDate": "2026-03-10",
+      "marketTimeZone": "America/New_York",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2006-08-16",
+      "withholding": null,
+      "issuerCountry": "US",
+      "instrument": "ordinary-share",
+      "treatyEligible": true,
+      "rightsSourceUrl": "https://www.investor.gov/introduction-investing/investing-basics/glossary/ex-dividend-dates-when-are-you-entitled-stock-and",
+      "factsCheckedUrl": "https://www.sec.gov/Archives/edgar/data/797468/000162828026009054/oxyex99112-31x25earningsre.htm",
+      "rightsCheckedAt": "2026-09-24"
+    },
+    {
+      "symbol": "OXY",
+      "amountPerShare": 0.28,
+      "recordDate": "2026-09-10",
+      "paymentDate": "2026-10-15",
+      "declaredDate": "2026-08-05",
+      "declarationDateBasis": "filing-date",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/797468/000162828026053388/oxy-20260630.htm",
+      "id": "OXY:2026-09-10",
+      "name": "Occidental Petroleum Corporation",
+      "currency": "USD",
+      "exDate": "2026-09-10",
+      "marketTimeZone": "America/New_York",
+      "status": "declared",
+      "entitlement": "ordinary-cash",
+      "shareBasis": "transaction-compatible",
+      "shareHistoryFrom": "2006-08-16",
+      "withholding": null,
+      "issuerCountry": "US",
+      "instrument": "ordinary-share",
+      "treatyEligible": true,
+      "rightsSourceUrl": "https://www.investor.gov/introduction-investing/investing-basics/glossary/ex-dividend-dates-when-are-you-entitled-stock-and",
+      "factsCheckedUrl": "https://www.sec.gov/Archives/edgar/data/797468/000162828026053388/oxy-20260630.htm",
+      "rightsCheckedAt": "2026-09-24"
+    }
+  ]
+}

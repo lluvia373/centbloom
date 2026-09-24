@@ -1,16 +1,21 @@
 import { runSupabaseRequest } from "@/features/auth/session-request";
 import { readBrandedStorage } from "@/lib/branded-storage";
+import { projectStorageKey } from "@/lib/project-storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 import type { PortfolioPerformancePoint } from "@/lib/types";
 export interface SavedHistory {
+  /** Missing only on legacy account-wide histories. */
+  portfolioId?: string;
   calculationVersion?: number;
   revision: string;
   startedAt: string;
   points: PortfolioPerformancePoint[];
   serverSynced?: boolean;
 }
-const key = (userId: string | null) =>
-  `centbloom-performance-v2:${userId ?? "guest"}`;
+const key = (userId: string | null, portfolioId: string) =>
+  projectStorageKey(`centbloom-performance-v2:${userId ?? "guest"}${
+    portfolioId === "all" ? "" : `:portfolio:${encodeURIComponent(portfolioId)}`
+  }`);
 function validHistory(value: unknown): value is SavedHistory {
   if (!value || typeof value !== "object") return false;
   const raw = value as SavedHistory;
@@ -35,17 +40,21 @@ export async function readHistory(
   userId: string | null,
   revision: string,
   signal: AbortSignal,
+  portfolioId = "all",
 ): Promise<{ saved: SavedHistory | null; startedAt: string | null }> {
   signal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   let saved: SavedHistory | null = null;
   try {
-    const raw = JSON.parse(readBrandedStorage(localStorage, key(userId)) ?? "null");
-    if (validHistory(raw)) saved = raw;
+    const raw = JSON.parse(readBrandedStorage(localStorage, key(userId, portfolioId)) ?? "null");
+    if (validHistory(raw) && (raw.portfolioId ?? "all") === portfolioId) saved = raw;
   } catch {
     /* Derived cache only; original records remain untouched. */
   }
   const client = getSupabaseBrowserClient();
-  if (!client || !userId) return { saved, startedAt: saved?.startedAt ?? null };
+  // The existing server schema is account-wide. A selected portfolio must
+  // neither consume those totals nor overwrite them with a partial calculation.
+  if (!client || !userId || portfolioId !== "all")
+    return { saved, startedAt: saved?.startedAt ?? null };
   const preference = runSupabaseRequest(
     client,
     userId,
@@ -102,7 +111,7 @@ export async function readHistory(
     points?.length &&
     (saved?.revision !== revision || points.length > saved.points.length)
   ) {
-    const candidate = { revision, startedAt, points, serverSynced: true };
+    const candidate = { portfolioId, revision, startedAt, points, serverSynced: true };
     if (!validHistory(candidate))
       throw new Error("저장된 성과 기록이 올바르지 않습니다.");
     saved = candidate;
@@ -114,12 +123,15 @@ export async function saveHistory(
   history: SavedHistory,
   changed: PortfolioPerformancePoint[],
   signal: AbortSignal,
+  portfolioId = "all",
 ) {
   signal.throwIfAborted();
+  if ((history.portfolioId ?? "all") !== portfolioId)
+    throw new Error("선택한 포트폴리오와 성과 기록이 일치하지 않습니다.");
   const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(20_000)]);
   const client = getSupabaseBrowserClient();
   let warning: string | null = null;
-  if (client && userId && changed.length) {
+  if (client && userId && changed.length && portfolioId === "all") {
     try {
       const { error } = await runSupabaseRequest(
         client,
@@ -152,8 +164,8 @@ export async function saveHistory(
   signal.throwIfAborted();
   try {
     localStorage.setItem(
-      key(userId),
-      JSON.stringify({ ...history, serverSynced: !warning }),
+      key(userId, portfolioId),
+      JSON.stringify({ ...history, portfolioId, serverSynced: portfolioId === "all" && !warning }),
     );
   } catch {
     warning = "성과의 브라우저 사본을 저장하지 못했습니다.";

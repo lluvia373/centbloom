@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ events: query.series ? events.filter(event => event.updatedAt !== null) : events, connected: false, earningsConnected: false, asOf }, { headers });
   }
   try {
-    const events = await readReleases(query, request.signal);
+    const events = await readReleases(query, request.signal, request.nextUrl.hostname);
     return NextResponse.json({ events, connected: true, earningsConnected: false, asOf }, { headers });
   } catch {
     return NextResponse.json({ error: "저장된 일정을 불러오지 못했습니다." }, { status: 503 });

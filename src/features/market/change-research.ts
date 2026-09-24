@@ -1,9 +1,15 @@
 import type { MarketChange, MarketChangesFeed } from "./market-changes";
 import type { MarketStory } from "./news-model";
 import { normalizeNews } from "./news-model";
+import { selectMarketChanges } from "./market-changes";
 
-export interface ResearchedMarketChange extends MarketChange { story: MarketStory }
+export interface ResearchedMarketChange extends MarketChange { story?: MarketStory | null }
 export interface ResearchedChangesFeed extends Omit<MarketChangesFeed, "items"> { items: ResearchedMarketChange[]; expiresAt: number }
+export interface ChangesView extends ResearchedChangesFeed { access: "preview" | "full"; total: number }
+export function changesView(feed: ResearchedChangesFeed, full = false): ChangesView {
+  return { ...feed, items: full ? feed.items : selectMarketChanges(feed.items, undefined, 3),
+    access: full ? "full" : "preview", total: feed.items.length };
+}
 
 export function companySearchName(name: string): string {
   return name.replace(/\b(?:incorporated|inc|corporation|corp|limited|ltd|plc)\b\.?/gi, "")
@@ -29,7 +35,7 @@ const event = /\b(earnings|revenue|results|guidance|forecast|trial|clinical|prec
 const opinion = /\b(should you|stocks? to buy|best stocks?|top \d+|millionaire|worth buying|undervalued|overvalued|is it too late|before you buy|could.*(?:double|triple)|price prediction)\b/i;
 const roundup = /\b(premarket|pre-market|futures|stocks? to watch|stocks? in focus)\b/i;
 
-/** A recent, directly associated event headline. Absence means no representative card. */
+/** A recent, directly associated event headline. Optional context, never an eligibility gate. */
 export function selectChangeStory(item: MarketChange, stories: MarketStory[], now = Date.now()): MarketStory | null {
   const quotedAt = Date.parse(item.quote.quotedAt ?? "");
   if (!Number.isFinite(quotedAt)) return null;

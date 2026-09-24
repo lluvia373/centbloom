@@ -1,0 +1,3978 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-23T16:57:49.884Z",
+  "summaries": [
+    {
+      "slug": "berkshire-hathaway",
+      "name": "Berkshire Hathaway",
+      "manager": "Warren Buffett",
+      "aliases": [
+        "Warren Buffett",
+        "워런 버핏",
+        "워렌 버핏",
+        "버크셔 해서웨이",
+        "BERKSHIRE HATHAWAY INC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 299253556246,
+      "holdingsCount": 29,
+      "topHoldings": [
+        {
+          "name": "APPLE INC",
+          "valueUsd": 65950296923
+        },
+        {
+          "name": "AMERICAN EXPRESS CO",
+          "valueUsd": 51282319275
+        },
+        {
+          "name": "COCA COLA CO",
+          "valueUsd": 32508000000
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "ark-invest",
+      "name": "ARK Invest",
+      "manager": "Cathie Wood",
+      "aliases": [
+        "Cathie Wood",
+        "캐시 우드",
+        "아크 인베스트",
+        "ARK Investment Management LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 15402788184,
+      "holdingsCount": 191,
+      "topHoldings": [
+        {
+          "name": "Tesla Inc · Common Stock",
+          "valueUsd": 1160772073
+        },
+        {
+          "name": "Advanced Micro Devices Inc · Common Stock",
+          "valueUsd": 822826048
+        },
+        {
+          "name": "Space Exploration Technologies Corp · Common Stock",
+          "valueUsd": 765113281
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "bridgewater",
+      "name": "Bridgewater Associates",
+      "manager": "Ray Dalio",
+      "aliases": [
+        "Ray Dalio",
+        "레이 달리오",
+        "브리지워터",
+        "Bridgewater Associates, LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 24376086530,
+      "holdingsCount": 997,
+      "topHoldings": [
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT",
+          "valueUsd": 3973046405
+        },
+        {
+          "name": "ISHARES TR · CORE S&P500 ETF",
+          "valueUsd": 2248381963
+        },
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 773586958
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "pershing-square",
+      "name": "Pershing Square",
+      "manager": "Bill Ackman",
+      "aliases": [
+        "Bill Ackman",
+        "빌 애크먼",
+        "빌 애크만",
+        "퍼싱 스퀘어",
+        "Pershing Square Capital Management, L.P."
+      ],
+      "period": "2026-03-31",
+      "valueUsd": 13714299861,
+      "holdingsCount": 11,
+      "topHoldings": [
+        {
+          "name": "BROOKFIELD CORP · CL A LTD VT SH",
+          "valueUsd": 2415946008
+        },
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 2385104083
+        },
+        {
+          "name": "UBER TECHNOLOGIES INC",
+          "valueUsd": 2154934398
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "daily-journal",
+      "name": "Daily Journal",
+      "manager": "Charlie Munger",
+      "aliases": [
+        "Charlie Munger",
+        "찰리 멍거",
+        "데일리 저널",
+        "DAILY JOURNAL CORP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 256664220,
+      "holdingsCount": 4,
+      "topHoldings": [
+        {
+          "name": "Wells Fargo & Co · Common Stock",
+          "valueUsd": 116770320
+        },
+        {
+          "name": "Bank of America Corp · Common Stock",
+          "valueUsd": 113960000
+        },
+        {
+          "name": "Alibaba Group Holding Ltd · Sponsored ADS",
+          "valueUsd": 18716100
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "situational-awareness",
+      "name": "Situational Awareness LP",
+      "manager": "Situational Awareness LP",
+      "aliases": [
+        "Situational Awareness LP",
+        "레오폴드 아셴브레너",
+        "Leopold Aschenbrenner",
+        "시추에이셔널 어웨어니스"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 20242292228,
+      "holdingsCount": 26,
+      "topHoldings": [
+        {
+          "name": "SANDISK CORP",
+          "valueUsd": 5673738513
+        },
+        {
+          "name": "MICRON TECHNOLOGY INC",
+          "valueUsd": 5573819392
+        },
+        {
+          "name": "BLOOM ENERGY CORP · COM CL A",
+          "valueUsd": 1898778982
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "scion-asset-management",
+      "name": "Scion Asset Management",
+      "manager": "Michael Burry",
+      "aliases": [
+        "Michael Burry",
+        "마이클 버리",
+        "사이온 자산운용",
+        "Scion Asset Management, LLC"
+      ],
+      "period": "2025-09-30",
+      "valueUsd": 1381198076,
+      "holdingsCount": 8,
+      "topHoldings": [
+        {
+          "name": "PALANTIR TECHNOLOGIES INC · CL A · PUT",
+          "valueUsd": 912100000
+        },
+        {
+          "name": "NVIDIA CORPORATION · PUT",
+          "valueUsd": 186580000
+        },
+        {
+          "name": "PFIZER INC · CALL",
+          "valueUsd": 152880000
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "blackrock",
+      "name": "BlackRock",
+      "manager": "BlackRock",
+      "aliases": [
+        "BlackRock",
+        "블랙록",
+        "BlackRock, Inc."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 6729538649155,
+      "holdingsCount": 5696,
+      "topHoldings": [
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 388558449933
+        },
+        {
+          "name": "APPLE INC",
+          "valueUsd": 336524794350
+        },
+        {
+          "name": "MICROSOFT CORP",
+          "valueUsd": 226560080545
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "fisher-asset-management",
+      "name": "Fisher Asset Management",
+      "manager": "Ken Fisher",
+      "aliases": [
+        "Ken Fisher",
+        "켄 피셔",
+        "피셔 자산운용",
+        "Fisher Asset Management, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 335827609549,
+      "holdingsCount": 1037,
+      "topHoldings": [
+        {
+          "name": "NVIDIA CORP COM",
+          "valueUsd": 18195373846
+        },
+        {
+          "name": "APPLE INC",
+          "valueUsd": 16670059955
+        },
+        {
+          "name": "ISHARES TR 7 10YR TR BD ETF",
+          "valueUsd": 15222380109
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "citadel-advisors",
+      "name": "Citadel Advisors",
+      "manager": "Ken Griffin",
+      "aliases": [
+        "Ken Griffin",
+        "켄 그리핀",
+        "시타델",
+        "CITADEL ADVISORS LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 875011794337,
+      "holdingsCount": 13572,
+      "topHoldings": [
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT · CALL",
+          "valueUsd": 35656923314
+        },
+        {
+          "name": "INVESCO QQQ TR · UNIT SER 1 · PUT",
+          "valueUsd": 26554510360
+        },
+        {
+          "name": "INVESCO QQQ TR · UNIT SER 1 · CALL",
+          "valueUsd": 23490644520
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "primecap-management",
+      "name": "PRIMECAP Management",
+      "manager": "PRIMECAP Management",
+      "aliases": [
+        "PRIMECAP Management",
+        "프라임캡",
+        "PRIMECAP MANAGEMENT CO/CA/"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 169112441771,
+      "holdingsCount": 324,
+      "topHoldings": [
+        {
+          "name": "MICRON TECHNOLOGY INC",
+          "valueUsd": 22182263342
+        },
+        {
+          "name": "ELI LILLY & CO",
+          "valueUsd": 11002256246
+        },
+        {
+          "name": "INTEL CORP",
+          "valueUsd": 10507291264
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "baillie-gifford",
+      "name": "Baillie Gifford",
+      "manager": "Baillie Gifford",
+      "aliases": [
+        "Baillie Gifford",
+        "베일리 기포드",
+        "BAILLIE GIFFORD & CO"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 110225053010,
+      "holdingsCount": 275,
+      "topHoldings": [
+        {
+          "name": "Space Exploration Technologies Corp · CL A COM",
+          "valueUsd": 8781829133
+        },
+        {
+          "name": "NVIDIA",
+          "valueUsd": 8381531192
+        },
+        {
+          "name": "Amazon.Com",
+          "valueUsd": 6415604182
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "first-eagle",
+      "name": "First Eagle Investments",
+      "manager": "First Eagle Investments",
+      "aliases": [
+        "First Eagle Investments",
+        "퍼스트 이글",
+        "First Eagle Investment Management, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 59922860164,
+      "holdingsCount": 424,
+      "topHoldings": [
+        {
+          "name": "ALPHABET INC · CL C",
+          "valueUsd": 2585051365
+        },
+        {
+          "name": "BECTON DICKINSON & CO",
+          "valueUsd": 2090674677
+        },
+        {
+          "name": "META PLATFORMS INC · CL A",
+          "valueUsd": 1812302580
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": true
+    },
+    {
+      "slug": "renaissance-technologies",
+      "name": "Renaissance Technologies",
+      "manager": "Jim Simons",
+      "aliases": [
+        "Jim Simons",
+        "짐 사이먼스",
+        "르네상스 테크놀로지",
+        "RENAISSANCE TECHNOLOGIES LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 72617871974,
+      "holdingsCount": 3140,
+      "topHoldings": [
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 1418869170
+        },
+        {
+          "name": "META PLATFORMS INC · CL A",
+          "valueUsd": 1139611745
+        },
+        {
+          "name": "INTEL CORP",
+          "valueUsd": 1022356867
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "bamco",
+      "name": "Baron Funds / BAMCO",
+      "manager": "Ron Baron",
+      "aliases": [
+        "Ron Baron",
+        "론 배런",
+        "배런 펀드",
+        "Baron Funds",
+        "BAMCO INC /NY/"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 66640911675,
+      "holdingsCount": 345,
+      "topHoldings": [
+        {
+          "name": "SPACE EXPLORATION TECHN CORP · CLASS A COM STK",
+          "valueUsd": 24907141616
+        },
+        {
+          "name": "TESLA INC",
+          "valueUsd": 5267910691
+        },
+        {
+          "name": "MSCI INC",
+          "valueUsd": 1798710150
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "point72",
+      "name": "Point72 Asset Management",
+      "manager": "Steven Cohen",
+      "aliases": [
+        "Steven Cohen",
+        "스티븐 코헨",
+        "스티브 코헨",
+        "포인트72",
+        "Point72 Asset Management, L.P."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 90675333456,
+      "holdingsCount": 3923,
+      "topHoldings": [
+        {
+          "name": "CREDO TECHNOLOGY GROUP HOLDI · ORDINARY SHARES",
+          "valueUsd": 1673344247
+        },
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT · PUT",
+          "valueUsd": 1163542337
+        },
+        {
+          "name": "ASML HLDG NV · N Y REGISTRY SHS",
+          "valueUsd": 1103464780
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "tci-fund",
+      "name": "TCI Fund Management",
+      "manager": "Chris Hohn",
+      "aliases": [
+        "Chris Hohn",
+        "크리스 혼",
+        "TCI",
+        "TCI Fund Management Ltd"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 52769884406,
+      "holdingsCount": 11,
+      "topHoldings": [
+        {
+          "name": "GE AEROSPACE · COM NEW",
+          "valueUsd": 17725353519
+        },
+        {
+          "name": "VISA INC · COM CL A",
+          "valueUsd": 10462232091
+        },
+        {
+          "name": "MOODYS CORP",
+          "valueUsd": 6492167509
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "gmo",
+      "name": "GMO",
+      "manager": "Jeremy Grantham",
+      "aliases": [
+        "Jeremy Grantham",
+        "제러미 그랜섬",
+        "GMO Asset Management",
+        "Grantham, Mayo, Van Otterloo & Co. LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 44399773809,
+      "holdingsCount": 663,
+      "topHoldings": [
+        {
+          "name": "MICROSOFT CORP",
+          "valueUsd": 2542626840
+        },
+        {
+          "name": "LAM RESEARCH CORP · COM NEW",
+          "valueUsd": 2368030518
+        },
+        {
+          "name": "ALPHABET INC · CL A",
+          "valueUsd": 2191620859
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "gotham-asset-management",
+      "name": "Gotham Asset Management",
+      "manager": "Joel Greenblatt",
+      "aliases": [
+        "Joel Greenblatt",
+        "조엘 그린블라트",
+        "고담 자산운용",
+        "Gotham Asset Management, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 42963515885,
+      "holdingsCount": 1791,
+      "topHoldings": [
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT",
+          "valueUsd": 8508238863
+        },
+        {
+          "name": "APPLE INC",
+          "valueUsd": 827714280
+        },
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 804155107
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "gardner-russo-quinn",
+      "name": "Gardner Russo & Quinn",
+      "manager": "Tom Russo",
+      "aliases": [
+        "Tom Russo",
+        "톰 루소",
+        "Gardner Russo & Gardner",
+        "GARDNER RUSSO & QUINN LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 8925889600,
+      "holdingsCount": 85,
+      "topHoldings": [
+        {
+          "name": "Alphabet Inc Cl C",
+          "valueUsd": 1076977046
+        },
+        {
+          "name": "Berkshire Hathaway Inc Cl A",
+          "valueUsd": 1072353200
+        },
+        {
+          "name": "Philip Morris International In",
+          "valueUsd": 819675318
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "ako-capital",
+      "name": "AKO Capital",
+      "manager": "AKO Capital",
+      "aliases": [
+        "AKO Capital",
+        "에이케이오 캐피털",
+        "AKO CAPITAL LLP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 4292009,
+      "holdingsCount": 22,
+      "topHoldings": [
+        {
+          "name": "ALCON AG · ORD SHS",
+          "valueUsd": 651941
+        },
+        {
+          "name": "SUNBELT RENTALS HOLDINGS INC · SHS",
+          "valueUsd": 454457
+        },
+        {
+          "name": "VISA INC · COM CL A",
+          "valueUsd": 337987
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "pzena-investment",
+      "name": "Pzena Investment Management",
+      "manager": "Richard Pzena",
+      "aliases": [
+        "Richard Pzena",
+        "리처드 프제나",
+        "프제나 투자운용",
+        "PZENA INVESTMENT MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 34066282976,
+      "holdingsCount": 161,
+      "topHoldings": [
+        {
+          "name": "MAGNA INTL INC",
+          "valueUsd": 2227312133
+        },
+        {
+          "name": "HUMANA INC",
+          "valueUsd": 1749013682
+        },
+        {
+          "name": "BAXTER INTL INC",
+          "valueUsd": 1392097779
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "viking-global",
+      "name": "Viking Global Investors",
+      "manager": "Andreas Halvorsen",
+      "aliases": [
+        "Andreas Halvorsen",
+        "안드레아스 할보르센",
+        "바이킹 글로벌",
+        "VIKING GLOBAL INVESTORS LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 35079228595,
+      "holdingsCount": 90,
+      "topHoldings": [
+        {
+          "name": "VISA INC · COM CL A",
+          "valueUsd": 2193581596
+        },
+        {
+          "name": "TAIWAN SEMICONDUCTOR MANUFAC · SPONSORED ADS",
+          "valueUsd": 1512988084
+        },
+        {
+          "name": "AIR PRODUCTS AND CHEMICALS I",
+          "valueUsd": 1389776106
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "gates-foundation",
+      "name": "Gates Foundation Trust",
+      "manager": "Bill Gates",
+      "aliases": [
+        "Bill Gates",
+        "빌 게이츠",
+        "게이츠 재단",
+        "Bill & Melinda Gates Foundation Trust",
+        "GATES FOUNDATION TRUST"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 34424791932,
+      "holdingsCount": 24,
+      "topHoldings": [
+        {
+          "name": "BERKSHIRE HATHAWAY INC DEL · CL B NEW",
+          "valueUsd": 7350651039
+        },
+        {
+          "name": "CATERPILLAR INC",
+          "valueUsd": 6765963549
+        },
+        {
+          "name": "CANADIAN NATL RY CO",
+          "valueUsd": 6179825963
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "sands-capital",
+      "name": "Sands Capital",
+      "manager": "Sands Capital",
+      "aliases": [
+        "Sands Capital",
+        "샌즈 캐피털",
+        "SANDS CAPITAL MANAGEMENT, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 26928187141,
+      "holdingsCount": 71,
+      "topHoldings": [
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 2813156151
+        },
+        {
+          "name": "TAIWAN SEMICONDUCTOR MANUFAC · SPONSORED ADS",
+          "valueUsd": 1874672381
+        },
+        {
+          "name": "ALPHABET INC · CL A",
+          "valueUsd": 1748753286
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "tiger-global",
+      "name": "Tiger Global",
+      "manager": "Tiger Global",
+      "aliases": [
+        "Tiger Global",
+        "타이거 글로벌",
+        "TIGER GLOBAL MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 23981506027,
+      "holdingsCount": 46,
+      "topHoldings": [
+        {
+          "name": "TAIWAN SEMICONDUCTOR MANUFAC · SPONSORED ADS",
+          "valueUsd": 2331022991
+        },
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 2307979214
+        },
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 2240762490
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "tudor-investment",
+      "name": "Tudor Investment",
+      "manager": "Paul Tudor Jones II",
+      "aliases": [
+        "Paul Tudor Jones II",
+        "폴 튜더 존스",
+        "튜더 인베스트먼트",
+        "TUDOR INVESTMENT CORP ET AL"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 71912518398,
+      "holdingsCount": 3458,
+      "topHoldings": [
+        {
+          "name": "Ishares Russell 2000 Etf - US ETP · ETF Option · PUT",
+          "valueUsd": 9230755395
+        },
+        {
+          "name": "Invesco Qqq Trust Series 1 - US ETP · ETF Option · CALL",
+          "valueUsd": 3554381880
+        },
+        {
+          "name": "Invesco Qqq Trust Series 1 - US ETP · ETF Option · PUT",
+          "valueUsd": 3487664040
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "davis-selected",
+      "name": "Davis Selected Advisers",
+      "manager": "Chris Davis",
+      "aliases": [
+        "Chris Davis",
+        "크리스 데이비스",
+        "데이비스 셀렉티드",
+        "DAVIS SELECTED ADVISERS"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 23289545492,
+      "holdingsCount": 112,
+      "topHoldings": [
+        {
+          "name": "Capital One Financial Corp. · Common Stock",
+          "valueUsd": 1659420488
+        },
+        {
+          "name": "U.S. Bancorp · Common Stock",
+          "valueUsd": 1295909823
+        },
+        {
+          "name": "CVS Health Corporation · Common Stock",
+          "valueUsd": 1227594458
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "markel",
+      "name": "Markel Group",
+      "manager": "Tom Gayner",
+      "aliases": [
+        "Tom Gayner",
+        "톰 게이너",
+        "마켈",
+        "Markel Corporation",
+        "MARKEL GROUP INC."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 13130490727,
+      "holdingsCount": 130,
+      "topHoldings": [
+        {
+          "name": "ALPHABET INC · CL C",
+          "valueUsd": 971608033
+        },
+        {
+          "name": "BERKSHIRE HATHAWAY INC DEL · CL A",
+          "valueUsd": 834218900
+        },
+        {
+          "name": "BERKSHIRE HATHAWAY INC DEL · CL B NEW",
+          "valueUsd": 766582969
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "brandes-investment",
+      "name": "Brandes Investment Partners",
+      "manager": "Charles Brandes",
+      "aliases": [
+        "Charles Brandes",
+        "찰스 브랜즈",
+        "브랜디스",
+        "BRANDES INVESTMENT PARTNERS, LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 14264854892,
+      "holdingsCount": 193,
+      "topHoldings": [
+        {
+          "name": "CAE INC",
+          "valueUsd": 461042422
+        },
+        {
+          "name": "EMBRAER S.A. · SPONSORED ADS",
+          "valueUsd": 385112593
+        },
+        {
+          "name": "MOHAWK INDS INC",
+          "valueUsd": 339425455
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "fundsmith",
+      "name": "Fundsmith",
+      "manager": "Terry Smith",
+      "aliases": [
+        "Terry Smith",
+        "테리 스미스",
+        "펀드스미스",
+        "Fundsmith LLP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 13648923682,
+      "holdingsCount": 41,
+      "topHoldings": [
+        {
+          "name": "MARRIOTT INTL INC NEW · CL A",
+          "valueUsd": 958255687
+        },
+        {
+          "name": "STRYKER CORPORATION",
+          "valueUsd": 917391182
+        },
+        {
+          "name": "WATERS CORP",
+          "valueUsd": 852702945
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "polen-capital",
+      "name": "Polen Capital",
+      "manager": "Polen Capital",
+      "aliases": [
+        "Polen Capital",
+        "폴렌 캐피털",
+        "POLEN CAPITAL MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 11610786601,
+      "holdingsCount": 219,
+      "topHoldings": [
+        {
+          "name": "ELI LILLY & CO",
+          "valueUsd": 799914391
+        },
+        {
+          "name": "NVIDIA CORPORATION",
+          "valueUsd": 796047269
+        },
+        {
+          "name": "MICROSOFT CORP",
+          "valueUsd": 782824321
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "lone-pine-capital",
+      "name": "Lone Pine Capital",
+      "manager": "Steve Mandel",
+      "aliases": [
+        "Steve Mandel",
+        "스티브 맨델",
+        "론 파인 캐피털",
+        "LONE PINE CAPITAL LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 16357760275,
+      "holdingsCount": 34,
+      "topHoldings": [
+        {
+          "name": "NEBIUS GROUP N.V. · SHS CLASS A",
+          "valueUsd": 1175934069
+        },
+        {
+          "name": "ASML HLDG NV · N Y REGISTRY SHS",
+          "valueUsd": 1132337523
+        },
+        {
+          "name": "SEAGATE TECHNOLOGY HLDNGS PL · ORD SHS",
+          "valueUsd": 965105185
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "royce-associates",
+      "name": "Royce Investment Partners",
+      "manager": "Chuck Royce",
+      "aliases": [
+        "Chuck Royce",
+        "척 로이스",
+        "Royce Investment Partners",
+        "ROYCE & ASSOCIATES LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 12417915021,
+      "holdingsCount": 747,
+      "topHoldings": [
+        {
+          "name": "ARCOSA INC",
+          "valueUsd": 144376126
+        },
+        {
+          "name": "QUAKER HOUGHTON",
+          "valueUsd": 136706682
+        },
+        {
+          "name": "MKS INC.",
+          "valueUsd": 116345002
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "generation-investment",
+      "name": "Generation Investment Management",
+      "manager": "Al Gore",
+      "aliases": [
+        "Al Gore",
+        "앨 고어",
+        "제너레이션 투자운용",
+        "Generation Investment Management US LLP",
+        "GENERATION INVESTMENT MANAGEMENT LLP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 10289660825,
+      "holdingsCount": 28,
+      "topHoldings": [
+        {
+          "name": "DANAHER CORP DEL",
+          "valueUsd": 1287948806
+        },
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 1237820220
+        },
+        {
+          "name": "MICROSOFT CORP",
+          "valueUsd": 1161417540
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "jefferies",
+      "name": "Jefferies Financial Group",
+      "manager": "Jefferies Group",
+      "aliases": [
+        "Jefferies Group",
+        "제프리스",
+        "Jefferies Financial Group Inc."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 15191337894,
+      "holdingsCount": 1621,
+      "topHoldings": [
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT · PUT",
+          "valueUsd": 1159360425
+        },
+        {
+          "name": "STATE STR SPDR S&P 500 ETF T · TR UNIT",
+          "valueUsd": 862748179
+        },
+        {
+          "name": "SPACE EXPLORATION TECHN CORP · CLASS A COM STK · PUT",
+          "valueUsd": 803042000
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "icahn",
+      "name": "Icahn Capital Management",
+      "manager": "Carl Icahn",
+      "aliases": [
+        "Carl Icahn",
+        "칼 아이칸",
+        "Icahn Capital Management",
+        "ICAHN CARL C"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 8264090525,
+      "holdingsCount": 12,
+      "topHoldings": [
+        {
+          "name": "Icahn Enterprises LP · DEPOSITARY UNIT",
+          "valueUsd": 4458616003
+        },
+        {
+          "name": "CVR Energy Inc",
+          "valueUsd": 1960899637
+        },
+        {
+          "name": "CVR Partners, LP",
+          "valueUsd": 464233266
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "ariel-investments",
+      "name": "Ariel Investments",
+      "manager": "John W. Rogers Jr.",
+      "aliases": [
+        "John W. Rogers Jr.",
+        "존 로저스",
+        "아리엘 인베스트먼츠",
+        "ARIEL INVESTMENTS, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 10029168542,
+      "holdingsCount": 106,
+      "topHoldings": [
+        {
+          "name": "MADISON SQUARE GARDEN ENTMT · COM CL A",
+          "valueUsd": 428939771
+        },
+        {
+          "name": "ONESPAWORLD HOLDINGS LIMITED",
+          "valueUsd": 420442260
+        },
+        {
+          "name": "CHARLES RIV LABS INTL INC",
+          "valueUsd": 341587697
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "soros-fund",
+      "name": "Soros Fund Management",
+      "manager": "George Soros",
+      "aliases": [
+        "George Soros",
+        "조지 소로스",
+        "소로스 펀드",
+        "SOROS FUND MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 8143628824,
+      "holdingsCount": 266,
+      "topHoldings": [
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 281843962
+        },
+        {
+          "name": "TAIWAN SEMICONDUCTOR MANUFAC · SPONSORED ADS",
+          "valueUsd": 249366996
+        },
+        {
+          "name": "GLOBAL PMTS INC · NOTE 1.500% 3/0 · 원금",
+          "valueUsd": 222694485
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "dorsey-asset-management",
+      "name": "Dorsey Asset Management",
+      "manager": "Pat Dorsey",
+      "aliases": [
+        "Pat Dorsey",
+        "팻 도시",
+        "도시 자산운용",
+        "Dorsey Asset Management, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 1561408466,
+      "holdingsCount": 11,
+      "topHoldings": [
+        {
+          "name": "ASML HLDG NV · N Y REGISTRY SHS",
+          "valueUsd": 259351356
+        },
+        {
+          "name": "APPLOVIN CORP · COM CL A",
+          "valueUsd": 226347237
+        },
+        {
+          "name": "ROYALTY PHARMA PLC · SHS CLASS A",
+          "valueUsd": 137737525
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "appaloosa",
+      "name": "Appaloosa",
+      "manager": "David Tepper",
+      "aliases": [
+        "David Tepper",
+        "데이비드 테퍼",
+        "애팔루사",
+        "Appaloosa LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 7725383349,
+      "holdingsCount": 27,
+      "topHoldings": [
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 1191700000
+        },
+        {
+          "name": "MICRON TECHNOLOGY INC",
+          "valueUsd": 1125432750
+        },
+        {
+          "name": "TAIWAN SEMICONDUCTOR MANUFAC · SPONSORED ADS",
+          "valueUsd": 787990500
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "valueact",
+      "name": "ValueAct Holdings",
+      "manager": "Jeffrey Ubben",
+      "aliases": [
+        "Jeffrey Ubben",
+        "제프리 우벤",
+        "밸류액트",
+        "ValueAct Holdings, L.P."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 5634931372,
+      "holdingsCount": 18,
+      "topHoldings": [
+        {
+          "name": "VISA INC · COM CL A",
+          "valueUsd": 794682213
+        },
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 701124778
+        },
+        {
+          "name": "ROCKET COS INC · COM CL A",
+          "valueUsd": 656283191
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "akre-capital",
+      "name": "Akre Capital Management",
+      "manager": "Chuck Akre",
+      "aliases": [
+        "Chuck Akre",
+        "척 애크리",
+        "아크레 캐피털",
+        "AKRE CAPITAL MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 5122536308,
+      "holdingsCount": 20,
+      "topHoldings": [
+        {
+          "name": "MASTERCARD INCORPORATED · CL A",
+          "valueUsd": 1022015722
+        },
+        {
+          "name": "MOODYS CORP",
+          "valueUsd": 523979978
+        },
+        {
+          "name": "BROOKFIELD CORP · CL A LTD VT SH",
+          "valueUsd": 516187709
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "baupost",
+      "name": "The Baupost Group",
+      "manager": "Seth Klarman",
+      "aliases": [
+        "Seth Klarman",
+        "세스 클라먼",
+        "바우포스트",
+        "BAUPOST GROUP LLC/MA"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 5415853,
+      "holdingsCount": 23,
+      "topHoldings": [
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 892310
+        },
+        {
+          "name": "ELEVANCE HEALTH INC FORMERLY",
+          "valueUsd": 493140
+        },
+        {
+          "name": "RESTAURANT BRANDS INTL INC",
+          "valueUsd": 489612
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "abrams-capital",
+      "name": "Abrams Capital",
+      "manager": "David Abrams",
+      "aliases": [
+        "David Abrams",
+        "데이비드 에이브럼스",
+        "에이브럼스 캐피털",
+        "ABRAMS CAPITAL MANAGEMENT, L.P."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 5479746142,
+      "holdingsCount": 11,
+      "topHoldings": [
+        {
+          "name": "LOAR HOLDINGS INC · COM SHS",
+          "valueUsd": 2583569846
+        },
+        {
+          "name": "LITHIA MTRS INC",
+          "valueUsd": 723475222
+        },
+        {
+          "name": "ALPHABET INC · CL A",
+          "valueUsd": 489773798
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "altarock-partners",
+      "name": "Altarock Partners",
+      "manager": "Altarock Partners",
+      "aliases": [
+        "Altarock Partners",
+        "알타록 파트너스",
+        "ALTAROCK PARTNERS LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 4239761490,
+      "holdingsCount": 8,
+      "topHoldings": [
+        {
+          "name": "AMAZON.COM INC · COMM",
+          "valueUsd": 1365681526
+        },
+        {
+          "name": "TRANSDIGM GROUP INC · COMM",
+          "valueUsd": 1166540690
+        },
+        {
+          "name": "MICROSOFT CORP · COMM",
+          "valueUsd": 870808476
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "broad-run",
+      "name": "Broad Run Investment Management",
+      "manager": "Broad Run",
+      "aliases": [
+        "Broad Run",
+        "브로드 런",
+        "Broad Run Investment Management, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 649745926,
+      "holdingsCount": 24,
+      "topHoldings": [
+        {
+          "name": "AST SPACEMOBILE INC · COM CL A",
+          "valueUsd": 129377405
+        },
+        {
+          "name": "APPLIED MATLS INC",
+          "valueUsd": 106651176
+        },
+        {
+          "name": "SUNBELT RENTALS HOLDINGS INC · SHS",
+          "valueUsd": 51353306
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "brave-warrior",
+      "name": "Brave Warrior Advisors",
+      "manager": "Glenn Greenberg",
+      "aliases": [
+        "Glenn Greenberg",
+        "글렌 그린버그",
+        "브레이브 워리어",
+        "Brave Warrior Advisors, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 4588428223,
+      "holdingsCount": 40,
+      "topHoldings": [
+        {
+          "name": "ICON PUB LTD CO · SHS",
+          "valueUsd": 547761133
+        },
+        {
+          "name": "ONEMAIN HLDGS INC",
+          "valueUsd": 462466717
+        },
+        {
+          "name": "TD SYNNEX CORPORATION",
+          "valueUsd": 385405364
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "third-point",
+      "name": "Third Point",
+      "manager": "Daniel Loeb",
+      "aliases": [
+        "Daniel Loeb",
+        "다니엘 로브",
+        "댄 로브",
+        "서드 포인트",
+        "Third Point LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 4679571988,
+      "holdingsCount": 43,
+      "topHoldings": [
+        {
+          "name": "WARNER BROS DISCOVERY INC · COM SER A",
+          "valueUsd": 533200000
+        },
+        {
+          "name": "AMAZON COM INC",
+          "valueUsd": 417095000
+        },
+        {
+          "name": "ALPHABET INC · CL A",
+          "valueUsd": 366304250
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "oaktree",
+      "name": "Oaktree Capital Management",
+      "manager": "Howard Marks",
+      "aliases": [
+        "Howard Marks",
+        "하워드 막스",
+        "오크트리",
+        "OAKTREE CAPITAL MANAGEMENT LP"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 7206070520,
+      "holdingsCount": 145,
+      "topHoldings": [
+        {
+          "name": "STATE STREET CORP · ETF · PUT",
+          "valueUsd": 1011873350
+        },
+        {
+          "name": "INVESCO QQQ TRUST SERIES 1 · ETF · PUT",
+          "valueUsd": 651714000
+        },
+        {
+          "name": "TORM PLC · COMMON STOCK",
+          "valueUsd": 524260745
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "fairfax",
+      "name": "Fairfax Financial Holdings",
+      "manager": "Prem Watsa",
+      "aliases": [
+        "Prem Watsa",
+        "프렘 왓사",
+        "페어팩스",
+        "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 2638451995,
+      "holdingsCount": 32,
+      "topHoldings": [
+        {
+          "name": "ORLA MINING LTD",
+          "valueUsd": 568456141
+        },
+        {
+          "name": "ELDORADO GOLD CORP",
+          "valueUsd": 427001600
+        },
+        {
+          "name": "KRAFT HEINZ CO",
+          "valueUsd": 337633400
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "paulson",
+      "name": "Paulson & Co",
+      "manager": "John Paulson",
+      "aliases": [
+        "John Paulson",
+        "존 폴슨",
+        "폴슨 앤 코",
+        "PAULSON & CO. INC."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 2575691752,
+      "holdingsCount": 8,
+      "topHoldings": [
+        {
+          "name": "MADRIGAL PHARMACEUTICALS INC",
+          "valueUsd": 719523739
+        },
+        {
+          "name": "PERPETUA RESOURCES CORP",
+          "valueUsd": 671529927
+        },
+        {
+          "name": "ACADIAN ASSET MANAGEMENT INC",
+          "valueUsd": 417911529
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "greenlight-capital",
+      "name": "Greenlight Capital",
+      "manager": "David Einhorn",
+      "aliases": [
+        "David Einhorn",
+        "데이비드 아인혼",
+        "그린라이트 캐피털",
+        "GREENLIGHT CAPITAL INC"
+      ],
+      "period": "2023-12-31",
+      "valueUsd": 2047998727,
+      "holdingsCount": 40,
+      "topHoldings": [
+        {
+          "name": "GREEN BRICK PARTNERS INC",
+          "valueUsd": 592369623
+        },
+        {
+          "name": "CONSOL ENERGY INC NEW",
+          "valueUsd": 211673655
+        },
+        {
+          "name": "BRIGHTHOUSE FINL INC",
+          "valueUsd": 161068530
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "cas-investment",
+      "name": "CAS Investment Partners",
+      "manager": "Cliff Sosin",
+      "aliases": [
+        "Cliff Sosin",
+        "클리프 소신",
+        "CAS 인베스트먼트",
+        "CAS Investment Partners, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 1883136156,
+      "holdingsCount": 6,
+      "topHoldings": [
+        {
+          "name": "CARVANA CO CL A · CL A",
+          "valueUsd": 1484870897
+        },
+        {
+          "name": "HILTON GRAND VACATIONS",
+          "valueUsd": 272683049
+        },
+        {
+          "name": "META PLATFORMS INC · CL A",
+          "valueUsd": 76746009
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "fairholme",
+      "name": "Fairholme Capital Management",
+      "manager": "Bruce Berkowitz",
+      "aliases": [
+        "Bruce Berkowitz",
+        "브루스 버코위츠",
+        "페어홀름",
+        "FAIRHOLME CAPITAL MANAGEMENT LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 1489888626,
+      "holdingsCount": 13,
+      "topHoldings": [
+        {
+          "name": "ST JOE CO",
+          "valueUsd": 1138761645
+        },
+        {
+          "name": "ENTERPRISE PRODS PARTNERS L",
+          "valueUsd": 200555208
+        },
+        {
+          "name": "BANK OZK",
+          "valueUsd": 47988026
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "tweedy-browne",
+      "name": "Tweedy Browne",
+      "manager": "Tweedy Browne",
+      "aliases": [
+        "Tweedy Browne",
+        "트위디 브라운",
+        "Tweedy, Browne Co LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 1319974933,
+      "holdingsCount": 91,
+      "topHoldings": [
+        {
+          "name": "CNH INDUSTRIAL NV",
+          "valueUsd": 225901366
+        },
+        {
+          "name": "IONIS PHARMACEUTICALS INC.",
+          "valueUsd": 180805859
+        },
+        {
+          "name": "COCA COLA FEMSA · ADR",
+          "valueUsd": 123310563
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "ensemble-capital",
+      "name": "Ensemble Capital Management",
+      "manager": "Ensemble Capital",
+      "aliases": [
+        "Ensemble Capital",
+        "앙상블 캐피털",
+        "Ensemble Capital Management, LLC"
+      ],
+      "period": "2024-09-30",
+      "valueUsd": 1179305199,
+      "holdingsCount": 22,
+      "topHoldings": [
+        {
+          "name": "HOME DEPOT INC",
+          "valueUsd": 98173072
+        },
+        {
+          "name": "MASTERCARD INCORPORATED · CL A",
+          "valueUsd": 94021495
+        },
+        {
+          "name": "BOOKING HOLDINGS INC",
+          "valueUsd": 93466943
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "aquamarine",
+      "name": "Aquamarine Capital",
+      "manager": "Guy Spier",
+      "aliases": [
+        "Guy Spier",
+        "가이 스파이어",
+        "아쿠아마린",
+        "Aquamarine Capital",
+        "Aquamarine Zurich AG"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 144091,
+      "holdingsCount": 7,
+      "topHoldings": [
+        {
+          "name": "BERKSHIRE HATHAWAY INC DEL · CL B NEW",
+          "valueUsd": 48838
+        },
+        {
+          "name": "BERKSHIRE HATHAWAY INC DEL · CL A",
+          "valueUsd": 22466
+        },
+        {
+          "name": "AMERICAN EXPRESS CO",
+          "valueUsd": 21986
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "miller-value",
+      "name": "Miller Value Partners",
+      "manager": "Bill Miller",
+      "aliases": [
+        "Bill Miller",
+        "빌 밀러",
+        "밀러 밸류",
+        "MILLER VALUE PARTNERS, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 423070057,
+      "holdingsCount": 56,
+      "topHoldings": [
+        {
+          "name": "NABORS INDUSTRIES LTD · SHS",
+          "valueUsd": 37423095
+        },
+        {
+          "name": "GRAY MEDIA INC",
+          "valueUsd": 28756258
+        },
+        {
+          "name": "DIREXION SHARES ETF TRUST · DAILY 500 2X ETF",
+          "valueUsd": 24596449
+        }
+      ],
+      "limitedScope": true,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "dalal-street",
+      "name": "Dalal Street",
+      "manager": "Mohnish Pabrai",
+      "aliases": [
+        "Mohnish Pabrai",
+        "모니시 파브라이",
+        "달랄 스트리트",
+        "Dalal Street, LLC"
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 326749980,
+      "holdingsCount": 4,
+      "topHoldings": [
+        {
+          "name": "WARRIOR MET COAL INC",
+          "valueUsd": 141547098
+        },
+        {
+          "name": "TRANSOCEAN LTD · REGISTERED SHS",
+          "valueUsd": 99749443
+        },
+        {
+          "name": "ALPHA METALLURGICAL RESOUR I",
+          "valueUsd": 85305978
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "bruce-fund",
+      "name": "Bruce Fund / Bruce & Co",
+      "manager": "Robert Bruce",
+      "aliases": [
+        "Robert Bruce",
+        "로버트 브루스",
+        "브루스 펀드",
+        "Bruce Fund",
+        "Bruce & Co., Inc."
+      ],
+      "period": "2026-06-30",
+      "valueUsd": 369495763,
+      "holdingsCount": 41,
+      "topHoldings": [
+        {
+          "name": "Abbvie · Common",
+          "valueUsd": 30448440
+        },
+        {
+          "name": "Allstate · Common",
+          "valueUsd": 29147650
+        },
+        {
+          "name": "AerCap Holdings · Common",
+          "valueUsd": 26969300
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "tiger-management",
+      "name": "Tiger Management",
+      "manager": "Julian Robertson",
+      "aliases": [
+        "Julian Robertson",
+        "줄리언 로버트슨",
+        "타이거 매니지먼트",
+        "TIGER MANAGEMENT L.L.C."
+      ],
+      "period": "2024-09-30",
+      "valueUsd": 22768961,
+      "holdingsCount": 1,
+      "topHoldings": [
+        {
+          "name": "VANGUARD INDEX FDS · S&P 500 ETF SHS",
+          "valueUsd": 22768961
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "kynikos",
+      "name": "Kynikos Associates",
+      "manager": "Jim Chanos",
+      "aliases": [
+        "Jim Chanos",
+        "짐 채노스",
+        "키니코스",
+        "Kynikos Associates LP"
+      ],
+      "period": "2023-09-30",
+      "valueUsd": 318165316,
+      "holdingsCount": 32,
+      "topHoldings": [
+        {
+          "name": "DIGITAL RLTY TR INC · PUT",
+          "valueUsd": 180767574
+        },
+        {
+          "name": "EQUINIX INC · PUT",
+          "valueUsd": 90709874
+        },
+        {
+          "name": "VERTIV HOLDINGS CO · COM CL A · PUT",
+          "valueUsd": 14604720
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "makaira-partners",
+      "name": "Makaira Partners",
+      "manager": "Tom Bancroft",
+      "aliases": [
+        "Tom Bancroft",
+        "톰 밴크로프트",
+        "마카이라",
+        "Makaira Partners LLC"
+      ],
+      "period": "2026-03-31",
+      "valueUsd": 0,
+      "holdingsCount": 0,
+      "topHoldings": [],
+      "limitedScope": false,
+      "pendingCorrection": false
+    },
+    {
+      "slug": "melvin-capital",
+      "name": "Melvin Capital",
+      "manager": "Gabe Plotkin",
+      "aliases": [
+        "Gabe Plotkin",
+        "게이브 플롯킨",
+        "멜빈 캐피털",
+        "Melvin Capital Management LP"
+      ],
+      "period": "2023-09-30",
+      "valueUsd": 0,
+      "holdingsCount": 1,
+      "topHoldings": [
+        {
+          "name": "No Securities Beneficially   Owned · 0",
+          "valueUsd": 0
+        }
+      ],
+      "limitedScope": false,
+      "pendingCorrection": false
+    }
+  ],
+  "pending": [
+    {
+      "slug": "himalaya-capital",
+      "name": "Himalaya Capital",
+      "manager": "Li Lu",
+      "reason": "공시 검증 중"
+    },
+    {
+      "slug": "gamco-investors",
+      "name": "GAMCO Investors",
+      "manager": "Mario Gabelli",
+      "reason": "공시 검증 중"
+    },
+    {
+      "slug": "yacktman",
+      "name": "Yacktman Asset Management",
+      "manager": "Donald Yacktman",
+      "reason": "공시 검증 중"
+    },
+    {
+      "slug": "duquesne-family-office",
+      "name": "Duquesne Family Office",
+      "manager": "Stanley Druckenmiller",
+      "reason": "공시 검증 중"
+    },
+    {
+      "slug": "third-avenue",
+      "name": "Third Avenue Management",
+      "manager": "Third Avenue Management",
+      "reason": "공시 검증 중"
+    },
+    {
+      "slug": "mfp-investors",
+      "name": "MFP Investors",
+      "manager": "Michael Price",
+      "reason": "별도 신고자의 보고 범위 확인 중"
+    }
+  ],
+  "managers": {
+    "berkshire-hathaway": {
+      "slug": "berkshire-hathaway",
+      "name": "Berkshire Hathaway",
+      "manager": "Warren Buffett",
+      "cik": "0001067983",
+      "aliases": [
+        "Warren Buffett",
+        "워런 버핏",
+        "워렌 버핏",
+        "버크셔 해서웨이",
+        "BERKSHIRE HATHAWAY INC"
+      ],
+      "sourceState": {
+        "checkedAt": null,
+        "issue": "일부 공시를 확인하지 못해 검증된 공시만 제공합니다.",
+        "pendingPeriods": [
+          "2025-03-31"
+        ]
+      },
+      "activeAccession": "0001193125-26-352200",
+      "versions": [
+        {
+          "accession": "0000950123-24-011775",
+          "period": "2024-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2024-11-14",
+          "path": "/data/gurus/berkshire-hathaway/0000950123-24-011775-ca413a87fcd9a6edeccadbaba74e4851a35578b1299dbc7dcf85d4ee5ed6942a.json",
+          "hash": "ca413a87fcd9a6edeccadbaba74e4851a35578b1299dbc7dcf85d4ee5ed6942a"
+        },
+        {
+          "accession": "0000950123-25-002701",
+          "period": "2024-12-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-02-14",
+          "path": "/data/gurus/berkshire-hathaway/0000950123-25-002701-b28cda424f64c86f29272b2feb43b22435f1ba882423aeb5b7a5309b84bf3ad9.json",
+          "hash": "b28cda424f64c86f29272b2feb43b22435f1ba882423aeb5b7a5309b84bf3ad9"
+        },
+        {
+          "accession": "0000950123-25-005701",
+          "period": "2025-03-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-05-15",
+          "path": "/data/gurus/berkshire-hathaway/0000950123-25-005701-d2ebe584f2e34447633f79bc87efa14a041c5f5055c366ea505e30d2351a146d.json",
+          "hash": "d2ebe584f2e34447633f79bc87efa14a041c5f5055c366ea505e30d2351a146d"
+        },
+        {
+          "accession": "0000950123-25-008343",
+          "period": "2025-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-08-14",
+          "path": "/data/gurus/berkshire-hathaway/0000950123-25-008343-1168059fe22c155ab42657fbe8632e4485f4a3238c7a0fa4b29ea6f405a4421a.json",
+          "hash": "1168059fe22c155ab42657fbe8632e4485f4a3238c7a0fa4b29ea6f405a4421a"
+        },
+        {
+          "accession": "0001193125-25-282901",
+          "period": "2025-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-11-14",
+          "path": "/data/gurus/berkshire-hathaway/0001193125-25-282901-1ccc8626025fbc78728c0ec42a1355fa4c8c50b7806686c1ea9e6d7d13d2c4fb.json",
+          "hash": "1ccc8626025fbc78728c0ec42a1355fa4c8c50b7806686c1ea9e6d7d13d2c4fb"
+        },
+        {
+          "accession": "0001193125-26-054580",
+          "period": "2025-12-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-02-17",
+          "path": "/data/gurus/berkshire-hathaway/0001193125-26-054580-af1e46c763249891b839caca32cf6b7f1d4a6cf2360025d70878358741d6fd93.json",
+          "hash": "af1e46c763249891b839caca32cf6b7f1d4a6cf2360025d70878358741d6fd93"
+        },
+        {
+          "accession": "0001193125-26-226661",
+          "period": "2026-03-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-05-15",
+          "path": "/data/gurus/berkshire-hathaway/0001193125-26-226661-2c31d50f642004682937d9847d8988b70ede4bc6f8a26b00162563e7cda907a8.json",
+          "hash": "2c31d50f642004682937d9847d8988b70ede4bc6f8a26b00162563e7cda907a8"
+        },
+        {
+          "accession": "0001193125-26-352200",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/berkshire-hathaway/0001193125-26-352200-79633b67fe73e0cbffa0c0526da85ee8b0a74919c384df6d2627de3f8b596c8d.json",
+          "hash": "79633b67fe73e0cbffa0c0526da85ee8b0a74919c384df6d2627de3f8b596c8d"
+        }
+      ]
+    },
+    "ark-invest": {
+      "slug": "ark-invest",
+      "name": "ARK Invest",
+      "manager": "Cathie Wood",
+      "cik": "0001697748",
+      "aliases": [
+        "Cathie Wood",
+        "캐시 우드",
+        "아크 인베스트",
+        "ARK Investment Management LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:41.275Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-096910",
+      "versions": [
+        {
+          "accession": "0001104659-26-096910",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/ark-invest/0001104659-26-096910-af12174156a7a2657f0e9e648d9bddea07f4facfa3abbee02838d8a85cfcdda6.json",
+          "hash": "af12174156a7a2657f0e9e648d9bddea07f4facfa3abbee02838d8a85cfcdda6"
+        }
+      ]
+    },
+    "bridgewater": {
+      "slug": "bridgewater",
+      "name": "Bridgewater Associates",
+      "manager": "Ray Dalio",
+      "cik": "0001350694",
+      "aliases": [
+        "Ray Dalio",
+        "레이 달리오",
+        "브리지워터",
+        "Bridgewater Associates, LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:43.822Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001350694-26-000003",
+      "versions": [
+        {
+          "accession": "0001350694-26-000003",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/bridgewater/0001350694-26-000003-a14f2e6cc501f3b5e1574ae597a46c3e04cafa883807239ff526fcc4e181dbe9.json",
+          "hash": "a14f2e6cc501f3b5e1574ae597a46c3e04cafa883807239ff526fcc4e181dbe9"
+        }
+      ]
+    },
+    "pershing-square": {
+      "slug": "pershing-square",
+      "name": "Pershing Square",
+      "manager": "Bill Ackman",
+      "cik": "0001336528",
+      "aliases": [
+        "Bill Ackman",
+        "빌 애크먼",
+        "빌 애크만",
+        "퍼싱 스퀘어",
+        "Pershing Square Capital Management, L.P."
+      ],
+      "sourceState": {
+        "checkedAt": null,
+        "issue": "일부 공시를 확인하지 못해 검증된 공시만 제공합니다.",
+        "pendingPeriods": [
+          "2024-12-31"
+        ]
+      },
+      "activeAccession": "0001172661-26-002336",
+      "versions": [
+        {
+          "accession": "0001172661-24-005218",
+          "period": "2024-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2024-11-14",
+          "path": "/data/gurus/pershing-square/0001172661-24-005218-7c5c78e1931847430916297c76995b66d5c9cc0d834eedc01f08c5b5ce3f4f6f.json",
+          "hash": "7c5c78e1931847430916297c76995b66d5c9cc0d834eedc01f08c5b5ce3f4f6f"
+        },
+        {
+          "accession": "0001172661-25-001119",
+          "period": "2024-12-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-02-14",
+          "path": "/data/gurus/pershing-square/0001172661-25-001119-ad31d0569f828d338deffc7dd9d08420411b36b49f3c990b57a0eef0476af386.json",
+          "hash": "ad31d0569f828d338deffc7dd9d08420411b36b49f3c990b57a0eef0476af386"
+        },
+        {
+          "accession": "0001172661-25-002315",
+          "period": "2025-03-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-05-15",
+          "path": "/data/gurus/pershing-square/0001172661-25-002315-af28ad5498d0c4dfb8419e3af80bf0c88652576f83e4c4db9f67cc2bb2d7bb86.json",
+          "hash": "af28ad5498d0c4dfb8419e3af80bf0c88652576f83e4c4db9f67cc2bb2d7bb86"
+        },
+        {
+          "accession": "0001172661-25-003509",
+          "period": "2025-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-08-14",
+          "path": "/data/gurus/pershing-square/0001172661-25-003509-e3221e42a89a1666a92ba89feb285a5d870bcb06281dd9beb961d6eed7f031e3.json",
+          "hash": "e3221e42a89a1666a92ba89feb285a5d870bcb06281dd9beb961d6eed7f031e3"
+        },
+        {
+          "accession": "0001172661-25-005039",
+          "period": "2025-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-11-14",
+          "path": "/data/gurus/pershing-square/0001172661-25-005039-28b123f89d719ff4dc66d841805fa5aa7c1b5316bb69716257e26ed216fe5894.json",
+          "hash": "28b123f89d719ff4dc66d841805fa5aa7c1b5316bb69716257e26ed216fe5894"
+        },
+        {
+          "accession": "0001172661-26-001091",
+          "period": "2025-12-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-02-17",
+          "path": "/data/gurus/pershing-square/0001172661-26-001091-1203066217bf26bd6f431b6ab40a29fd7c7cb06cd0fcee90d347fd1697c52e4b.json",
+          "hash": "1203066217bf26bd6f431b6ab40a29fd7c7cb06cd0fcee90d347fd1697c52e4b"
+        },
+        {
+          "accession": "0001172661-26-002336",
+          "period": "2026-03-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-05-15",
+          "path": "/data/gurus/pershing-square/0001172661-26-002336-1c0ccf18d0721a586e67fd0054c947f0473b9625869d89aaa4de745b6f8c3490.json",
+          "hash": "1c0ccf18d0721a586e67fd0054c947f0473b9625869d89aaa4de745b6f8c3490"
+        }
+      ]
+    },
+    "daily-journal": {
+      "slug": "daily-journal",
+      "name": "Daily Journal",
+      "manager": "Charlie Munger",
+      "cik": "0000783412",
+      "aliases": [
+        "Charlie Munger",
+        "찰리 멍거",
+        "데일리 저널",
+        "DAILY JOURNAL CORP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:45.151Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001437749-26-023711",
+      "versions": [
+        {
+          "accession": "0001437749-26-023711",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-07-16",
+          "path": "/data/gurus/daily-journal/0001437749-26-023711-7bd3cb16474a627b13f46b52424113fcabf94e7a17254ef02c59f18a59c17c75.json",
+          "hash": "7bd3cb16474a627b13f46b52424113fcabf94e7a17254ef02c59f18a59c17c75"
+        }
+      ]
+    },
+    "situational-awareness": {
+      "slug": "situational-awareness",
+      "name": "Situational Awareness LP",
+      "manager": "Situational Awareness LP",
+      "cik": "0002045724",
+      "aliases": [
+        "Situational Awareness LP",
+        "레오폴드 아셴브레너",
+        "Leopold Aschenbrenner",
+        "시추에이셔널 어웨어니스"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:46.501Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000935836-26-000418",
+      "versions": [
+        {
+          "accession": "0000935836-26-000418",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/situational-awareness/0000935836-26-000418-c6c5ed2b4d271a4dc4a94812c5675a4269a115f2a8a2d2b3ebacbe90418d6f35.json",
+          "hash": "c6c5ed2b4d271a4dc4a94812c5675a4269a115f2a8a2d2b3ebacbe90418d6f35"
+        }
+      ]
+    },
+    "scion-asset-management": {
+      "slug": "scion-asset-management",
+      "name": "Scion Asset Management",
+      "manager": "Michael Burry",
+      "cik": "0001649339",
+      "aliases": [
+        "Michael Burry",
+        "마이클 버리",
+        "사이온 자산운용",
+        "Scion Asset Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:47.895Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001649339-25-000007",
+      "versions": [
+        {
+          "accession": "0001649339-25-000007",
+          "period": "2025-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2025-11-03",
+          "path": "/data/gurus/scion-asset-management/0001649339-25-000007-23a77f4c8d926b7fceccb81a51e1b5f92e8d7a7b37f10e58414ed3e1cd65abc7.json",
+          "hash": "23a77f4c8d926b7fceccb81a51e1b5f92e8d7a7b37f10e58414ed3e1cd65abc7"
+        }
+      ]
+    },
+    "blackrock": {
+      "slug": "blackrock",
+      "name": "BlackRock",
+      "manager": "BlackRock",
+      "cik": "0002012383",
+      "aliases": [
+        "BlackRock",
+        "블랙록",
+        "BlackRock, Inc."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:49.172Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0002012383-26-003238",
+      "versions": [
+        {
+          "accession": "0002012383-26-003238",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-07",
+          "path": "/data/gurus/blackrock/0002012383-26-003238-def66381be0d29448b28bdb0308c5b2aa73adccec5a279af9f39c7d5f02b2907.json",
+          "hash": "def66381be0d29448b28bdb0308c5b2aa73adccec5a279af9f39c7d5f02b2907"
+        }
+      ]
+    },
+    "fisher-asset-management": {
+      "slug": "fisher-asset-management",
+      "name": "Fisher Asset Management",
+      "manager": "Ken Fisher",
+      "cik": "0000850529",
+      "aliases": [
+        "Ken Fisher",
+        "켄 피셔",
+        "피셔 자산운용",
+        "Fisher Asset Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:50.621Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000850529-26-000006",
+      "versions": [
+        {
+          "accession": "0000850529-26-000006",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-04",
+          "path": "/data/gurus/fisher-asset-management/0000850529-26-000006-dbc7957fe233da37124012332923c29bd90bcb6fda18127c470ed2e382642709.json",
+          "hash": "dbc7957fe233da37124012332923c29bd90bcb6fda18127c470ed2e382642709"
+        }
+      ]
+    },
+    "citadel-advisors": {
+      "slug": "citadel-advisors",
+      "name": "Citadel Advisors",
+      "manager": "Ken Griffin",
+      "cik": "0001423053",
+      "aliases": [
+        "Ken Griffin",
+        "켄 그리핀",
+        "시타델",
+        "CITADEL ADVISORS LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:51.864Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-104387",
+      "versions": [
+        {
+          "accession": "0001104659-26-097200",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/citadel-advisors/0001104659-26-097200-d45ad9430e39686949fcc05855faddce9a9c48ab93b758ec86b7930a3846a0ab.json",
+          "hash": "d45ad9430e39686949fcc05855faddce9a9c48ab93b758ec86b7930a3846a0ab"
+        },
+        {
+          "accession": "0001104659-26-104387",
+          "period": "2026-06-30",
+          "kind": "restatement",
+          "revision": 1,
+          "filedDate": "2026-09-02",
+          "path": "/data/gurus/citadel-advisors/0001104659-26-104387-50d909540e8244389e2bf8ef53b0543a5feb9483ece7bf210f5427fd3bd63593.json",
+          "hash": "50d909540e8244389e2bf8ef53b0543a5feb9483ece7bf210f5427fd3bd63593"
+        }
+      ]
+    },
+    "primecap-management": {
+      "slug": "primecap-management",
+      "name": "PRIMECAP Management",
+      "manager": "PRIMECAP Management",
+      "cik": "0000763212",
+      "aliases": [
+        "PRIMECAP Management",
+        "프라임캡",
+        "PRIMECAP MANAGEMENT CO/CA/"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:54.320Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000763212-26-000028",
+      "versions": [
+        {
+          "accession": "0000763212-26-000028",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/primecap-management/0000763212-26-000028-3d3a134377bb05863b910ee96c764d8884d42dec0c5716a99d3e4816a9a3ede5.json",
+          "hash": "3d3a134377bb05863b910ee96c764d8884d42dec0c5716a99d3e4816a9a3ede5"
+        }
+      ]
+    },
+    "baillie-gifford": {
+      "slug": "baillie-gifford",
+      "name": "Baillie Gifford",
+      "manager": "Baillie Gifford",
+      "cik": "0001088875",
+      "aliases": [
+        "Baillie Gifford",
+        "베일리 기포드",
+        "BAILLIE GIFFORD & CO"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:55.666Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001088875-26-000057",
+      "versions": [
+        {
+          "accession": "0001088875-26-000057",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-06",
+          "path": "/data/gurus/baillie-gifford/0001088875-26-000057-be79d0659b27f7e1a61ffda8f33ddf73b9a1d41b091a62b11e6e82ab3a610e5b.json",
+          "hash": "be79d0659b27f7e1a61ffda8f33ddf73b9a1d41b091a62b11e6e82ab3a610e5b"
+        }
+      ]
+    },
+    "first-eagle": {
+      "slug": "first-eagle",
+      "name": "First Eagle Investments",
+      "manager": "First Eagle Investments",
+      "cik": "0001325447",
+      "aliases": [
+        "First Eagle Investments",
+        "퍼스트 이글",
+        "First Eagle Investment Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": null,
+        "issue": "일부 공시를 확인하지 못해 검증된 공시만 제공합니다.",
+        "pendingPeriods": [
+          "2026-06-30"
+        ]
+      },
+      "activeAccession": "0001325447-26-000020",
+      "versions": [
+        {
+          "accession": "0001325447-26-000020",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-05",
+          "path": "/data/gurus/first-eagle/0001325447-26-000020-4f52944af844c96d9d9b9096b35fe80b03945f7b0a91a662fa1eda4112e6239d.json",
+          "hash": "4f52944af844c96d9d9b9096b35fe80b03945f7b0a91a662fa1eda4112e6239d"
+        }
+      ]
+    },
+    "renaissance-technologies": {
+      "slug": "renaissance-technologies",
+      "name": "Renaissance Technologies",
+      "manager": "Jim Simons",
+      "cik": "0001037389",
+      "aliases": [
+        "Jim Simons",
+        "짐 사이먼스",
+        "르네상스 테크놀로지",
+        "RENAISSANCE TECHNOLOGIES LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:35:59.446Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001037389-26-000059",
+      "versions": [
+        {
+          "accession": "0001037389-26-000059",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/renaissance-technologies/0001037389-26-000059-950d4e12aed9c34840246d127c9f3bb53511b369807ee46f67edea60e0968f9c.json",
+          "hash": "950d4e12aed9c34840246d127c9f3bb53511b369807ee46f67edea60e0968f9c"
+        }
+      ]
+    },
+    "bamco": {
+      "slug": "bamco",
+      "name": "Baron Funds / BAMCO",
+      "manager": "Ron Baron",
+      "cik": "0001017918",
+      "aliases": [
+        "Ron Baron",
+        "론 배런",
+        "배런 펀드",
+        "Baron Funds",
+        "BAMCO INC /NY/"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:00.783Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001017918-26-000067",
+      "versions": [
+        {
+          "accession": "0001017918-26-000067",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/bamco/0001017918-26-000067-d8428ff43983c7f1aa8a7282a083e80d2c1529f76d52f1a8474e3e50b633cbd8.json",
+          "hash": "d8428ff43983c7f1aa8a7282a083e80d2c1529f76d52f1a8474e3e50b633cbd8"
+        }
+      ]
+    },
+    "point72": {
+      "slug": "point72",
+      "name": "Point72 Asset Management",
+      "manager": "Steven Cohen",
+      "cik": "0001603466",
+      "aliases": [
+        "Steven Cohen",
+        "스티븐 코헨",
+        "스티브 코헨",
+        "포인트72",
+        "Point72 Asset Management, L.P."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:02.138Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000919574-26-005520",
+      "versions": [
+        {
+          "accession": "0000919574-26-005520",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/point72/0000919574-26-005520-078443136ce7099b5b575648f378f0b1d20e096aa361e32b58d22990d6c19493.json",
+          "hash": "078443136ce7099b5b575648f378f0b1d20e096aa361e32b58d22990d6c19493"
+        }
+      ]
+    },
+    "tci-fund": {
+      "slug": "tci-fund",
+      "name": "TCI Fund Management",
+      "manager": "Chris Hohn",
+      "cik": "0001647251",
+      "aliases": [
+        "Chris Hohn",
+        "크리스 혼",
+        "TCI",
+        "TCI Fund Management Ltd"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:03.438Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001647251-26-000007",
+      "versions": [
+        {
+          "accession": "0001647251-26-000007",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/tci-fund/0001647251-26-000007-13433644f060a04e35ea5501015024b7d73ebd66acda8fe4dba444bd2dc266f8.json",
+          "hash": "13433644f060a04e35ea5501015024b7d73ebd66acda8fe4dba444bd2dc266f8"
+        }
+      ]
+    },
+    "gmo": {
+      "slug": "gmo",
+      "name": "GMO",
+      "manager": "Jeremy Grantham",
+      "cik": "0001352662",
+      "aliases": [
+        "Jeremy Grantham",
+        "제러미 그랜섬",
+        "GMO Asset Management",
+        "Grantham, Mayo, Van Otterloo & Co. LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:04.818Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001072613-26-000636",
+      "versions": [
+        {
+          "accession": "0001072613-26-000636",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/gmo/0001072613-26-000636-b97a7ccd06d5692778e58300bd00c75f1cf74d526dd2266e103bbb88cad55b58.json",
+          "hash": "b97a7ccd06d5692778e58300bd00c75f1cf74d526dd2266e103bbb88cad55b58"
+        }
+      ]
+    },
+    "gotham-asset-management": {
+      "slug": "gotham-asset-management",
+      "name": "Gotham Asset Management",
+      "manager": "Joel Greenblatt",
+      "cik": "0001510387",
+      "aliases": [
+        "Joel Greenblatt",
+        "조엘 그린블라트",
+        "고담 자산운용",
+        "Gotham Asset Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:06.122Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001398344-26-014644",
+      "versions": [
+        {
+          "accession": "0001398344-26-014644",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/gotham-asset-management/0001398344-26-014644-ea3ab992fe72d0c06dad7b3b87f4aedef3e9c499a9651ab58a2fbb8928e45b16.json",
+          "hash": "ea3ab992fe72d0c06dad7b3b87f4aedef3e9c499a9651ab58a2fbb8928e45b16"
+        }
+      ]
+    },
+    "gardner-russo-quinn": {
+      "slug": "gardner-russo-quinn",
+      "name": "Gardner Russo & Quinn",
+      "manager": "Tom Russo",
+      "cik": "0000860643",
+      "aliases": [
+        "Tom Russo",
+        "톰 루소",
+        "Gardner Russo & Gardner",
+        "GARDNER RUSSO & QUINN LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:07.447Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000860643-26-000005",
+      "versions": [
+        {
+          "accession": "0000860643-26-000005",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/gardner-russo-quinn/0000860643-26-000005-c1c2ca4300b79e69bade1f35871ef946ecdaea212b800c790be437beaa2ab0e8.json",
+          "hash": "c1c2ca4300b79e69bade1f35871ef946ecdaea212b800c790be437beaa2ab0e8"
+        }
+      ]
+    },
+    "ako-capital": {
+      "slug": "ako-capital",
+      "name": "AKO Capital",
+      "manager": "AKO Capital",
+      "cik": "0001376879",
+      "aliases": [
+        "AKO Capital",
+        "에이케이오 캐피털",
+        "AKO CAPITAL LLP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:09.624Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001376879-26-000006",
+      "versions": [
+        {
+          "accession": "0001376879-26-000006",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-12",
+          "path": "/data/gurus/ako-capital/0001376879-26-000006-cd17a3f8b44f81f75a5f6e386489f6a8b77c75b6262dee1581f858e22c9b5bf3.json",
+          "hash": "cd17a3f8b44f81f75a5f6e386489f6a8b77c75b6262dee1581f858e22c9b5bf3"
+        }
+      ]
+    },
+    "pzena-investment": {
+      "slug": "pzena-investment",
+      "name": "Pzena Investment Management",
+      "manager": "Richard Pzena",
+      "cik": "0001027796",
+      "aliases": [
+        "Richard Pzena",
+        "리처드 프제나",
+        "프제나 투자운용",
+        "PZENA INVESTMENT MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:10.937Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001027796-26-000049",
+      "versions": [
+        {
+          "accession": "0001027796-26-000049",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-07",
+          "path": "/data/gurus/pzena-investment/0001027796-26-000049-f9787b1e1c4b7d565299733a7207a5457be80699572dd4f62989f24b90085286.json",
+          "hash": "f9787b1e1c4b7d565299733a7207a5457be80699572dd4f62989f24b90085286"
+        }
+      ]
+    },
+    "viking-global": {
+      "slug": "viking-global",
+      "name": "Viking Global Investors",
+      "manager": "Andreas Halvorsen",
+      "cik": "0001103804",
+      "aliases": [
+        "Andreas Halvorsen",
+        "안드레아스 할보르센",
+        "바이킹 글로벌",
+        "VIKING GLOBAL INVESTORS LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:12.228Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001103804-26-000006",
+      "versions": [
+        {
+          "accession": "0001103804-26-000006",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/viking-global/0001103804-26-000006-ff973fb9db52cff11d6d1de398e5abbdb07c71c564816ada2104acc399a46b2b.json",
+          "hash": "ff973fb9db52cff11d6d1de398e5abbdb07c71c564816ada2104acc399a46b2b"
+        }
+      ]
+    },
+    "gates-foundation": {
+      "slug": "gates-foundation",
+      "name": "Gates Foundation Trust",
+      "manager": "Bill Gates",
+      "cik": "0001166559",
+      "aliases": [
+        "Bill Gates",
+        "빌 게이츠",
+        "게이츠 재단",
+        "Bill & Melinda Gates Foundation Trust",
+        "GATES FOUNDATION TRUST"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:13.622Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-097175",
+      "versions": [
+        {
+          "accession": "0001104659-26-097175",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/gates-foundation/0001104659-26-097175-d338f29f8f552b7a1b73326b6c51288b8734cc92f7ac4eaef0f3979e838ecf1f.json",
+          "hash": "d338f29f8f552b7a1b73326b6c51288b8734cc92f7ac4eaef0f3979e838ecf1f"
+        }
+      ]
+    },
+    "sands-capital": {
+      "slug": "sands-capital",
+      "name": "Sands Capital",
+      "manager": "Sands Capital",
+      "cik": "0001020066",
+      "aliases": [
+        "Sands Capital",
+        "샌즈 캐피털",
+        "SANDS CAPITAL MANAGEMENT, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:14.995Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001020066-26-000018",
+      "versions": [
+        {
+          "accession": "0001020066-26-000018",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/sands-capital/0001020066-26-000018-7d3cf6b1287028e3534ff277e2cbcd2e9d7b63d50bf9d3275e6ad17a64654c48.json",
+          "hash": "7d3cf6b1287028e3534ff277e2cbcd2e9d7b63d50bf9d3275e6ad17a64654c48"
+        }
+      ]
+    },
+    "tiger-global": {
+      "slug": "tiger-global",
+      "name": "Tiger Global",
+      "manager": "Tiger Global",
+      "cik": "0001167483",
+      "aliases": [
+        "Tiger Global",
+        "타이거 글로벌",
+        "TIGER GLOBAL MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:16.311Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000919574-26-005427",
+      "versions": [
+        {
+          "accession": "0000919574-26-005427",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/tiger-global/0000919574-26-005427-c848ef8c5ddba20b8731ac1c8459b0a812e41f82cee473bd672fb06864bbd8de.json",
+          "hash": "c848ef8c5ddba20b8731ac1c8459b0a812e41f82cee473bd672fb06864bbd8de"
+        }
+      ]
+    },
+    "tudor-investment": {
+      "slug": "tudor-investment",
+      "name": "Tudor Investment",
+      "manager": "Paul Tudor Jones II",
+      "cik": "0000923093",
+      "aliases": [
+        "Paul Tudor Jones II",
+        "폴 튜더 존스",
+        "튜더 인베스트먼트",
+        "TUDOR INVESTMENT CORP ET AL"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:17.693Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000902664-26-003485",
+      "versions": [
+        {
+          "accession": "0000902664-26-003485",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/tudor-investment/0000902664-26-003485-d59d534fdf57832ba12938846ea2a355be96e5244e5aef5d89768d53f436173a.json",
+          "hash": "d59d534fdf57832ba12938846ea2a355be96e5244e5aef5d89768d53f436173a"
+        }
+      ]
+    },
+    "davis-selected": {
+      "slug": "davis-selected",
+      "name": "Davis Selected Advisers",
+      "manager": "Chris Davis",
+      "cik": "0001036325",
+      "aliases": [
+        "Chris Davis",
+        "크리스 데이비스",
+        "데이비스 셀렉티드",
+        "DAVIS SELECTED ADVISERS"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:19.117Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001036325-26-000020",
+      "versions": [
+        {
+          "accession": "0001036325-26-000020",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-11",
+          "path": "/data/gurus/davis-selected/0001036325-26-000020-1cccec4e4f585ad1cdc433505729cebf3e82efc3cdd2f1bf71920ce61ee31699.json",
+          "hash": "1cccec4e4f585ad1cdc433505729cebf3e82efc3cdd2f1bf71920ce61ee31699"
+        }
+      ]
+    },
+    "markel": {
+      "slug": "markel",
+      "name": "Markel Group",
+      "manager": "Tom Gayner",
+      "cik": "0001096343",
+      "aliases": [
+        "Tom Gayner",
+        "톰 게이너",
+        "마켈",
+        "Markel Corporation",
+        "MARKEL GROUP INC."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:20.339Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001096343-26-000065",
+      "versions": [
+        {
+          "accession": "0001096343-26-000065",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-07-31",
+          "path": "/data/gurus/markel/0001096343-26-000065-32fc09a80ef121fb52b84f7124eca7219cb5b2ac92e388657535311af3091106.json",
+          "hash": "32fc09a80ef121fb52b84f7124eca7219cb5b2ac92e388657535311af3091106"
+        }
+      ]
+    },
+    "brandes-investment": {
+      "slug": "brandes-investment",
+      "name": "Brandes Investment Partners",
+      "manager": "Charles Brandes",
+      "cik": "0001015079",
+      "aliases": [
+        "Charles Brandes",
+        "찰스 브랜즈",
+        "브랜디스",
+        "BRANDES INVESTMENT PARTNERS, LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:21.696Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001015079-26-000091",
+      "versions": [
+        {
+          "accession": "0001015079-26-000091",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/brandes-investment/0001015079-26-000091-f292c3adca1bc22873f7164f841338b5351db9dcf62821f58eea5b201af03df7.json",
+          "hash": "f292c3adca1bc22873f7164f841338b5351db9dcf62821f58eea5b201af03df7"
+        }
+      ]
+    },
+    "fundsmith": {
+      "slug": "fundsmith",
+      "name": "Fundsmith",
+      "manager": "Terry Smith",
+      "cik": "0001569205",
+      "aliases": [
+        "Terry Smith",
+        "테리 스미스",
+        "펀드스미스",
+        "Fundsmith LLP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:23.082Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001569205-26-000012",
+      "versions": [
+        {
+          "accession": "0001569205-26-000012",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/fundsmith/0001569205-26-000012-76b16ad774412aaba4b392d8edf9927d3e65cd468d50c1da15ef27a86dc6a0b5.json",
+          "hash": "76b16ad774412aaba4b392d8edf9927d3e65cd468d50c1da15ef27a86dc6a0b5"
+        }
+      ]
+    },
+    "polen-capital": {
+      "slug": "polen-capital",
+      "name": "Polen Capital",
+      "manager": "Polen Capital",
+      "cik": "0001034524",
+      "aliases": [
+        "Polen Capital",
+        "폴렌 캐피털",
+        "POLEN CAPITAL MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:24.456Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001172661-26-003035",
+      "versions": [
+        {
+          "accession": "0001172661-26-003035",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-04",
+          "path": "/data/gurus/polen-capital/0001172661-26-003035-cfa466bc72aeb8b3bdd74d9898db4bc733e38be56e21448e44e4fb7317263b3a.json",
+          "hash": "cfa466bc72aeb8b3bdd74d9898db4bc733e38be56e21448e44e4fb7317263b3a"
+        }
+      ]
+    },
+    "lone-pine-capital": {
+      "slug": "lone-pine-capital",
+      "name": "Lone Pine Capital",
+      "manager": "Steve Mandel",
+      "cik": "0001061165",
+      "aliases": [
+        "Steve Mandel",
+        "스티브 맨델",
+        "론 파인 캐피털",
+        "LONE PINE CAPITAL LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:25.698Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000919574-26-005485",
+      "versions": [
+        {
+          "accession": "0000919574-26-005485",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/lone-pine-capital/0000919574-26-005485-15061a43fcadc74e964385246c6007a07a0f97eb0524870b296783d9e5241d87.json",
+          "hash": "15061a43fcadc74e964385246c6007a07a0f97eb0524870b296783d9e5241d87"
+        }
+      ]
+    },
+    "royce-associates": {
+      "slug": "royce-associates",
+      "name": "Royce Investment Partners",
+      "manager": "Chuck Royce",
+      "cik": "0000906304",
+      "aliases": [
+        "Chuck Royce",
+        "척 로이스",
+        "Royce Investment Partners",
+        "ROYCE & ASSOCIATES LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:27.109Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000906304-26-000154",
+      "versions": [
+        {
+          "accession": "0000906304-26-000154",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/royce-associates/0000906304-26-000154-7187604d8464eaca0e139aa586606aee33f4b028bdcfcffba9a6af2958cf0568.json",
+          "hash": "7187604d8464eaca0e139aa586606aee33f4b028bdcfcffba9a6af2958cf0568"
+        }
+      ]
+    },
+    "generation-investment": {
+      "slug": "generation-investment",
+      "name": "Generation Investment Management",
+      "manager": "Al Gore",
+      "cik": "0001375534",
+      "aliases": [
+        "Al Gore",
+        "앨 고어",
+        "제너레이션 투자운용",
+        "Generation Investment Management US LLP",
+        "GENERATION INVESTMENT MANAGEMENT LLP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:28.467Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001752724-26-000044",
+      "versions": [
+        {
+          "accession": "0001752724-26-000044",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-10",
+          "path": "/data/gurus/generation-investment/0001752724-26-000044-19220c849d63d73b15b7e5a3804bf7254853751c0a11b8454ffd6860bc489c3a.json",
+          "hash": "19220c849d63d73b15b7e5a3804bf7254853751c0a11b8454ffd6860bc489c3a"
+        }
+      ]
+    },
+    "jefferies": {
+      "slug": "jefferies",
+      "name": "Jefferies Financial Group",
+      "manager": "Jefferies Group",
+      "cik": "0000096223",
+      "aliases": [
+        "Jefferies Group",
+        "제프리스",
+        "Jefferies Financial Group Inc."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:29.850Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001085146-26-000619",
+      "versions": [
+        {
+          "accession": "0001085146-26-000619",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-17",
+          "path": "/data/gurus/jefferies/0001085146-26-000619-dd2f7e5b9158dabf6f170243947c2984304bdcf7018b327bb9e93022a557bc31.json",
+          "hash": "dd2f7e5b9158dabf6f170243947c2984304bdcf7018b327bb9e93022a557bc31"
+        }
+      ]
+    },
+    "icahn": {
+      "slug": "icahn",
+      "name": "Icahn Capital Management",
+      "manager": "Carl Icahn",
+      "cik": "0000921669",
+      "aliases": [
+        "Carl Icahn",
+        "칼 아이칸",
+        "Icahn Capital Management",
+        "ICAHN CARL C"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:32.448Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001539497-26-002243",
+      "versions": [
+        {
+          "accession": "0001539497-26-002243",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/icahn/0001539497-26-002243-b610c030c64710425b3cd302a3f5cb872475502a3e729a2eb932986dd7ed6dc9.json",
+          "hash": "b610c030c64710425b3cd302a3f5cb872475502a3e729a2eb932986dd7ed6dc9"
+        }
+      ]
+    },
+    "ariel-investments": {
+      "slug": "ariel-investments",
+      "name": "Ariel Investments",
+      "manager": "John W. Rogers Jr.",
+      "cik": "0000936753",
+      "aliases": [
+        "John W. Rogers Jr.",
+        "존 로저스",
+        "아리엘 인베스트먼츠",
+        "ARIEL INVESTMENTS, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:33.859Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000936753-26-000050",
+      "versions": [
+        {
+          "accession": "0000936753-26-000050",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/ariel-investments/0000936753-26-000050-685f1ef983c529440b168fdbac96eb92d5cc0f021ea117809b0c03f2a8c314cc.json",
+          "hash": "685f1ef983c529440b168fdbac96eb92d5cc0f021ea117809b0c03f2a8c314cc"
+        }
+      ]
+    },
+    "soros-fund": {
+      "slug": "soros-fund",
+      "name": "Soros Fund Management",
+      "manager": "George Soros",
+      "cik": "0001029160",
+      "aliases": [
+        "George Soros",
+        "조지 소로스",
+        "소로스 펀드",
+        "SOROS FUND MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:36.432Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000902664-26-003507",
+      "versions": [
+        {
+          "accession": "0000902664-26-003507",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/soros-fund/0000902664-26-003507-b0d8836f52462cf0a6170117722544845f088b48352b7093cbae2e8ee3dbd998.json",
+          "hash": "b0d8836f52462cf0a6170117722544845f088b48352b7093cbae2e8ee3dbd998"
+        }
+      ]
+    },
+    "dorsey-asset-management": {
+      "slug": "dorsey-asset-management",
+      "name": "Dorsey Asset Management",
+      "manager": "Pat Dorsey",
+      "cik": "0001671657",
+      "aliases": [
+        "Pat Dorsey",
+        "팻 도시",
+        "도시 자산운용",
+        "Dorsey Asset Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:37.854Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001398344-26-014470",
+      "versions": [
+        {
+          "accession": "0001398344-26-014470",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/dorsey-asset-management/0001398344-26-014470-1141a29e251dea3bd237eaa6220807f9af4e3bc7ddbf299f64a5a1e7b69c8993.json",
+          "hash": "1141a29e251dea3bd237eaa6220807f9af4e3bc7ddbf299f64a5a1e7b69c8993"
+        }
+      ]
+    },
+    "appaloosa": {
+      "slug": "appaloosa",
+      "name": "Appaloosa",
+      "manager": "David Tepper",
+      "cik": "0001656456",
+      "aliases": [
+        "David Tepper",
+        "데이비드 테퍼",
+        "애팔루사",
+        "Appaloosa LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:39.117Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001656456-26-000003",
+      "versions": [
+        {
+          "accession": "0001656456-26-000003",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/appaloosa/0001656456-26-000003-abe81aef790cda302890ee9416474f6fa873984ff3c51920c0387d810c76da64.json",
+          "hash": "abe81aef790cda302890ee9416474f6fa873984ff3c51920c0387d810c76da64"
+        }
+      ]
+    },
+    "valueact": {
+      "slug": "valueact",
+      "name": "ValueAct Holdings",
+      "manager": "Jeffrey Ubben",
+      "cik": "0001418814",
+      "aliases": [
+        "Jeffrey Ubben",
+        "제프리 우벤",
+        "밸류액트",
+        "ValueAct Holdings, L.P."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:40.478Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001418814-26-000003",
+      "versions": [
+        {
+          "accession": "0001418814-26-000003",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/valueact/0001418814-26-000003-3fe8ce848f7fcea96c73e1ea773e9a826fdff371ab1a2ea803de68b9e1f62592.json",
+          "hash": "3fe8ce848f7fcea96c73e1ea773e9a826fdff371ab1a2ea803de68b9e1f62592"
+        }
+      ]
+    },
+    "akre-capital": {
+      "slug": "akre-capital",
+      "name": "Akre Capital Management",
+      "manager": "Chuck Akre",
+      "cik": "0001112520",
+      "aliases": [
+        "Chuck Akre",
+        "척 애크리",
+        "아크레 캐피털",
+        "AKRE CAPITAL MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:41.793Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001112520-26-000014",
+      "versions": [
+        {
+          "accession": "0001112520-26-000014",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/akre-capital/0001112520-26-000014-103f4652fb0d9114b38a5dd57c97a0b3da30784a9aad0cb129c7bb0fc60dfca6.json",
+          "hash": "103f4652fb0d9114b38a5dd57c97a0b3da30784a9aad0cb129c7bb0fc60dfca6"
+        }
+      ]
+    },
+    "baupost": {
+      "slug": "baupost",
+      "name": "The Baupost Group",
+      "manager": "Seth Klarman",
+      "cik": "0001061768",
+      "aliases": [
+        "Seth Klarman",
+        "세스 클라먼",
+        "바우포스트",
+        "BAUPOST GROUP LLC/MA"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:43.254Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001061768-26-000010",
+      "versions": [
+        {
+          "accession": "0001061768-26-000010",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/baupost/0001061768-26-000010-a3dbf22525b4d75d453e4aa4c9a01bfadb6ca68d46db605d5751d2834bd57871.json",
+          "hash": "a3dbf22525b4d75d453e4aa4c9a01bfadb6ca68d46db605d5751d2834bd57871"
+        }
+      ]
+    },
+    "abrams-capital": {
+      "slug": "abrams-capital",
+      "name": "Abrams Capital",
+      "manager": "David Abrams",
+      "cik": "0001358706",
+      "aliases": [
+        "David Abrams",
+        "데이비드 에이브럼스",
+        "에이브럼스 캐피털",
+        "ABRAMS CAPITAL MANAGEMENT, L.P."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:44.481Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001172661-26-003402",
+      "versions": [
+        {
+          "accession": "0001172661-26-003402",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/abrams-capital/0001172661-26-003402-b43ba6edc14b4c6544797f2ceabc40662a012d0203da42a8aba8888682ee7948.json",
+          "hash": "b43ba6edc14b4c6544797f2ceabc40662a012d0203da42a8aba8888682ee7948"
+        }
+      ]
+    },
+    "altarock-partners": {
+      "slug": "altarock-partners",
+      "name": "Altarock Partners",
+      "manager": "Altarock Partners",
+      "cik": "0001631014",
+      "aliases": [
+        "Altarock Partners",
+        "알타록 파트너스",
+        "ALTAROCK PARTNERS LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:45.919Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-097527",
+      "versions": [
+        {
+          "accession": "0001104659-26-097527",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-17",
+          "path": "/data/gurus/altarock-partners/0001104659-26-097527-c35e02b6236544973a4c06460ed228552adfe3bb2a4a495f0d5bd4387ced8042.json",
+          "hash": "c35e02b6236544973a4c06460ed228552adfe3bb2a4a495f0d5bd4387ced8042"
+        }
+      ]
+    },
+    "broad-run": {
+      "slug": "broad-run",
+      "name": "Broad Run Investment Management",
+      "manager": "Broad Run",
+      "cik": "0001568621",
+      "aliases": [
+        "Broad Run",
+        "브로드 런",
+        "Broad Run Investment Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:47.236Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001568621-26-000009",
+      "versions": [
+        {
+          "accession": "0001568621-26-000009",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/broad-run/0001568621-26-000009-3e615e3235b0c5e5b82ea23e854266ae8d11ac4734d086cac0bc8a597311424f.json",
+          "hash": "3e615e3235b0c5e5b82ea23e854266ae8d11ac4734d086cac0bc8a597311424f"
+        }
+      ]
+    },
+    "brave-warrior": {
+      "slug": "brave-warrior",
+      "name": "Brave Warrior Advisors",
+      "manager": "Glenn Greenberg",
+      "cik": "0001553733",
+      "aliases": [
+        "Glenn Greenberg",
+        "글렌 그린버그",
+        "브레이브 워리어",
+        "Brave Warrior Advisors, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:48.566Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001172661-26-003728",
+      "versions": [
+        {
+          "accession": "0001172661-26-003728",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/brave-warrior/0001172661-26-003728-6c548fb9dc9d2db8fdbacf2fae5d468d3a07c794edb37b7c1a8c991d1de539a5.json",
+          "hash": "6c548fb9dc9d2db8fdbacf2fae5d468d3a07c794edb37b7c1a8c991d1de539a5"
+        }
+      ]
+    },
+    "third-point": {
+      "slug": "third-point",
+      "name": "Third Point",
+      "manager": "Daniel Loeb",
+      "cik": "0001040273",
+      "aliases": [
+        "Daniel Loeb",
+        "다니엘 로브",
+        "댄 로브",
+        "서드 포인트",
+        "Third Point LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:51.182Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001040273-26-000003",
+      "versions": [
+        {
+          "accession": "0001040273-26-000003",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/third-point/0001040273-26-000003-69773415f0b03915a458d325689cd179ee697b8dbb5a8909bccaab4967c221b4.json",
+          "hash": "69773415f0b03915a458d325689cd179ee697b8dbb5a8909bccaab4967c221b4"
+        }
+      ]
+    },
+    "oaktree": {
+      "slug": "oaktree",
+      "name": "Oaktree Capital Management",
+      "manager": "Howard Marks",
+      "cik": "0000949509",
+      "aliases": [
+        "Howard Marks",
+        "하워드 막스",
+        "오크트리",
+        "OAKTREE CAPITAL MANAGEMENT LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:52.619Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000949509-26-000005",
+      "versions": [
+        {
+          "accession": "0000949509-26-000005",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/oaktree/0000949509-26-000005-4b64053631a93becf15cfa3cac1a6fb3fb78e5ece7d610bb1f491d180cf06a88.json",
+          "hash": "4b64053631a93becf15cfa3cac1a6fb3fb78e5ece7d610bb1f491d180cf06a88"
+        }
+      ]
+    },
+    "fairfax": {
+      "slug": "fairfax",
+      "name": "Fairfax Financial Holdings",
+      "manager": "Prem Watsa",
+      "cik": "0000915191",
+      "aliases": [
+        "Prem Watsa",
+        "프렘 왓사",
+        "페어팩스",
+        "FAIRFAX FINANCIAL HOLDINGS LTD/ CAN"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:53.862Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-096276",
+      "versions": [
+        {
+          "accession": "0001104659-26-096276",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/fairfax/0001104659-26-096276-7596a10e7e76fd628d36e287ae7d5beb366959ecdbdd9047601582ff9673fc16.json",
+          "hash": "7596a10e7e76fd628d36e287ae7d5beb366959ecdbdd9047601582ff9673fc16"
+        }
+      ]
+    },
+    "paulson": {
+      "slug": "paulson",
+      "name": "Paulson & Co",
+      "manager": "John Paulson",
+      "cik": "0001035674",
+      "aliases": [
+        "John Paulson",
+        "존 폴슨",
+        "폴슨 앤 코",
+        "PAULSON & CO. INC."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:55.410Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001013594-26-000913",
+      "versions": [
+        {
+          "accession": "0001013594-26-000913",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/paulson/0001013594-26-000913-99a5b1e2a0ea57acdfdce8065fb9b6047907ceadb275bc75dbbef11dfb947303.json",
+          "hash": "99a5b1e2a0ea57acdfdce8065fb9b6047907ceadb275bc75dbbef11dfb947303"
+        }
+      ]
+    },
+    "greenlight-capital": {
+      "slug": "greenlight-capital",
+      "name": "Greenlight Capital",
+      "manager": "David Einhorn",
+      "cik": "0001079114",
+      "aliases": [
+        "David Einhorn",
+        "데이비드 아인혼",
+        "그린라이트 캐피털",
+        "GREENLIGHT CAPITAL INC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:56.680Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001172661-24-001512",
+      "versions": [
+        {
+          "accession": "0001172661-24-001512",
+          "period": "2023-12-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2024-02-14",
+          "path": "/data/gurus/greenlight-capital/0001172661-24-001512-eeb1a7760e2878d1fc2b8db2727300f5598eb220c2a47ae7be0fffade9698d53.json",
+          "hash": "eeb1a7760e2878d1fc2b8db2727300f5598eb220c2a47ae7be0fffade9698d53"
+        }
+      ]
+    },
+    "cas-investment": {
+      "slug": "cas-investment",
+      "name": "CAS Investment Partners",
+      "manager": "Cliff Sosin",
+      "cik": "0001697591",
+      "aliases": [
+        "Cliff Sosin",
+        "클리프 소신",
+        "CAS 인베스트먼트",
+        "CAS Investment Partners, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:57.987Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001697591-26-000004",
+      "versions": [
+        {
+          "accession": "0001697591-26-000004",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/cas-investment/0001697591-26-000004-725145134dd42ef1e1c8893790277171bf54d0d4e9722b6c97164a3da521793a.json",
+          "hash": "725145134dd42ef1e1c8893790277171bf54d0d4e9722b6c97164a3da521793a"
+        }
+      ]
+    },
+    "fairholme": {
+      "slug": "fairholme",
+      "name": "Fairholme Capital Management",
+      "manager": "Bruce Berkowitz",
+      "cik": "0001056831",
+      "aliases": [
+        "Bruce Berkowitz",
+        "브루스 버코위츠",
+        "페어홀름",
+        "FAIRHOLME CAPITAL MANAGEMENT LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:36:59.423Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000919574-26-005488",
+      "versions": [
+        {
+          "accession": "0000919574-26-005488",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/fairholme/0000919574-26-005488-553fc8ffb63aa510a2d745c6409c742e7806d387f38ad29fbd4126bed3e342ec.json",
+          "hash": "553fc8ffb63aa510a2d745c6409c742e7806d387f38ad29fbd4126bed3e342ec"
+        }
+      ]
+    },
+    "tweedy-browne": {
+      "slug": "tweedy-browne",
+      "name": "Tweedy Browne",
+      "manager": "Tweedy Browne",
+      "cik": "0000732905",
+      "aliases": [
+        "Tweedy Browne",
+        "트위디 브라운",
+        "Tweedy, Browne Co LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:00.688Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001193125-26-340443",
+      "versions": [
+        {
+          "accession": "0001193125-26-340443",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-07",
+          "path": "/data/gurus/tweedy-browne/0001193125-26-340443-c3c0f900a8a965bd625d672b8f957addc710ec7bb660afae423d4451dba5d13d.json",
+          "hash": "c3c0f900a8a965bd625d672b8f957addc710ec7bb660afae423d4451dba5d13d"
+        }
+      ]
+    },
+    "ensemble-capital": {
+      "slug": "ensemble-capital",
+      "name": "Ensemble Capital Management",
+      "manager": "Ensemble Capital",
+      "cik": "0001387366",
+      "aliases": [
+        "Ensemble Capital",
+        "앙상블 캐피털",
+        "Ensemble Capital Management, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:02.113Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001941040-24-000498",
+      "versions": [
+        {
+          "accession": "0001941040-24-000498",
+          "period": "2024-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2024-11-12",
+          "path": "/data/gurus/ensemble-capital/0001941040-24-000498-b399e41f6950f8d076221ffb286ba5e873a2b319984e8130aae557dddbd46765.json",
+          "hash": "b399e41f6950f8d076221ffb286ba5e873a2b319984e8130aae557dddbd46765"
+        }
+      ]
+    },
+    "aquamarine": {
+      "slug": "aquamarine",
+      "name": "Aquamarine Capital",
+      "manager": "Guy Spier",
+      "cik": "0001953324",
+      "aliases": [
+        "Guy Spier",
+        "가이 스파이어",
+        "아쿠아마린",
+        "Aquamarine Capital",
+        "Aquamarine Zurich AG"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:04.745Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001953324-26-000003",
+      "versions": [
+        {
+          "accession": "0001953324-26-000003",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-07-10",
+          "path": "/data/gurus/aquamarine/0001953324-26-000003-27462c21130d34d08cff4f87739deb520ee9e9ae09e775db7aca55a7e677e60a.json",
+          "hash": "27462c21130d34d08cff4f87739deb520ee9e9ae09e775db7aca55a7e677e60a"
+        }
+      ]
+    },
+    "miller-value": {
+      "slug": "miller-value",
+      "name": "Miller Value Partners",
+      "manager": "Bill Miller",
+      "cik": "0001135778",
+      "aliases": [
+        "Bill Miller",
+        "빌 밀러",
+        "밀러 밸류",
+        "MILLER VALUE PARTNERS, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:06.127Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001135778-26-000016",
+      "versions": [
+        {
+          "accession": "0001135778-26-000016",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/miller-value/0001135778-26-000016-1cf55c41ffcda57cc2573572a91729a66394b2199a6b286d798d803980e9cecb.json",
+          "hash": "1cf55c41ffcda57cc2573572a91729a66394b2199a6b286d798d803980e9cecb"
+        }
+      ]
+    },
+    "dalal-street": {
+      "slug": "dalal-street",
+      "name": "Dalal Street",
+      "manager": "Mohnish Pabrai",
+      "cik": "0001549575",
+      "aliases": [
+        "Mohnish Pabrai",
+        "모니시 파브라이",
+        "달랄 스트리트",
+        "Dalal Street, LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:07.476Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001549575-26-000015",
+      "versions": [
+        {
+          "accession": "0001549575-26-000015",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-13",
+          "path": "/data/gurus/dalal-street/0001549575-26-000015-82744922a5b343eae256885dc42f8ad10c042e856c14096fd931f331ef944b69.json",
+          "hash": "82744922a5b343eae256885dc42f8ad10c042e856c14096fd931f331ef944b69"
+        }
+      ]
+    },
+    "bruce-fund": {
+      "slug": "bruce-fund",
+      "name": "Bruce Fund / Bruce & Co",
+      "manager": "Robert Bruce",
+      "cik": "0001358331",
+      "aliases": [
+        "Robert Bruce",
+        "로버트 브루스",
+        "브루스 펀드",
+        "Bruce Fund",
+        "Bruce & Co., Inc."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:08.822Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001104659-26-096709",
+      "versions": [
+        {
+          "accession": "0001104659-26-096709",
+          "period": "2026-06-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-08-14",
+          "path": "/data/gurus/bruce-fund/0001104659-26-096709-11698291b846c54f5be75e08ff92bc5dc2b9b5f7e52e5284aeac31ed511f0f58.json",
+          "hash": "11698291b846c54f5be75e08ff92bc5dc2b9b5f7e52e5284aeac31ed511f0f58"
+        }
+      ]
+    },
+    "tiger-management": {
+      "slug": "tiger-management",
+      "name": "Tiger Management",
+      "manager": "Julian Robertson",
+      "cik": "0001027451",
+      "aliases": [
+        "Julian Robertson",
+        "줄리언 로버트슨",
+        "타이거 매니지먼트",
+        "TIGER MANAGEMENT L.L.C."
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:10.163Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000919574-24-006401",
+      "versions": [
+        {
+          "accession": "0000919574-24-006401",
+          "period": "2024-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2024-11-13",
+          "path": "/data/gurus/tiger-management/0000919574-24-006401-bcef6eceb010a222e0c16ece351d29f779cc7d416093fb021ed4d9be3f3fb592.json",
+          "hash": "bcef6eceb010a222e0c16ece351d29f779cc7d416093fb021ed4d9be3f3fb592"
+        }
+      ]
+    },
+    "kynikos": {
+      "slug": "kynikos",
+      "name": "Kynikos Associates",
+      "manager": "Jim Chanos",
+      "cik": "0001446440",
+      "aliases": [
+        "Jim Chanos",
+        "짐 채노스",
+        "키니코스",
+        "Kynikos Associates LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:11.737Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001172661-23-003940",
+      "versions": [
+        {
+          "accession": "0001172661-23-003940",
+          "period": "2023-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2023-11-14",
+          "path": "/data/gurus/kynikos/0001172661-23-003940-74878702b8eba73902a55fb4b456527dac8889f5c966218ea543ce236a844455.json",
+          "hash": "74878702b8eba73902a55fb4b456527dac8889f5c966218ea543ce236a844455"
+        }
+      ]
+    },
+    "makaira-partners": {
+      "slug": "makaira-partners",
+      "name": "Makaira Partners",
+      "manager": "Tom Bancroft",
+      "cik": "0001540866",
+      "aliases": [
+        "Tom Bancroft",
+        "톰 밴크로프트",
+        "마카이라",
+        "Makaira Partners LLC"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:13.666Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0001540866-26-000002",
+      "versions": [
+        {
+          "accession": "0001540866-26-000002",
+          "period": "2026-03-31",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2026-05-15",
+          "path": "/data/gurus/makaira-partners/0001540866-26-000002-7126ea7bae9663e22a57fa24736a1a84482a3293815a68cc97f10237d7e3cf9e.json",
+          "hash": "7126ea7bae9663e22a57fa24736a1a84482a3293815a68cc97f10237d7e3cf9e"
+        }
+      ]
+    },
+    "melvin-capital": {
+      "slug": "melvin-capital",
+      "name": "Melvin Capital",
+      "manager": "Gabe Plotkin",
+      "cik": "0001628110",
+      "aliases": [
+        "Gabe Plotkin",
+        "게이브 플롯킨",
+        "멜빈 캐피털",
+        "Melvin Capital Management LP"
+      ],
+      "sourceState": {
+        "checkedAt": "2026-09-23T16:37:15.107Z",
+        "issue": null,
+        "pendingPeriods": []
+      },
+      "activeAccession": "0000902664-23-005012",
+      "versions": [
+        {
+          "accession": "0000902664-23-005012",
+          "period": "2023-09-30",
+          "kind": "original",
+          "revision": 0,
+          "filedDate": "2023-10-05",
+          "path": "/data/gurus/melvin-capital/0000902664-23-005012-62fbf1175319d523bffbd1ec6f956b276a3cd637047ca57d70915e5eb28c0583.json",
+          "hash": "62fbf1175319d523bffbd1ec6f956b276a3cd637047ca57d70915e5eb28c0583"
+        }
+      ]
+    }
+  }
+}
