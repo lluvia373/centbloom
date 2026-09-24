@@ -102,6 +102,6 @@ test('logout double-click is coalesced, failure retains account and offers retry
 });
 test('primary navigation has no duplicate settings destination after moving account controls', () => {
   const { primaryNavigation, navigationArea } = loadTypescript('src/features/navigation/model.ts');
-  assert.deepEqual(Array.from(primaryNavigation, item => item.href), ['/', '/portfolio']);
+  assert.deepEqual(Array.from(primaryNavigation, item => item.href), ['/', '/portfolio', '/gurus']);
   assert.equal(navigationArea('/settings'), 'settings');
 });

@@ -80,7 +80,7 @@ test("transaction history preserves actual records and edit/delete commands, inc
     let received;
     const { TransactionHistory } = loadTypescript("src/features/portfolio/ui/TransactionHistory.tsx", {
       "@/hooks/useAuth": { useAuth: () => ({ user: { id: "isolated-user" } }) },
-      "@/hooks/usePortfolio": { useTransactions: () => ({ transactions: records }), useTransactionCommands: () => commands },
+      "@/hooks/usePortfolio": { useTransactions: () => ({ transactions: records }), useTransactionCommands: () => commands, usePortfolios: () => ({ selectedPortfolioId: 'default' }) },
       "@/components/TransactionList": { TransactionList: (props) => { received = props; return createElement("div", null, "personal-history"); } },
     });
     const html = renderToStaticMarkup(createElement(TransactionHistory));

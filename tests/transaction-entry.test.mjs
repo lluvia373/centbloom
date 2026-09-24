@@ -11,6 +11,11 @@ const user = { id: 'user-a', email: 'a@example.com' };
 const validMarket = { symbol: 'AAPL', date: '2026-09-22', quote: { currency: 'USD' }, fx: 1400, usdKrw: 1400 };
 const format = { todayISO: () => '2026-09-22', formatCurrency: (value, currency) => `${currency} ${value}` };
 const submit = { preventDefault() {} };
+const portfolios = { selectedPortfolioId: 'default', isAggregate: false, writable: true, status: 'ready' };
+const formBoundaries = {
+  '@/features/portfolio/ui/PortfolioSwitcher': { PortfolioSwitcher: () => React.createElement('div', { 'data-portfolio-switcher': true }) },
+  '@/components/StorageNotice': { StorageNotice: () => null },
+};
 
 function harness({ save = async () => null, marketState } = {}) {
   const slots = [];
@@ -27,6 +32,7 @@ function harness({ save = async () => null, marketState } = {}) {
     },
     '@/hooks/useAuth': { useAuth: () => ({ user }) },
     '@/hooks/usePortfolio': {
+      usePortfolios: () => portfolios,
       useTransactions: () => ({ transactions: [] }),
       useTransactionCommands: () => ({ addTransaction: async input => { calls.push(input); return save(input); } }),
     },
@@ -102,20 +108,25 @@ test('save failure retains the draft, and stale or loading market input never sa
   }
 });
 
-test('account key remains on the form session and forces a fresh draft for another account', () => {
+test('account and portfolio keys force a fresh draft when either selection changes', () => {
   let currentUser = user;
   const { TransactionForm } = loadTypescript('src/components/TransactionForm.tsx', {
+    ...formBoundaries,
+    '@/hooks/usePortfolio': { usePortfolios: () => portfolios },
     '@/hooks/useAuth': { useAuth: () => ({ user: currentUser }) },
     '@/features/portfolio/ui/use-transaction-entry': { useTransactionEntry() { throw new Error('wrapper must not run entry'); } },
     '@/features/portfolio/ui/TradeStockPicker': { TradeStockPicker: () => null },
   });
-  assert.equal(TransactionForm({ initialSymbol: 'AAPL' }).key, 'user-a');
-  currentUser = { id: 'user-b' }; assert.equal(TransactionForm({}).key, 'user-b');
-  currentUser = null; assert.equal(TransactionForm({}).key, 'guest');
+  assert.equal(TransactionForm({ initialSymbol: 'AAPL' }).key, 'user-a:default');
+  currentUser = { id: 'user-b' }; assert.equal(TransactionForm({}).key, 'user-b:default');
+  currentUser = null; assert.equal(TransactionForm({}).key, 'guest:default');
+  portfolios.selectedPortfolioId = 'another';
+  assert.equal(TransactionForm({}).key, 'guest:another');
+  portfolios.selectedPortfolioId = 'default';
 });
 
-test('all five representative HTML outputs match the before-extraction screen byte for byte', () => {
-  // Captured from the dirty working copy immediately before extraction, including its account confirmation.
+test('five legacy form bodies remain unchanged alongside the new portfolio destination', () => {
+  // Preserve the original form-body snapshots; the added destination has its own UI tests.
   const cases = [
     ['empty', [null,'buy','',false,'','','',null,false,0,false], {market:null,marketLoading:false,marketError:null}, '1d4deb7cbf3d85a270f99a7e585f40950aa402fc1606cb1a352ae7681bdd0d6a'],
     ['buy', [stock,'buy','2026-09-22',true,'123.45','2.5','1',null,false,0,false], {market:validMarket,marketLoading:false,marketError:null}, '98a620e0a071da24d5656fe62b06caeec06ba2e39cc70a1cb47716aaeddfce46'],
@@ -126,9 +137,10 @@ test('all five representative HTML outputs match the before-extraction screen by
   for (const [name, states, marketState, expected] of cases) {
     let cursor = 0;
     const { TransactionForm } = loadTypescript('src/components/TransactionForm.tsx', {
+      ...formBoundaries,
       react: { ...React, useState: () => [states[cursor++], () => {}] },
       '@/hooks/useAuth': { useAuth: () => ({ user }) },
-      '@/hooks/usePortfolio': { useTransactions: () => ({transactions:[]}), useTransactionCommands: () => ({addTransaction:async()=>null}) },
+      '@/hooks/usePortfolio': { usePortfolios: () => portfolios, useTransactions: () => ({transactions:[]}), useTransactionCommands: () => ({addTransaction:async()=>null}) },
       '@/shared/react/use-operation-scope': {useOperationScope:()=>()=>()=>true},
       '@/features/market/use-trade-market': {useTradeMarket:()=>marketState},
       '@/lib/portfolio': {getAvailableQuantity:()=>3},
@@ -137,6 +149,8 @@ test('all five representative HTML outputs match the before-extraction screen by
       'next/link': {__esModule:true,default:({children,...props})=>React.createElement('a',props,children)},
     });
     const html = renderToStaticMarkup(React.createElement(TransactionForm));
-    assert.equal(createHash('sha256').update(html).digest('hex'), expected, name);
+    const destination = '<div class="mb-6 space-y-2"><p class="text-cf-label text-cf-muted">기록할 포트폴리오</p><div data-portfolio-switcher="true"></div></div>';
+    assert.ok(html.includes(destination), name + ': destination remains visible');
+    assert.equal(createHash('sha256').update(html.replace(destination, '')).digest('hex'), expected, name);
   }
 });

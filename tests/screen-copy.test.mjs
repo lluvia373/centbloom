@@ -92,7 +92,7 @@ test('missing performance and failed performance remain distinct, with one visib
  error='격리된 조회 오류';const html=render(PerformanceAnalytics);assert.equal(html.split(error).length-1,1);assert.match(html,/role="alert"/);assert.doesNotMatch(html,/기록 없음/);
 });
 test('target not configured, missing quote, stale quote and currency mismatch never collapse into one label',()=>{
- const {WatchlistRow}=loadTypescript('src/features/watchlist/WatchlistRow.tsx',{'@/components/AssetAvatar':{AssetAvatar:()=>null}});
+ const {WatchlistRow}=loadTypescript('src/features/watchlist/WatchlistRow.tsx',{'@/components/AssetAvatar':{AssetAvatar:()=>null},'./PriceAlertEditor':{PriceAlertEditor:()=>null}});
  const item={symbol:'AAPL',name:'Apple',targetPrice:90,targetCurrency:'USD'};
  const quote={symbol:'AAPL',name:'Apple',currency:'USD',price:100,change:1,changePercent:1};
  const base={item,loading:false,failed:false,onRemove:()=>null,onTarget:()=>null};
@@ -214,6 +214,9 @@ test('portfolio overview: summary and one focusable graph precede integrated hol
  const marker=(name)=>function Marker(){return createElement('div',null,name);};
  const {default:PortfolioPage}=loadTypescript('src/app/portfolio/page.tsx',{
   '@/features/ads/PortfolioAd':{PortfolioAd:()=>null},
+  '@/features/portfolio/ui/PortfolioSwitcher':{PortfolioSwitcher:marker('PORTFOLIO_SWITCHER')},
+  '@/components/StorageNotice':{StorageNotice:()=>null},
+  '@/features/dividends/SharedDividendSchedule':{SharedDividendSchedule:()=>null},
   '@/components/Header':{PageHeading:(props)=>{headingProps=props;return createElement('header',null,props.titleAction,props.children);},AddTransactionLink:marker('ADD_TRANSACTION'),CurrencySwitch:marker('CURRENCY_SWITCH')},
   '@/components/PortfolioMetrics':{PortfolioMetrics:marker('SUMMARY_ONCE')},
   '@/components/HoldingsTable':{HoldingsTable:(props)=>{holdingsProps=props;return createElement('div',null,'EDITABLE_HOLDINGS');}},
@@ -223,11 +226,11 @@ test('portfolio overview: summary and one focusable graph precede integrated hol
    detailsProps=props;return createElement('section',{'data-view':'portfolio-details'},props.holdings,props.history);
   }},
   '@/features/portfolio/ui/PortfolioHoldings.module.css':{default:{performance:'performance'}},
-  '@/hooks/usePortfolio':{useTransactions:()=>({transactions}),usePreferences:()=>({displayCurrency:'USD'}),usePortfolioMarket:()=>marketState,usePortfolioDailyChange:()=>dailyChange},
+  '@/hooks/usePortfolio':{useTransactions:()=>({transactions}),usePortfolios:()=>({selectedPortfolioId:'default',portfolios:[{id:'default',name:'기본 포트폴리오'}]}),usePreferences:()=>({displayCurrency:'USD'}),usePortfolioMarket:()=>marketState,usePortfolioDailyChange:()=>dailyChange},
  });
  const html=render(PortfolioPage);
- assert.equal(headingProps.title,'보유자산');assert.equal(headingProps.titleAction,undefined);
- assert.match(html,/<header><div>CURRENCY_SWITCH<\/div><div>ADD_TRANSACTION<\/div><\/header>/);
+ assert.equal(headingProps.title,'보유자산');assert.ok(headingProps.titleAction);
+ assert.match(html,/<header><div>PORTFOLIO_SWITCHER<\/div><div>CURRENCY_SWITCH<\/div><div>ADD_TRANSACTION<\/div><\/header>/);
  assert.doesNotMatch(html,/aria-controls="performance"|href="#performance"|<button[^>]*>기간 성과<\/button>/);
  for(const text of ['SUMMARY_ONCE','PERFORMANCE_ONCE','EDITABLE_HOLDINGS','HISTORY_ONCE'])assert.equal(html.split(text).length-1,1);
  assert.equal(html.split('class="portfolio-overview"').length-1,1);

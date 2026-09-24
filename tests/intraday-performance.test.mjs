@@ -74,14 +74,14 @@ test('intraday hook scopes values by account, revision, day, range and currency 
   const states = new Map(); let resource;
   const { useIntradayPerformance: readIntraday } = loadTypescript('src/features/performance/use-intraday-performance.ts', {
     '@/hooks/useAuth': { useAuth: () => ({ user: input.user, loading: input.authLoading }) },
-    '@/hooks/usePortfolio': { useTransactions: () => input },
+    '@/hooks/usePortfolio': { useTransactions: () => input, usePortfolios: () => ({ selectedPortfolioId: 'default' }) },
     '@/shared/time/use-kst-date': { useKstDate: () => input.day },
     '@/features/performance/intraday-performance': { loadIntradayPerformance() {} },
     '@/shared/async/shared-resource': { createSharedResource: (_, empty) => resource = { initial: { value: empty, loading: true, error: null }, snapshot: key => states.get(key) ?? resource.initial, subscribe: () => () => {} } },
     react: { useCallback: cb => cb, useSyncExternalStore: (_, read) => read() },
   });
   const saved = { points: [{ date: 'saved', assetValue: 1 }], tradeDates: [], profitKRW: 1 };
-  states.set(JSON.stringify(['a', 'r1', day, '1d', 'KRW']), { value: saved, loading: false, error: null });
+  states.set(JSON.stringify(['a', 'default', 'r1', day, '1d', 'KRW']), { value: saved, loading: false, error: null });
   assert.equal(readIntraday('1d', 'KRW').value, saved);
   for (const change of [{ user: { id: 'b' } }, { revision: 'r2' }, { day: '2026-09-23' }, { status: 'loading' }, { authLoading: true }, { revision: '' }]) {
     Object.assign(input, { user: { id: 'a' }, revision: 'r1', day, status: 'ready', authLoading: false }, change);

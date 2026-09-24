@@ -222,6 +222,7 @@ test('ledger cross-tab locks and storage events use the same development transac
     '../data/ledger-store': { createLedgerStore: input => { options = input; return { start() {}, reload() { reloads++; } }; } },
     '../data/local': { localRepository() {}, transactionCache() {} }, '../data/server': { serverRepository() {} },
     '../model/enrichment': { prepareTransactions() {} },
+    '../model/portfolios': { ALL_PORTFOLIOS_ID: 'all' },
     react: { createContext: () => ({ Provider: 'ledger' }), useMemo: callback => callback(), useEffect: callback => { callback(); } },
   }, { window: { addEventListener: (name, callback) => listeners.set(name, callback) }, navigator: { locks: { request: key => { locks.push(key); } } } });
   LedgerProvider({ children: null });
