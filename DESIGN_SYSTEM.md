@@ -353,6 +353,7 @@ Wanted Sans와 공통 토큰을 사용한다. 지수명·등락은 label, 가격
 | `--cf-color-canvas` | `#f6f7f8` | 페이지 배경 |
 | `--cf-color-surface` | `#ffffff` | 카드·입력 배경 / 진한 버튼의 글자 |
 | `--cf-color-ink` | `#202329` | 제목·본문 |
+| `--cf-color-backdrop` | `color-mix(in srgb, var(--cf-color-ink) 35%, transparent)` | 대화상자 뒤 배경 |
 | `--cf-color-muted` | `#727680` | 보조 정보 |
 | `--cf-color-line` | `#e6e8eb` | 구분선 |
 | `--cf-color-soft` | `#f3f4f6` | 선택 전·호버 배경 |

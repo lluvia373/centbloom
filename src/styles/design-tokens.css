@@ -23,6 +23,7 @@
   --cf-color-canvas: #f6f7f8;
   --cf-color-surface: #ffffff;
   --cf-color-ink: #202329;
+  --cf-color-backdrop: color-mix(in srgb, var(--cf-color-ink) 35%, transparent);
   --cf-color-muted: #727680;
   --cf-color-line: #e6e8eb;
   --cf-color-soft: #f3f4f6;
